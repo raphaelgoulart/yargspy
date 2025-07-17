@@ -1,0 +1,52 @@
+# TODO
+
+## General notes
+- The leaderboard will allow 3 kinds of sorting:
+    - score (score desc / notes hit desc / datetime asc);
+        - the standard; rewards pathing.
+    - notes hit (notes hit desc / datetime asc);
+        - rewards FCs, first evers, etc.
+- Each engine is its own leaderboard (so 3 leaderboards: Default, Casual, Precision);
+- Every "grab all X from Y" command should have filter, sort and pagination support;
+- Score submission will be done by the user simply uploading replay data, and all other data is extracted from there:
+    - If the song the replay refers to doesn't exist in the database yet, we'll have to ask the user for the song.ini / notes.mid as well;
+    - If there's ever a version of YARG with leaderboard support, just have the game auto-upload these 3 files on run end (using JWT token for auth, which is already implemented).
+- Files will be uploaded as files with their paths on the DB (as opposed to the binary data being stored on the DB directly)
+
+## Backend
+No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/leaderboards/95FD6F3E703C10437E882698004F3B01) to decide what data the models should have
+
+- [ ] Protect /register against bots ([reCAPTCHA](https://github.com/qwertyforce/fastify-recaptcha)?);
+    - I kind of only want to do that after we start the front-end though, since the reCAPTCHA widget is the only way to actually test this.
+- [ ] Song model (essentially song.ini);
+    - [ ] Add method to select all scores for that song (if a player has multiple scores, only the top-most in the selected criteria (score/notes hit) should be selected);
+    - [ ] Store notes.mid + metadata that affects chart parsing (i.e. hopo_threshold) for replay validation.
+- [ ] Score model (essentially replay file metadata, don't need to be as thorough though since the user can just download the replay for more data);
+    - [ ] Create tool to verify and extract replay data using YARG.Core (based on [ReplayCli](https://github.com/YARC-Official/YARG.Core/tree/master/ReplayCli))
+        - [ ] There should be two versions, one which targets stable and one which targets nightly
+        - [ ] If hosting on server, create cronjob to update the stable/nightly YARG.Core dlls if needed
+    - [ ] Figure out how to figure out YARG.Core version (git commit id?).
+- [ ] User model (more data?);
+    - [ ] Add method to select all scores for that user (order by datetime desc).
+- [ ] User routes;
+    - [ ] Edit user (only user itself and admin)
+- [ ] Score routes;
+    - [ ] Upload score (replay file)
+        - [ ] If notes.mid hash isn't found in Songs, the song is auto-created based on uploaded song.ini/notes.mid;
+        - [ ] If there's no uploaded song.ini/notes.mid, but it is needed, return reply prompting user for it.
+- [ ] Admin routes;
+    - [ ] Ban user (deactivates the account, hides all their scores) / unban user 
+    - [ ] Edit/delete song
+    - [ ] Delete score
+
+## Frontend
+Everything lol
+
+Framework suggestion: [Quasar](https://quasar.dev/) - Vue-based with tons of built-in components (but we should customize [fonts](https://quasar.dev/style/typography#default-font) and [color palette](https://quasar.dev/style/color-palette) to fit within the YARG aesthetic)
+
+We could make it ugly too, but if we're gonna do something, we gotta do it right! Go hard or go home.
+
+## Long-term?
+- [ ] Custom YARG build?
+    - [ ] Add "leaderboard token" to YARG configuration + auto-submit score on run end?
+    - [ ] More scorespy-esque features (ingame leaderboards (I really don't wanna do this))
