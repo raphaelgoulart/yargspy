@@ -94,14 +94,18 @@ const songSchema = mongoose.Schema({
             instrument: {
                 type: Number,
                 required: true,
-                enum: Object.keys(Instrument)
+                enum: Object.values(Instrument)
             },
             difficulty: {
                 type: Number,
                 required: true,
-                enum: Object.keys(Difficulty)
+                enum: Object.values(Difficulty)
             },
             notes: {
+                type: Number,
+                required: true
+            },
+            spPhrases: {
                 type: Number,
                 required: true
             }
