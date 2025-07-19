@@ -1,7 +1,5 @@
 import mongoose from 'mongoose';
 import { Difficulty, Instrument } from './song.js'; // TODO: better way to handle these enums?
-import Song from './song.js';
-import User from './user.js'
 
 export const Modifier = {
     AllStrums         : 0,
