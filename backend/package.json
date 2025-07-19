@@ -1,10 +1,11 @@
 {
-  "name": "backend",
+  "name": "yarglb-backend",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "start": "node --es-module-specifier-resolution=node ./src/index.js",
-    "dev": "nodemon --es-module-specifier-resolution=node ./src/index.js"
+    "build": "tsup",
+    "dev": "tsx src/index.ts"
   },
   "keywords": [],
   "author": "",
@@ -13,12 +14,21 @@
   "dependencies": {
     "@fastify/auth": "^5.0.2",
     "bcryptjs": "^3.0.2",
-    "dotenv": "^17.2.0",
     "fast-jwt": "^6.0.2",
     "fastify": "^5.4.0",
     "fastify-plugin": "^5.0.1",
+    "mongodb": "^6.17.0",
     "mongoose": "^8.16.4",
-    "nodemon": "^3.1.10"
+    "zod": "^4.0.5"
   },
-  "type": "module"
+  "devDependencies": {
+    "@types/node": "^24.0.14",
+    "dotenv": "^17.2.0",
+    "esbuild-fix-imports-plugin": "^1.0.21",
+    "pino-pretty": "^13.0.0",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.3",
+    "type-fest": "^4.41.0",
+    "typescript": "^5.8.3"
+  }
 }
