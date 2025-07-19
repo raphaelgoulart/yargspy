@@ -105,7 +105,7 @@ const songSchema = mongoose.Schema({
                 type: Number,
                 required: true
             },
-            spPhrases: {
+            starPowerPhrases: {
                 type: Number,
                 required: true
             }

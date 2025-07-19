@@ -20,11 +20,11 @@ export const Modifier = {
 const scoreSchema = mongoose.Schema({
     // system metadata
     song: {
-        type: Song,
+        type: Schema.Types.ObjectId, ref: 'Song',
         required: true
     },
     uploader: {
-        type: User,
+        type: Schema.Types.ObjectId, ref: 'User',
         required: true
     },
     filePath: {
