@@ -1,6 +1,14 @@
-# API Documentation
+<h1>Server API</h1>
 
-**Note:** The server sends `GenericServerResponseObject` JSON object on all routes except for `/status`.
+- [Server Responses](#server-responses)
+- [`GET` server](#get-server)
+- [`POST` user/register](#post-userregister)
+- [`POST` user/login](#post-userlogin)
+- [`POST` user/profile](#post-userprofile)
+
+## Server Responses
+
+The server sends `GenericServerResponseObject` JSON object on all routes except for `/status`.
 
 ```ts
 interface GenericServerResponseObject {
@@ -12,13 +20,9 @@ interface GenericServerResponseObject {
 }
 ```
 
-## Base URL
-
-`https://localhost:5000`
-
 ---
 
-## 🟩 GET /server
+## `GET` server
 
 **Description:**  
 Retrieve the status of the server.
@@ -29,7 +33,7 @@ Retrieve the status of the server.
   - On success.
 - `503 Service Unavailable`
 
-## 🟦 POST /user/register
+## `POST` user/register
 
 **Description:**  
 Register a new user.
@@ -54,7 +58,7 @@ interface IUserRegisterBodySchema {
 - `501 Not Implemented`
   - On not implemented errors.
 
-## 🟦 POST /user/login
+## `POST` user/login
 
 **Description:**  
 Authenticate a user login
@@ -87,7 +91,7 @@ interface IUserLoginResponse extends GenericServerResponseObject {
 }
 ```
 
-## 🟦 POST /user/profile
+## `POST` user/profile
 
 **Description:**  
 Retrieve the user profile data by its token.
