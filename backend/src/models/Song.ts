@@ -60,6 +60,7 @@ export interface SongSchemaInput {
   multiplier_note?: number
   checksum: string
   isChart: boolean
+  isRb3con: boolean
   availableInstruments: {
     instrument: (typeof Instrument)[keyof typeof Instrument]
     difficulty: (typeof Difficulty)[keyof typeof Difficulty]
@@ -105,6 +106,7 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
     checksum: { type: String, required: true },
     // filename will be checksum + .chart if isChart, else .mid
     isChart: { type: Boolean, required: true },
+    isRb3con: { type: Boolean, default: false, required: true }, // info needed for replay validation
     // should probably fetch these using YARG.Core for consistency with the actual game
     availableInstruments: [
       {
