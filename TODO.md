@@ -18,10 +18,10 @@ No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/
 
 - [ ] Protect /register against bots ([reCAPTCHA](https://github.com/qwertyforce/fastify-recaptcha)?);
     - I kind of only want to do that after we start the front-end though, since the reCAPTCHA widget is the only way to actually test this.
-- [ ] Song model (essentially song.ini);
+- [x] Song model (essentially song.ini);
     - [ ] Add method to select all scores for that song (if a player has multiple scores, only the top-most in the selected criteria (score/notes hit) should be selected);
     - [ ] Store notes.mid + metadata that affects chart parsing (i.e. hopo_threshold) for replay validation.
-- [ ] Score model (essentially replay file metadata, don't need to be as thorough though since the user can just download the replay for more data);
+- [x] Score model (essentially replay file metadata, don't need to be as thorough though since the user can just download the replay for more data);
     - [ ] Create tool to verify and extract replay data using YARG.Core (based on [ReplayCli](https://github.com/YARC-Official/YARG.Core/tree/master/ReplayCli))
         - [ ] There should be two versions, one which targets stable and one which targets nightly
         - [ ] If hosting on server, create cronjob to update the stable/nightly YARG.Core dlls if needed

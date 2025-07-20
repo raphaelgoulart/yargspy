@@ -27,6 +27,7 @@ export interface ScoreSchemaInput {
   childrenScores: { score: Schema.Types.ObjectId }[]
   nightly: boolean
   yargCoreCommit: string
+  hidden: boolean
   instrument: (typeof Instrument)[keyof typeof Instrument]
   difficulty?: number
   modifiers: { modifier: (typeof Modifier)[keyof typeof Modifier] }[]
@@ -95,6 +96,11 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>({
   yargCoreCommit: {
     // which version of YARG.Core was used to parse this replay?
     type: String,
+    required: true,
+  },
+  hidden: { // cheated/bugged scores or banned users
+    type: Boolean,
+    default: false,
     required: true,
   },
   // main score metadata
