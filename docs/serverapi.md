@@ -1,6 +1,16 @@
 # API Documentation
 
-**Note:** All routes (except for `/status`) send generic response JSON.
+**Note:** The server sends `GenericServerResponseObject` JSON object on all routes except for `/status`.
+
+```ts
+interface GenericServerResponseObject {
+  statusCode: number;
+  statusName: string;
+  statusFullName: string;
+  code: string;
+  message: string;
+}
+```
 
 ## Base URL
 
@@ -72,15 +82,8 @@ interface IUserLoginBodySchema {
 **Response Body**:
 
 ```ts
-interface GenericResponseObject {
-  statusCode: number;
-  statusName: string;
-  code: string;
-  message: string;
-}
-
-interface IUserLoginResponse extends GenericResponseObject {
-  payload: string;
+interface IUserLoginResponse extends GenericServerResponseObject {
+  token: string;
 }
 ```
 
@@ -104,14 +107,7 @@ Authorization required with valid login token.
 **Response Body**:
 
 ```ts
-interface GenericResponseObject {
-  statusCode: number;
-  statusName: string;
-  code: string;
-  message: string;
-}
-
-interface IUserProfileResponse extends GenericResponseObject {
+interface IUserProfileResponse extends GenericServerResponseObject {
   user: string;
 }
 ```
