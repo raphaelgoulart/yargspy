@@ -50,7 +50,7 @@ interface GenericServerUserTokenObject {
    */
   _id: string;
   /**
-   * Tells if the user has admin privileges
+   * Tells if the user has admin privileges.
    */
   admin: boolean;
 }
@@ -61,7 +61,7 @@ interface GenericServerUserTokenObject {
 ## `GET` server
 
 **Description:**  
-Retrieve the status of the server.
+Retrieves the status of the server.
 
 **Response (Status Only):**
 
@@ -72,7 +72,7 @@ Retrieve the status of the server.
 ## `POST` user/register
 
 **Description:**  
-Register a new user.
+Registers a new user.
 
 **Body Schema:**
 
@@ -97,7 +97,7 @@ interface IUserRegisterBodySchema {
 ## `POST` user/login
 
 **Description:**  
-Authenticate a user login
+Authenticates a user login.
 
 **Body Schema:**
 
@@ -130,10 +130,10 @@ interface IUserLoginResponse extends GenericServerResponseObject {
 ## `POST` user/profile
 
 **Description:**  
-Retrieve the user profile data by its token.
+Retrieves the user profile data by its token.
 
 **Headers:**  
-Authorization required with valid login token.
+Authorization required with valid user token.
 
 **Responses**:
 

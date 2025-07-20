@@ -131,3 +131,6 @@ dist
 
 # Yarn lock
 pnpm-lock.yaml
+
+# HTTP files
+*.http

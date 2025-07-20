@@ -41,7 +41,7 @@ export interface GenericServerUserTokenObject {
    */
   _id: string
   /**
-   * Tells if the user has admin privileges
+   * Tells if the user has admin privileges.
    */
   admin: boolean
 }
