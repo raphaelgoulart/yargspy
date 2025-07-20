@@ -1,6 +1,6 @@
 import zod, { ZodError } from 'zod'
 import { User, type UserSchemaDocument } from '../models/User'
-import { ServerError, type ControllerAuthFunction, type ControllerErrorHandler, type ControllerHandler } from '../config.exports'
+import { ServerError, type ControllerAuthFunction, type ControllerErrorHandler, type ControllerHandler } from '../app.exports'
 import { serverReply } from '../core.exports'
 
 // #region Body Schema Validator

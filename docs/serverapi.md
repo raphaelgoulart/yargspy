@@ -1,22 +1,58 @@
 <h1>Server API</h1>
 
-- [Server Responses](#server-responses)
+- [Interfaces](#interfaces)
+  - [Server Responses](#server-responses)
+  - [User Tokens](#user-tokens)
 - [`GET` server](#get-server)
 - [`POST` user/register](#post-userregister)
 - [`POST` user/login](#post-userlogin)
 - [`POST` user/profile](#post-userprofile)
 
-## Server Responses
+## Interfaces
+
+### Server Responses
 
 The server sends `GenericServerResponseObject` JSON object on all routes except for `/status`.
 
 ```ts
-interface GenericServerResponseObject {
+export interface GenericServerResponseObject {
+  /**
+   * The status code number.
+   */
   statusCode: number;
+  /**
+   * The status code name.
+   */
   statusName: string;
+  /**
+   * The status code number and name.
+   */
   statusFullName: string;
+  /**
+   * Internal code string that represents the status of the response.
+   */
   code: string;
+  /**
+   * A generic message of the response status (in English).
+   */
   message: string;
+}
+```
+
+### User Tokens
+
+User tokens are signed JSON objects where it holds the `ObjectID` of the user that owns the token.
+
+```ts
+interface GenericServerUserTokenObject {
+  /**
+   * The `ObjectID` of the user, encoded in Base64 string.
+   */
+  _id: string;
+  /**
+   * Tells if the user has admin privileges
+   */
+  admin: boolean;
 }
 ```
 
@@ -79,7 +115,7 @@ interface IUserLoginBodySchema {
 - `400 Bad Request`
   - On incomplete requests, response body JSON syntax errors, invalid body inputs, unregistered user.
 - `401 Unauthorized`
-  - When the provided user exists but provided password doesn't match.
+  - When the provided user exists but provided password doesn't match, inactive user register.
 - `501 Not Implemented`
   - On not implemented errors.
 
@@ -104,7 +140,7 @@ Authorization required with valid login token.
 - `200 OK`
   - On success.
 - `401 Unauthorized`
-  - Invalid token (wrong format, expired token).
+  - Invalid token (wrong format, expired token), inactive user register.
 - `501 Not Implemented`
   - On not implemented errors.
 

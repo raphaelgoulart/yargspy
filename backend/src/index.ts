@@ -2,7 +2,7 @@ import fastify from 'fastify'
 import fastifyAuth from '@fastify/auth'
 import cors from '@fastify/cors'
 import { envCheck } from './utils.exports'
-import { fastifyLoggerOptions, mongoDBConnectPlugin } from './config.exports'
+import { fastifyLoggerOptions, mongoDBConnectPlugin } from './app.exports'
 import 'dotenv/config'
 import { initServerRoutes } from './core/initServerRoutes'
 

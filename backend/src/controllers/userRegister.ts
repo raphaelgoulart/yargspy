@@ -2,7 +2,7 @@ import zod, { ZodError } from 'zod'
 import { serverReply } from '../core.exports'
 import { MongoError } from 'mongodb'
 import { User } from '../models/User'
-import { ServerError, type ControllerErrorHandler, type ControllerHandler } from '../config.exports'
+import { ServerError, type ControllerErrorHandler, type ControllerHandler } from '../app.exports'
 
 // #region Body Schema Validator
 export const userRegisterBodySchema = zod.object({

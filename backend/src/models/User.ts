@@ -1,29 +1,60 @@
-import bcrypt from "bcryptjs";
-import { Document, model, Model, Schema } from "mongoose";
-import { jwtSign, jwtVerify, passwordValidator } from "../utils.exports";
-import { ServerError } from "../config.exports";
-import "dotenv/config";
+import bcrypt from 'bcryptjs'
+import { Document, model, Model, Schema } from 'mongoose'
+import { bearerTokenVerifier, jwtSign, jwtVerify, passwordValidator } from '../utils.exports'
+import { ServerError } from '../app.exports'
+import 'dotenv/config'
 
 export interface UserSchemaInput {
-  username: string;
-  password: string;
-  profilePhotoURL: string;
-  active: boolean;
-  admin: boolean;
+  /**
+   * The username registered by the user.
+   */
+  username: string
+  /**
+   * The hashed password of the user.
+   */
+  password: string
+  /**
+   * The profile photo URL.
+   */
+  profilePhotoURL: string
+  /**
+   * Tells if the user registry is active
+   */
+  active: boolean
+  /**
+   * Tells if the user registered has admin privileges
+   */
+  admin: boolean
 }
 
 // Methods here
 export interface UserSchemaDocument extends UserSchemaInput, Document {
-  generateToken(): Promise<string>;
+  /**
+   * Signs a token for the user with the `ObjectID` of the user for user requests validation.
+   * - - - -
+   */
+  generateToken(): Promise<string>
 }
 
 // Statics here
 export interface UserSchemaModel extends Model<UserSchemaDocument> {
-  findByToken(token: string): Promise<UserSchemaDocument>;
-  findByCredentials(
-    username: string,
-    password: string
-  ): Promise<UserSchemaDocument>;
+  /**
+   * Finds a `User` registry by it's token by parsing it directly from the request authorization header.
+   * - - - -
+   * @param {string | undefined} auth The request authorization header where the user token is found.
+   * @returns {Promise<UserSchemaDocument>}
+   * @throws {ServerError} When no authorization header is found, when the authorization header is in invalid format, or when the provided user token is invalid/expired.
+   */
+  findByToken(auth: string | undefined): Promise<UserSchemaDocument>
+  /**
+   * Finds a `User` registry by checking basic credentials.
+   * - - - -
+   * @param {string} username The user name.
+   * @param {string} password The user password.
+   * @returns {Promise<UserSchemaDocument>}
+   * @throws {ServerError} When no user is found using the provided username, or when the provided password doesn't match.
+   */
+  findByCredentials(username: string, password: string): Promise<UserSchemaDocument>
 }
 
 const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
@@ -53,41 +84,36 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
   {
     methods: {
       async generateToken() {
-        const token = jwtSign({ _id: this._id.toString() });
-        return token;
+        const token = jwtSign({ _id: this._id.toString(), admin: this.admin })
+        return token
       },
     },
     statics: {
-      async findByToken(token: string) {
-        const decoded = jwtVerify(token);
-        const user = await this.findOne({
-          _id: decoded._id,
-        });
-        if (!user) throw new ServerError("err_invalid_auth");
-        if (!user.active) throw new ServerError("err_login_user_inactive");
-        return user;
+      async findByToken(auth: string | undefined) {
+        const token = bearerTokenVerifier(auth)
+        const decoded = jwtVerify(token)
+        const user = await this.findOne({ _id: decoded._id })
+        if (!user) throw new ServerError('err_invalid_auth')
+        if (!user.active) throw new ServerError('err_login_user_inactive')
+        return user
       },
       async findByCredentials(username: string, password: string) {
-        const user = await this.findOne({ username }).select([
-          "+password",
-          "+tokens",
-        ]);
-        if (!user)
-          throw new ServerError("err_login_user_notfound", null, { username });
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) throw new ServerError("err_login_password_validation");
-        if (!user.active) throw new ServerError("err_login_user_inactive");
-        return user;
+        const user = await this.findOne({ username }).select(['+password', '+tokens'])
+        if (!user) throw new ServerError('err_login_user_notfound', null, { username })
+        const isMatch = await bcrypt.compare(password, user.password)
+        if (!isMatch) throw new ServerError('err_login_password_validation')
+        if (!user.active) throw new ServerError('err_login_user_inactive')
+        return user
       },
     },
   }
-);
+)
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  const salt = await bcrypt.genSalt(12);
-  this.password = await bcrypt.hash(passwordValidator(this.password), salt);
-  next();
-});
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next()
+  const salt = await bcrypt.genSalt(12)
+  this.password = await bcrypt.hash(passwordValidator(this.password), salt)
+  next()
+})
 
-export const User = model<UserSchemaInput, UserSchemaModel>("User", userSchema);
+export const User = model<UserSchemaInput, UserSchemaModel>('User', userSchema)

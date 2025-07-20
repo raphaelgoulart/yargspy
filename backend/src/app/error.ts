@@ -6,14 +6,41 @@ import { MongoError } from 'mongodb'
 import { TokenError } from 'fast-jwt'
 
 export interface ServerErrorLogObject {
+  /**
+   * Tells if the error is an instance of the generic `Error` class from NodeJS.
+   */
   isError: boolean
+  /**
+   * Tells if the error is an instance of `TypeError` (generic `Error` class from NodeJS).
+   */
   isTypeError: boolean
+  /**
+   * Tells if the error is an instance of `RangeError` (generic `Error` class from NodeJS).
+   */
   isRangeError: boolean
-  isMongoError: boolean
-  isTokenError: boolean
+  /**
+   * Tells if the error is an instance of `SyntaxError` (generic `Error` class from NodeJS).
+   */
   isSyntaxError: boolean
+  /**
+   * Tells if the error is an instance of `ServerError` (custom error class used on this server).
+   */
   isServerError: boolean
+  /**
+   * Tells if the error is an instance of `MongoError` (imported from `mongodb`).
+   */
+  isMongoError: boolean
+  /**
+   * Tells if the error is an instance of `TokenError` (imported from `fast-jwt`).
+   */
+  isTokenError: boolean
+  /**
+   * Tells if the error is an instance of `ZodError` (imported from `zod`).
+   */
   isZodError: boolean
+  /**
+   * The error object itself.
+   */
   error: FastifyError
 }
 
@@ -23,8 +50,17 @@ export interface ServerErrorLogObject {
  * You can also debug error classes by using the static method `logErrors()` on any error handler function.
  */
 export class ServerError extends Error {
+  /**
+   * A code of the error (status code and message will be retrieved from the internal code map), or an array with the status code and the custom message.
+   */
   serverErrorCode: LiteralUnion<ReplyCodeNames, string> | DirectMessage
+  /**
+   * Values that will be placed on the reply JSON object.
+   */
   data?: Record<string, any> | null
+  /**
+   * An object with key values that can be replaced parameters inside the message string by using `{{paramName}}` flags inside the string.
+   */
   messageValues?: Record<string, string>
 
   /**
@@ -52,19 +88,19 @@ export class ServerError extends Error {
     const isError = error instanceof Error
     const isTypeError = error instanceof TypeError
     const isRangeError = error instanceof RangeError
-    const isMongoError = error instanceof MongoError
-    const isTokenError = error instanceof TokenError
     const isSyntaxError = error instanceof SyntaxError
     const isServerError = error instanceof ServerError
+    const isMongoError = error instanceof MongoError
+    const isTokenError = error instanceof TokenError
     const isZodError = error instanceof ZodError
     const output = {
       isError,
       isTypeError,
       isRangeError,
-      isMongoError,
-      isTokenError,
       isSyntaxError,
       isServerError,
+      isMongoError,
+      isTokenError,
       isZodError,
       error,
     }

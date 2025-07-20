@@ -1,12 +1,11 @@
 import { bearerTokenVerifier } from '../utils.exports'
 import { serverReply } from '../core.exports'
 import { User, type UserSchemaDocument } from '../models/User'
-import { ServerError, type ControllerAuthFunction, type ControllerErrorHandler, type ControllerHandler } from '../config.exports'
+import { ServerError, type ControllerAuthFunction, type ControllerErrorHandler, type ControllerHandler } from '../app.exports'
 
 export interface IUserProfileController {}
 export interface IUserProfileDecorators {
   user?: UserSchemaDocument
-  token?: string
 }
 
 // #region Handler
@@ -30,12 +29,8 @@ const userProfileErrorHandler: ControllerErrorHandler<IUserProfileController> = 
 // #region Auth Methods
 
 export const verifyUserJWT: ControllerAuthFunction<IUserProfileController, IUserProfileDecorators> = async function (req) {
-  const auth = req.headers.authorization
-  const token = bearerTokenVerifier(auth)
-  const user = await User.findByToken(token)
-
+  const user = await User.findByToken(req.headers.authorization)
   req.user = user
-  req.token = token
 }
 
 // #region Opts

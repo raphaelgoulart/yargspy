@@ -1,4 +1,4 @@
-import { ServerError } from '../config/error'
+import { ServerError } from '../app/error'
 
 /**
  * Validates the password to be used when registering new users.
