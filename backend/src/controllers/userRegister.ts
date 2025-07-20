@@ -1,11 +1,11 @@
 import zod, { ZodError } from 'zod'
 import { serverReply } from '../core.exports'
 import { MongoError } from 'mongodb'
-import User from '../models/User'
+import { User } from '../models/User'
 import { ServerError, type ControllerErrorHandler, type ControllerHandler } from '../config.exports'
 
 // #region Body Schema Validator
-const userRegisterBodySchema = zod.object({
+export const userRegisterBodySchema = zod.object({
   username: zod.string().min(3).max(32),
   password: zod
     .string()
@@ -94,5 +94,4 @@ export const userRegisterController = {
     errorHandler: userRegisterErrorHandler,
     handler: userRegisterHandler,
   },
-  bodySchema: userRegisterBodySchema,
 } as const

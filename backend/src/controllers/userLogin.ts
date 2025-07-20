@@ -1,12 +1,12 @@
 import zod, { ZodError } from 'zod'
-import User, { type UserSchemaDocument } from '../models/User'
+import { User, type UserSchemaDocument } from '../models/User'
 import { ServerError, type ControllerAuthFunction, type ControllerErrorHandler, type ControllerHandler } from '../config.exports'
 import { serverReply } from '../core.exports'
 
 // #region Body Schema Validator
-const userLoginBodySchema = zod.object({
-  username: zod.string(),
-  password: zod.string(),
+export const userLoginBodySchema = zod.object({
+  username: zod.string().nonempty(),
+  password: zod.string().nonempty(),
 })
 
 export interface IUserLoginController {
@@ -21,7 +21,7 @@ export interface IUserLoginDecorators {
 const userLoginHandler: ControllerHandler<IUserLoginController, IUserLoginDecorators> = async function (req, reply) {
   const user = req.user!
   const token = await user.generateToken()
-  serverReply(reply, 'suceess_user_login', { payload: token })
+  serverReply(reply, 'suceess_user_login', { token })
 }
 
 // #region Error Handler
@@ -73,6 +73,7 @@ const userLoginErrorHandler: ControllerErrorHandler<IUserLoginController> = func
 
 export const verifyUserLoginBody: ControllerAuthFunction<IUserLoginController, IUserLoginDecorators> = async function (req) {
   const { username, password } = userLoginBodySchema.parse(req.body)
+  console.log(userLoginBodySchema.parse(req.body))
   const user = await User.findByCredentials(username, password)
   req.user = user
 }
@@ -84,5 +85,4 @@ export const userLoginController = {
     handler: userLoginHandler,
     errorHandler: userLoginErrorHandler,
   },
-  bodySchema: userLoginBodySchema,
 } as const

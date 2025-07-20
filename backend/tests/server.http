@@ -1,4 +1,4 @@
-@hostname=http://127.0.0.1
+@hostname=http://localhost
 @port=5000
 @host={{hostname}}:{{port}}
 @admin_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODdiMTIxNTZmYzU1ZjhmYWUyYWNlMmMiLCJpYXQiOjE3NTI4OTYwMjd9.rnplrcU8tB0JJGCgyTOEAI4aYgRyq9umqkC8pxZXYlk

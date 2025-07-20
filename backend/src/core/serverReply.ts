@@ -129,7 +129,7 @@ export type DirectMessage = [HTTPCodes, string]
  * @param {FastifyReply} reply The reply instance of the request.
  * @param {LiteralUnion<ReplyCodeNames, string> | DirectMessage} codeOrMessage A code of the error (status code and message will be retrieved from the internal code map), or an array with the status code and the custom message.
  * @param {Record<string, any> | null} [data] `OPTIONAL` Values that will be placed on the reply JSON object.
- * @param {Record<string, string>} [messageValues] `OPTIONAL` An object with key values that can be replaced o
+ * @param {Record<string, string>} [messageValues] `OPTIONAL` An object with key values that can be replaced parameters inside the message string by using `{{paramName}}` flags inside the string.
  * @returns {FastifyReply}
  */
 export const serverReply = (reply: FastifyReply, codeOrMessage: LiteralUnion<ReplyCodeNames, string> | DirectMessage, data?: Record<string, any> | null, messageValues?: Record<string, string>): FastifyReply => {

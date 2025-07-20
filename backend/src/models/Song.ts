@@ -1,4 +1,4 @@
-import { Document, Model, model, Schema } from 'mongoose'
+import { type Document, type Model, model, Schema } from 'mongoose'
 
 // #region Enums
 
@@ -145,5 +145,4 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
 // (if a player has multiple scores, only the top-most in the selected criteria (score/notes hit) should be selected);
 // TODO: method to find song by hash
 
-const Song = model<SongSchemaInput, SongSchemaModel>('Song', songSchema)
-export default Song
+export const Song = model<SongSchemaInput, SongSchemaModel>('Song', songSchema)

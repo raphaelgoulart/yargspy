@@ -1,6 +1,6 @@
 import { bearerTokenVerifier } from '../utils.exports'
 import { serverReply } from '../core.exports'
-import User, { type UserSchemaDocument } from '../models/User'
+import { User, type UserSchemaDocument } from '../models/User'
 import { ServerError, type ControllerAuthFunction, type ControllerErrorHandler, type ControllerHandler } from '../config.exports'
 
 export interface IUserProfileController {}

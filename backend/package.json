@@ -1,7 +1,7 @@
 {
   "name": "yarglb-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.ts",
   "type": "module",
   "scripts": {
     "build": "tsup",
@@ -13,6 +13,7 @@
   "description": "",
   "dependencies": {
     "@fastify/auth": "^5.0.2",
+    "@fastify/cors": "^11.0.1",
     "bcryptjs": "^3.0.2",
     "fast-jwt": "^6.0.2",
     "fastify": "^5.4.0",

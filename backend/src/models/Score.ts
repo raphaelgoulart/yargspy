@@ -192,5 +192,4 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>({
     }*/
 })
 
-const Score = model('Score', scoreSchema)
-export default Score
+export const Score = model('Score', scoreSchema)

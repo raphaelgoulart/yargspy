@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
-import UserRoute from '../routes/userRoute'
-import StatusRoute from '../routes/statusRoute'
+import UserRoute from '../routes/User.route'
+import StatusRoute from '../routes/Status.route'
 
 /**
  * Initialize all server routes.
