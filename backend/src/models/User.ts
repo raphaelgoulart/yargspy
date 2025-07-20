@@ -40,13 +40,10 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
     },
     profilePhotoURL: {
       type: String,
-      required: true,
-      default:
-        "https://media.discordapp.net/attachments/424076935056982046/1258691936777404458/image.png?ex=687d48f7&is=687bf777&hm=5c829a48aa823e525893074ae2ef03e0e19102020d7eed9d99506dbc2695b8a8&=&format=webp&quality=lossless&width=256&height=256",
     },
     active: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     admin: {
       type: Boolean,
@@ -67,6 +64,7 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
           _id: decoded._id,
         });
         if (!user) throw new ServerError("err_invalid_auth");
+        if (!user.active) throw new ServerError("err_login_user_inactive");
         return user;
       },
       async findByCredentials(username: string, password: string) {
@@ -78,6 +76,7 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
           throw new ServerError("err_login_user_notfound", null, { username });
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) throw new ServerError("err_login_password_validation");
+        if (!user.active) throw new ServerError("err_login_user_inactive");
         return user;
       },
     },

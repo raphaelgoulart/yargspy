@@ -171,6 +171,10 @@ export const codeMap = {
     400,
     "The provided username {{username}} is not registered",
   ],
+  err_login_user_inactive: [
+    401,
+    "The registered user has been deactivated and is unable to login"
+  ],
   suceess_user_login: [200, "You're logged in"],
 
   // user/profile
