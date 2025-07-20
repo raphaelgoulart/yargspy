@@ -17,6 +17,12 @@ export const Modifier = {
   RangeCompress: 10,
 } as const
 
+export const Engine = {
+  Default: 0,
+  Casual: 1,
+  Precision: 2,
+} as const
+
 //#region Types
 
 export interface ScoreSchemaInput {
@@ -30,6 +36,7 @@ export interface ScoreSchemaInput {
   hidden: boolean
   instrument: (typeof Instrument)[keyof typeof Instrument]
   difficulty?: number
+  engine?: number
   modifiers: { modifier: (typeof Modifier)[keyof typeof Modifier] }[]
   songSpeed: number
   datetime: Date
@@ -110,9 +117,14 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>({
     enum: Object.values(Instrument),
   },
   difficulty: {
-    // not required; can be null for band scores
+    // can be null for band scores
     type: Number,
     enum: Object.values(Difficulty),
+  },
+  engine: {
+    // (Default / Casual / Precision) can be null for band scores
+    type: Number,
+    enum: Object.values(Engine),
   },
   modifiers: [
     {
