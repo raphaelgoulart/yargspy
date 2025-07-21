@@ -127,6 +127,7 @@ Dictionary<string, object> readReplay(Dictionary<string, object> storage, string
             { "starPowerCount", starPowerStorage }
         };
         storage.Add("chartData", chartDataStorage);
+        storage.Add("hopo_frequency", parseSettings.Value.HopoThreshold); // needed because DB stores hopo_frequency, but .ini might contain eighthNoteHopo/hopofreq instead
     }
     storage["result"] = "success";
     return storage;
