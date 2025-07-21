@@ -73,7 +73,6 @@ const userLoginErrorHandler: ControllerErrorHandler<IUserLoginController> = func
 
 export const verifyUserLoginBody: ControllerAuthFunction<IUserLoginController, IUserLoginDecorators> = async function (req) {
   const { username, password } = userLoginBodySchema.parse(req.body)
-  console.log(userLoginBodySchema.parse(req.body))
   const user = await User.findByCredentials(username, password)
   req.user = user
 }

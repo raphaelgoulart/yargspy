@@ -36,7 +36,7 @@ export interface AnimationGeneratorReturnObject {
  * @param {FramerMotionAnimationGeneratorOptions} animations An object flagging the animations you want to be activated.
  * @returns {AnimationGeneratorReturnObject}
  */
-export const genAnimation = (animations: FramerMotionAnimationGeneratorOptions): AnimationGeneratorReturnObject => {
+export const createAnimation = (animations: FramerMotionAnimationGeneratorOptions): AnimationGeneratorReturnObject => {
   const { delay, duration, height, heightInit, left, leftInit, opacity, opacityInit, scaleX, scaleXInit, scaleY, scaleYInit, width, widthInit, right, rightInit, bottom, bottomInit, top, topInit } = animations
   const initial = new Map()
   const animate = new Map()

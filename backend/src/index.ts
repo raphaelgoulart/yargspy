@@ -8,7 +8,7 @@ import { initServerRoutes } from './core/initServerRoutes'
 
 const serverStart = async () => {
   // Init fastify
-  const app = fastify({ logger: fastifyLoggerOptions })
+  const app = fastify({ logger: fastifyLoggerOptions, disableRequestLogging: false })
 
   // Check environment variables
   const { port, mongoDBURI } = envCheck()

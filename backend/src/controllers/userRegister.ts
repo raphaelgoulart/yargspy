@@ -74,7 +74,7 @@ const userRegisterErrorHandler: ControllerErrorHandler<IUserRegisterController> 
   if (error instanceof MongoError && Number(error.code) === 11000 && 'keyValue' in error && error.keyValue !== null && error.keyValue !== undefined && 'username' in (error.keyValue as Record<string, string>)) {
     const username = (error.keyValue as Record<string, string>).username
 
-    return serverReply(reply, 'err_user_register_duplicated_username', undefined, { username })
+    return serverReply(reply, 'err_user_register_duplicated_username', { messageValues: { username } }, { username })
   }
 
   // Empty body but with Content-Type in request headers

@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 @import 'tailwindcss';
 
+/* Tailwind config, see https://tailwindcss.com/docs/theme */
 @theme {
   /* Breakpoints */
   --breakpoint-mobile: 320px;
@@ -11,22 +13,32 @@
   --breakpoint-laptop-lg: 1366px;
   --breakpoint-desktop: 1440px;
 
-  --font-chalet: 'Chalet', sans-serif;
-  --font-mono: 'Space Mono', monospace;
+  --font-mono: "Space Mono", monospace;
 }
 
+/* Applies on all tags. Don't put Tailwind classes here, only raw CSS. */
+* {
+  outline: none;
+}
+
+/* Globals tags */
 body {
   @apply bg-neutral-900 text-neutral-300;
 }
 
-/* Global */
-* {
-  outline: none;
+/* 
+  Root:
+    #root takes all the actual screen size on the webpage.
+*/
+#root {
+  @apply relative h-screen w-full overflow-hidden;
 }
 
 header,
 footer,
 section,
+main,
+nav,
 div,
 form,
 button {
@@ -41,13 +53,12 @@ p {
   @apply whitespace-pre-wrap;
 }
 
-#root {
-  @apply font-chalet h-screen w-full overflow-hidden;
-}
+/* Scrollbar Options */
 
 /* Scroll width */
 ::-webkit-scrollbar {
   width: 0.5rem;
+  height: 0.55rem;
 }
 
 /* Track */

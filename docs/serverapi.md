@@ -36,6 +36,10 @@ export interface GenericServerResponseObject {
    * A generic message of the response status (in English).
    */
   message: string;
+  /**
+   * An object with key values that can be replaced parameters inside the message string by using `{{paramName}}` flags inside the string.
+   */
+  messageValues?: Record<string, string>;
 }
 ```
 
@@ -44,7 +48,7 @@ export interface GenericServerResponseObject {
 User tokens are signed JSON objects where it holds the `ObjectID` of the user that owns the token.
 
 ```ts
-interface GenericServerUserTokenObject {
+export interface GenericServerUserTokenObject {
   /**
    * The `ObjectID` of the user, encoded in Base64 string.
    */
@@ -148,6 +152,13 @@ Authorization required with valid user token.
 
 ```ts
 interface IUserProfileResponse extends GenericServerResponseObject {
-  user: string;
+  user?: {
+    _id: string;
+    username: string;
+    active: boolean;
+    admin: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  };
 }
 ```

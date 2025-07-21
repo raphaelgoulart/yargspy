@@ -25,6 +25,8 @@ export interface UserSchemaInput {
    * Tells if the user registered has admin privileges
    */
   admin: boolean
+  createdAt: Date
+  updatedAt: Date
 }
 
 // Methods here
@@ -63,6 +65,7 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
       type: String,
       required: true,
       unique: true,
+      trim: true,
     },
     password: {
       type: String,
@@ -80,8 +83,17 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
       type: Boolean,
       default: false,
     },
+    createdAt: {
+      type: Schema.Types.Date,
+      default: Date.now(),
+    },
+    updatedAt: {
+      type: Schema.Types.Date,
+      default: Date.now(),
+    },
   },
   {
+    timestamps: true,
     methods: {
       async generateToken() {
         const token = jwtSign({ _id: this._id.toString(), admin: this.admin })
