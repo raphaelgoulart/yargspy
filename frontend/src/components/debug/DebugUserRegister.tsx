@@ -1,11 +1,11 @@
 import axios, { AxiosError } from 'axios'
-import { AppGlobalState } from '../../app/stores/global'
 import { AnimatedComponent, createAnimation, MotionDiv, MotionSection } from '../../lib.exports'
 import { DebugGlobalState } from '../../app/stores/debug'
-import type { GenericServerResponseObject } from '../../@types/app'
+import type { DebugUserLoginResponseDecorators, GenericServerResponseObject } from '../../app/types'
 import { VscLoading } from '../../assets/icons'
 import clsx from 'clsx'
 import BlockOfCode from '../BlockOfCode'
+import { useTranslation } from 'react-i18next'
 
 export default function DebugUserRegister() {
   const debugTabSelected = DebugGlobalState((x) => x.debugTabSelected)
@@ -15,12 +15,13 @@ export default function DebugUserRegister() {
   const lastRequest = DebugGlobalState((x) => x.lastRequest)
   const setDebugGlobalState = DebugGlobalState((x) => x.setDebugGlobalState)
   const isActivated = debugTabSelected === 1
+  const { t } = useTranslation()
   return (
     <AnimatedComponent condition={isActivated}>
-      <MotionSection {...createAnimation({ opacity: true })} className="!absolute origin-top w-full">
-        <h1 className="text-5xl mb-4">User Register</h1>
+      <MotionSection {...createAnimation({ opacity: true })} className="!absolute w-full origin-top">
+        <h1 className="mb-4 text-5xl">{t('user_register')}</h1>
         <form
-          className="pb-2 mb-2 border-b border-neutral-700"
+          className="mb-2 border-b border-neutral-700 pb-2"
           onSubmit={async (ev) => {
             setDebugGlobalState({ isRequesting: true })
             ev.preventDefault()
@@ -46,37 +47,37 @@ export default function DebugUserRegister() {
             }
           }}
         >
-          <h2 className="text-xs font-bold mb-1">USERNAME</h2>
-          <input name="username" className="bg-white/10 py-1 px-2 mb-2 rounded-xs" value={username} onChange={(ev) => setDebugGlobalState({ username: ev.target.value })} />
-          <h2 className="text-xs font-bold mb-1">PASSWORD</h2>
-          <input name="password" type="password" className="bg-white/10 py-1 px-2 mb-2 rounded-xs" value={password} onChange={(ev) => setDebugGlobalState({ password: ev.target.value })} />
-          <button disabled={isRequesting} className="bg-cyan-700 hover:bg-cyan-600 py-2 rounded-sm disabled:bg-neutral-800 disabled:text-neutral-700">
-            REGISTER
+          <h2 className="mb-1 text-xs font-bold uppercase">{t('username_short')}</h2>
+          <input name="username" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={username} onChange={(ev) => setDebugGlobalState({ username: ev.target.value })} />
+          <h2 className="mb-1 text-xs font-bold uppercase">{t('password')}</h2>
+          <input name="password" type="password" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={password} onChange={(ev) => setDebugGlobalState({ password: ev.target.value })} />
+          <button disabled={isRequesting} className="rounded-sm bg-cyan-700 py-2 uppercase hover:bg-cyan-600 disabled:bg-neutral-800 disabled:text-neutral-700">
+            {t('register')}
           </button>
         </form>
-        <h3 className="mb-2 font-bold text-xs">LAST RESPONSE</h3>
-        <div className="pb-2 border-b border-neutral-700 mb-2">
+        <h3 className="mb-2 text-xs font-bold uppercase">{t('last_response')}</h3>
+        <div className="mb-2 border-b border-neutral-700 pb-2">
           <AnimatedComponent condition={isRequesting}>
-            <MotionDiv {...createAnimation({ opacity: true })} className="!absolute z-20 bg-black/90 w-full h-full items-center">
-              <VscLoading className="animate-spin mt-6 text-3xl" />
+            <MotionDiv {...createAnimation({ opacity: true })} className="!absolute z-20 h-full w-full items-center bg-black/90">
+              <VscLoading className="mt-6 animate-spin text-3xl" />
             </MotionDiv>
           </AnimatedComponent>
           {(() => {
-            const { code, message, statusCode, statusFullName, statusName, token }: GenericServerResponseObject & { token?: string } = lastRequest ?? { code: 'off', message: 'Make your first request', statusCode: 0, statusFullName: '000 Off', statusName: 'Off' }
+            const { code, message, statusCode, statusFullName, statusName, token }: DebugUserLoginResponseDecorators = lastRequest ?? { code: 'off', message: t('debug_make_first_req_message'), statusCode: 0, statusFullName: '000 Off', statusName: 'Off' }
             return (
               <>
-                <div className={clsx('p-3 rounded-sm', statusCode === 0 ? 'bg-neutral-700' : statusCode < 400 ? 'bg-green-900' : 'bg-red-900')}>
-                  <h1 className="font-mono uppercase text-lg bg-neutral-800 px-1 mb-2 rounded-sm">{statusFullName}</h1>
+                <div className={clsx('rounded-sm p-3', statusCode === 0 ? 'bg-neutral-700' : statusCode < 400 ? 'bg-green-900' : 'bg-red-900')}>
+                  <h1 className="mb-2 rounded-sm bg-neutral-800 px-1 font-mono text-lg uppercase">{statusFullName}</h1>
                   <h2 className="mb-2">{message}.</h2>
-                  <div className="bg-neutral-800 p-3 rounded-sm mb-2">
-                    <h2 className="text-sm uppercase font-bold mr-auto mb-3">Response JSON</h2>
+                  <div className="mb-2 rounded-sm bg-neutral-800 p-3">
+                    <h2 className="mr-auto mb-3 text-sm font-bold uppercase">{t('res_json')}</h2>
                     <BlockOfCode code={JSON.stringify(lastRequest, null, 4)} className="text-xs" />
                   </div>
 
                   {token && (
-                    <div className="relative bg-neutral-800 p-3 rounded-sm">
-                      <h2 className="text-sm uppercase font-bold">Received Token</h2>
-                      <code className="break-all font-mono font-bold text-xs">{token}</code>
+                    <div className="relative rounded-sm bg-neutral-800 p-3">
+                      <h2 className="text-sm font-bold uppercase">{t('received_token')}</h2>
+                      <code className="font-mono text-xs font-bold break-all">{token}</code>
                     </div>
                   )}
                 </div>

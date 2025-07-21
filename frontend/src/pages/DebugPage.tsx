@@ -6,9 +6,9 @@ import { useCallback, useEffect } from 'react'
 import { DebugGlobalState } from '../app/stores/debug'
 import DebugUserProfile from '../components/debug/DebugUserProfile'
 import axios, { AxiosError } from 'axios'
-import type { GenericServerResponseObject } from '../@types/app'
+import type { GenericServerResponseObject } from '../app/types'
 
-const debugTabs = ['debug_user_login', 'debug_user_register', 'debug_user_profile'] as const
+const debugTabs = ['user_login', 'user_register', 'user_profile'] as const
 
 export default function DebugPage() {
   const debugTabSelected = DebugGlobalState((x) => x.debugTabSelected)
@@ -60,10 +60,10 @@ export default function DebugPage() {
   return (
     <>
       <main className="h-full w-full bg-neutral-950">
-        <nav className="!sticky z-10 overflow-x-scroll !flex-row bg-neutral-900 w-full border-b border-neutral-700 drop-shadow-[0px_0px_36px_rgba(0,0,0)]">
+        <nav className="!sticky z-10 w-full !flex-row overflow-x-scroll border-b border-neutral-700 bg-neutral-900 drop-shadow-[0px_0px_36px_rgba(0,0,0)]">
           {debugTabs.map((tab, tabI) => {
             return (
-              <button onClick={() => setDebugGlobalState({ debugTabSelected: tabI })} className={clsx('font-bold text-xs uppercase p-2', debugTabSelected === tabI ? 'bg-white/15 hover:bg-white/25' : 'hover:bg-white/5')} key={`debugTab${tabI}`}>
+              <button onClick={() => setDebugGlobalState({ debugTabSelected: tabI })} className={clsx('p-2 text-xs font-bold uppercase', debugTabSelected === tabI ? 'bg-white/15 hover:bg-white/25' : 'hover:bg-white/5')} key={`debugTab${tabI}`}>
                 {t(tab)}
               </button>
             )
@@ -71,7 +71,7 @@ export default function DebugPage() {
         </nav>
 
         {/* Components */}
-        <div className="w-full h-full pt-6 px-5 overflow-y-scroll">
+        <div className="h-full w-full overflow-y-scroll px-5 pt-6">
           <div>
             <DebugUserLogin />
             <DebugUserRegister />

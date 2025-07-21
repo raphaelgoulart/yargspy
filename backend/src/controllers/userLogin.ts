@@ -5,8 +5,8 @@ import { serverReply } from '../core.exports'
 
 // #region Body Schema Validator
 export const userLoginBodySchema = zod.object({
-  username: zod.string().nonempty(),
-  password: zod.string().nonempty(),
+  username: zod.string().nonempty().min(3).max(32),
+  password: zod.string().nonempty().min(8).max(48),
 })
 
 export interface IUserLoginController {

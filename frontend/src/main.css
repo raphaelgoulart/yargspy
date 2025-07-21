@@ -13,7 +13,7 @@
   --breakpoint-laptop-lg: 1366px;
   --breakpoint-desktop: 1440px;
 
-  --font-mono: "Space Mono", monospace;
+  --font-mono: 'Space Mono', monospace;
 }
 
 /* Applies on all tags. Don't put Tailwind classes here, only raw CSS. */

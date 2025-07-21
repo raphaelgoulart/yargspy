@@ -10,7 +10,7 @@ export const userRegisterBodySchema = zod.object({
   password: zod
     .string()
     .min(8)
-    .max(32)
+    .max(48)
     .regex(/[A-Z]/)
     .regex(/[a-z]/)
     .regex(/[0-9]/)

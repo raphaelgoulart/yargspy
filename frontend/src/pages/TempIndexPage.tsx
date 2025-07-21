@@ -12,19 +12,19 @@ export default function TempIndexPage() {
     }
   }, [showMessage1])
   return (
-    <div className="w-full h-full items-center justify-center">
-      <h1 className="text-5xl font-bold mb-4">YARGLB</h1>
+    <div className="h-full w-full items-center justify-center">
+      <h1 className="mb-4 text-5xl font-bold">YARGLB</h1>
       <h2>THERE WILL BE AN ACTUAL WEBSITE HERE!!!</h2>
       <p className="mb-6">
         Right now the only thing that works is the{' '}
-        <Link className="text-amber-500 hover:underline underline-offset-2" to="debug">
+        <Link className="text-amber-500 underline-offset-2 hover:underline" to="debug">
           Debug
         </Link>{' '}
         page.
       </p>
       <h3 className="mb-2 text-xs font-bold">UTILITIES</h3>
       <button
-        className="bg-amber-600 text-sm font-bold rounded-xs p-2 text-neutral-900 hover:bg-amber-500 duration-100"
+        className="rounded-xs bg-amber-600 p-2 text-sm font-bold text-neutral-900 duration-100 hover:bg-amber-500"
         onClick={() => {
           localStorage.clear()
           setShowMessage1(true)
@@ -34,7 +34,7 @@ export default function TempIndexPage() {
       </button>
       <AnimatedComponent condition={showMessage1}>
         <MotionDiv {...createAnimation({ height: true, scaleY: true, opacity: true })}>
-        <div className='w-full h-3'></div>
+          <div className="h-3 w-full"></div>
           <p>Local storage has been cleaned</p>
         </MotionDiv>
       </AnimatedComponent>

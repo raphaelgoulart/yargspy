@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { GenericServerResponseObject } from '../../@types/app'
+import type { GenericServerResponseObject } from '../types'
 
 export interface DebugGlobalStateProps {
   debugTabSelected: number

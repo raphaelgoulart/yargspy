@@ -105,7 +105,8 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>({
     type: String,
     required: true,
   },
-  hidden: { // cheated/bugged scores or banned users
+  hidden: {
+    // cheated/bugged scores or banned users
     type: Boolean,
     default: false,
     required: true,

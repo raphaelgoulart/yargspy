@@ -4,6 +4,7 @@ import js from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript'
 import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json'
 import type { HTMLAttributes } from 'react'
 
+// Language syntax highlight must be declared here first for light module import
 SyntaxHighlighter.registerLanguage('js', js)
 SyntaxHighlighter.registerLanguage('json', json)
 
