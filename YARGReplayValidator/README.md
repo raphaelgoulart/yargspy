@@ -12,4 +12,5 @@ C# tool to validate replay files, and output relevant metadata for leaderboard a
 ## TODO
 
 - [ ] Make it use arguments instead of hardcoded variables;
+- [ ] If validation fails, fetch and output differences for each replay frame;
 - [ ] Test with a multitude of instrument, .ini settings and engine combinations.
