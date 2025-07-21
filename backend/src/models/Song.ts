@@ -54,7 +54,6 @@ export interface SongSchemaInput {
   year?: string
   pro_drums?: boolean
   five_lane_drums?: boolean
-  delay?: number
   sustain_cutoff_threshold?: number
   hopo_frequency?: number
   multiplier_note?: number
@@ -91,7 +90,6 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
       type: Boolean,
     },
     five_lane_drums: { type: Boolean },
-    delay: { type: Number },
     sustain_cutoff_threshold: { type: Number },
     hopo_frequency: {
       //hopo_frequency //hopofreq //eighthnote_hopo
