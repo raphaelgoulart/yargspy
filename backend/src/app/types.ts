@@ -1,9 +1,8 @@
-import type { Multipart, FastifyMultipartBaseOptions, MultipartFile, SavedMultipartFile } from '@fastify/multipart'
+import type { Multipart, MultipartFile } from '@fastify/multipart'
 import type { FastifyInstance, FastifyError, FastifyRequest, FastifyReply, RouteGenericInterface, ContextConfigDefault, FastifySchema, preHandlerHookHandler } from 'fastify'
-import type { BusboyConfig } from '@fastify/busboy'
 import type { FastifyAuthFunction, FastifyAuthRelation } from '@fastify/auth'
 
-// Controllers
+// #region Controllers
 export interface ControllerHandler<T extends RouteGenericInterface, D extends object = {}> {
   (this: FastifyInstance, req: FastifyRequest<T> & D, reply: FastifyReply<T>): any
 }
@@ -14,7 +13,7 @@ export interface ControllerAuthFunction<T extends RouteGenericInterface, D exten
   (this: FastifyInstance, request: FastifyRequest<T> & D, reply: FastifyReply<T>, done: (error?: Error) => void): void
 }
 
-// Server Responses and internal objects
+// #region Server Responses and internal objects
 export interface GenericServerResponseObject {
   /**
    * The status code number.
@@ -49,6 +48,7 @@ export interface GenericServerUserTokenObject {
   admin: boolean
 }
 
+//  #region Fastify Decorators
 export interface FastifyInstanceWithAuth extends FastifyInstance {
   auth<Request extends FastifyRequest = FastifyRequest, Reply extends FastifyReply = FastifyReply>(
     functions: FastifyAuthFunction<Request, Reply>[] | (FastifyAuthFunction<Request, Reply> | FastifyAuthFunction<Request, Reply>[])[],
@@ -59,22 +59,121 @@ export interface FastifyInstanceWithAuth extends FastifyInstance {
   ): preHandlerHookHandler<any, any, any, RouteGenericInterface, ContextConfigDefault, FastifySchema, any, any>
 }
 
-export interface FastifyMultipartDecorators {
-  isMultipart: () => boolean
+export interface FastifyMultipartObject<F extends Record<string, Multipart> = {}> extends Omit<MultipartFile, 'fields'> {
+  fields: F
+}
 
-  formData: () => Promise<FormData>
+// #region Replay File
 
-  // promise api
-  parts: (options?: Omit<BusboyConfig, 'headers'>) => AsyncIterableIterator<Multipart>
+// ???
+export interface ReplayCountObject {
+  [key: '0' | '1' | '2' | '3' | string]: { [key: '0' | '1' | '2' | '3' | '4' | string]: number }
+}
 
-  // Stream mode
-  file: (options?: Omit<BusboyConfig, 'headers'> | FastifyMultipartBaseOptions) => Promise<MultipartFile | undefined>
-  files: (options?: Omit<BusboyConfig, 'headers'> | FastifyMultipartBaseOptions) => AsyncIterableIterator<MultipartFile>
-
-  // Disk mode
-  saveRequestFiles: (options?: Omit<BusboyConfig, 'headers'> & { tmpdir?: string }) => Promise<Array<SavedMultipartFile>>
-  cleanRequestFiles: () => Promise<void>
-  tmpUploads: Array<string> | null
-  /** This will get populated as soon as a call to `saveRequestFiles` gets resolved. Avoiding any future duplicate work */
-  savedRequestFiles: Array<SavedMultipartFile> | null
+export interface ReplayChecksumObject {
+  hashBytes: string
+}
+export interface YARGReplayValidatorResults {
+  replayInfo: {
+    filePath: string
+    replayName: string
+    replayVersion: number
+    engineVersion: number
+    replayChecksum: ReplayChecksumObject
+    songName: string
+    artistName: string
+    charterName: string
+    songSpeed: number
+    bandScore: number
+    bandStars: number
+    replayLength: number
+    date: string
+    songChecksum: ReplayChecksumObject
+    stats: {
+      '0': {
+        totalNotes: number
+        numNotesHit: number
+        percentageHit: number
+        overstrums: number
+        ghostInputs: number
+        soloBonuses: number
+        playerName: string
+        score: number
+        stars: number
+        totalOverdrivePhrases: number
+        numOverdrivePhrasesHit: number
+        numOverdriveActivations: number
+        averageMultiplier: number
+        numPauses: number
+      }
+    }
+  }
+  replayData: {
+    '0': {
+      profile: {
+        id: string
+        name: string
+        isBot: boolean
+        gameMode: number
+        noteSpeed: number
+        highwayLength: number
+        leftyFlip: boolean
+        rangeEnabled: boolean
+        autoConnectOrder: null
+        inputCalibrationMilliseconds: number
+        enginePreset: string
+        themePreset: string
+        colorProfile: string
+        cameraPreset: string
+        highwayPreset: string
+        currentInstrument: number
+        currentDifficulty: number
+        difficultyFallback: number
+        harmonyIndex: number
+        inputCalibrationSeconds: number
+        hasValidInstrument: boolean
+        currentModifiers: number
+      }
+      stats: {
+        overstrums: number
+        hoposStrummed: number
+        ghostInputs: number
+        committedScore: number
+        pendingScore: number
+        noteScore: number
+        sustainScore: number
+        multiplierScore: number
+        combo: number
+        maxCombo: number
+        scoreMultiplier: number
+        notesHit: number
+        totalNotes: number
+        starPowerTickAmount: number
+        totalStarPowerTicks: number
+        totalStarPowerBarsFilled: number
+        starPowerActivationCount: number
+        timeInStarPower: number
+        starPowerWhammyTicks: number
+        isStarPowerActive: boolean
+        starPowerPhrasesHit: number
+        totalStarPowerPhrases: number
+        soloBonuses: number
+        starPowerScore: number
+        stars: number
+        totalScore: number
+        starScore: number
+        comboInBandUnits: number
+        bandComboUnits: number
+        notesMissed: number
+        percent: number
+        starPowerPhrasesMissed: number
+      }
+      engine: number
+    }
+  }
+  chartData: {
+    noteCount: ReplayCountObject
+    starPowerCount: ReplayCountObject
+  }
+  hopoFrequency: number
 }

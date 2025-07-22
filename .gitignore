@@ -134,3 +134,9 @@ pnpm-lock.yaml
 
 # HTTP files
 *.http
+
+# Public folder on backend
+backend/public/
+
+# Test folder junk
+backend/tests/

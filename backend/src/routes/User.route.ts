@@ -1,5 +1,4 @@
-import { userLoginController, userProfileController, userRegisterController } from '../controllers.exports'
-import { userReplaySendController } from '../controllers/userReplaySend'
+import { userLoginController, userProfileController, userRegisterController, replayRegisterController } from '../controllers.exports'
 import { verifyUserJWT, verifyUserLoginBody } from '../core.exports'
 import type { FastifyInstanceWithAuth } from '../app.exports'
 
@@ -29,9 +28,9 @@ export default function UserRoute(app: FastifyInstanceWithAuth) {
 
   app.route({
     method: ['POST', 'HEAD'],
-    url: '/user/replay/send',
+    url: '/user/replay/register',
     logLevel: 'warn',
     preHandler: app.auth([verifyUserJWT]),
-    ...userReplaySendController.routeOpts,
+    ...replayRegisterController.routeOpts,
   })
 }

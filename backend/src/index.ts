@@ -6,6 +6,7 @@ import { envCheck } from './utils.exports'
 import { fastifyLoggerOptions, mongoDBConnectPlugin } from './app.exports'
 import { initServerRoutes } from './core/initServerRoutes'
 import 'dotenv/config'
+import fastifyStatic from '@fastify/static'
 
 const serverStart = async () => {
   // Init fastify
@@ -19,6 +20,7 @@ const serverStart = async () => {
   await app.register(cors)
   await app.register(fastifyAuth)
   await app.register(fastifyMultipart)
+  // await app.register(fastifyStatic, { root: '', prefix: '/static/' })
 
   initServerRoutes(app)
 

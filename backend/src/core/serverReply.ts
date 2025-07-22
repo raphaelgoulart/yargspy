@@ -81,7 +81,7 @@ export const codeMap = {
   err_auth_required: [401, 'No authorization string found on request headers'],
   err_empty_json_body: [400, "Body cannot be empty when content-type is set to 'application/json'"],
   err_invalid_auth_format: [401, 'Invalid authorization string format found on request headers'],
-  err_invalid_auth: [401, 'The provided authorization is not valid. Please logout this session, validate a new login and try again'],
+  err_invalid_auth: [401, 'The provided authorization token is not valid. Please logout this session, validate a new login and try again'],
   err_invalid_input: [401, 'Some request validation method on the server declined your request due to validation errors on fields'],
   err_not_implemented: [501, 'Not implemented error: {{resolution}}'],
   err_syntax_json_body: [400, 'Response body JSON has a syntax error: {{additionalMessage}}'],
@@ -119,7 +119,11 @@ export const codeMap = {
   // user/profile
   success_user_profile: [200, 'Profile data from user {{username}} has been retrieved successfully'],
 
-  // user/profile
+  // replay/register
+  err_replay_nofileuploaded: [400, 'No YARG Replay file provided on the request body to register'],
+  err_replay_invalid_magic: [400, 'Provided YARG Replay file is invalid'],
+  err_replay_missing_chart: [412, 'The MIDI/CHART file of the song is required to validate replay'],
+  success_replay_register: [201, 'Your score was registered successfully'],
 } as const
 
 export type ReplyCodeNames = keyof typeof codeMap

@@ -8,12 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="YARG.Core">
-      <HintPath>..\..\..\AppData\Local\YARC\YARG Installs\0f769d95-c99b-4e09-a5ed-b9c41bd5ca5d\installation\YARG_Data\Managed\YARG.Core.dll</HintPath>
+      <HintPath>C:\Users\Ruggery\AppData\Local\YARC\YARG Installs\c6b5161b-8aeb-4e22-a5d1-13afd86e060c\installation\YARG_Data\Managed\YARG.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
 
