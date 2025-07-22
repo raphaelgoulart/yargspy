@@ -9,6 +9,7 @@ export interface DebugGlobalStateProps {
   isRequesting: boolean
   hasUserToken: boolean
   isRequestingUserProfile: boolean
+  replayFileSelected: File | null
 }
 
 export interface DebugGlobalStateActions {
@@ -27,6 +28,7 @@ const DebugGlobalStateDefaultState: DebugGlobalStateProps = {
   isRequesting: false,
   hasUserToken: false,
   isRequestingUserProfile: false,
+  replayFileSelected: null,
 }
 
 export const DebugGlobalState = create<DebugGlobalStateHook>()((set, get) => ({

@@ -8,6 +8,6 @@ import { ServerError } from '../app.exports'
  */
 export const bearerTokenVerifier = (auth: string | undefined): string => {
   if (!auth) throw new ServerError('err_auth_required')
-  if (!auth.startsWith('Bearer ') || auth.length < 7) throw new ServerError('err_invalid_auth_format')
+  if (!auth.startsWith('Bearer ') || auth.length < 7) throw new ServerError('err_invalid_auth_format', { token: auth })
   return auth.slice(7)
 }

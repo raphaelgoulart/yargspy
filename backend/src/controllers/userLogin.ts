@@ -1,6 +1,6 @@
 import zod, { ZodError } from 'zod'
-import { User, type UserSchemaDocument } from '../models/User'
-import { ServerError, type ControllerAuthFunction, type ControllerErrorHandler, type ControllerHandler } from '../app.exports'
+import type { UserSchemaDocument } from '../models/User'
+import { ServerError, type ControllerErrorHandler, type ControllerHandler } from '../app.exports'
 import { serverReply } from '../core.exports'
 
 // #region Body Schema Validator
@@ -66,22 +66,14 @@ const userLoginErrorHandler: ControllerErrorHandler<IUserLoginController> = func
   if (error.code === 'FST_ERR_CTP_EMPTY_JSON_BODY') return serverReply(reply, 'err_empty_json_body')
 
   if (error instanceof ServerError) return serverReply(reply, error.serverErrorCode, error.data, error.messageValues)
-  return serverReply(reply, 'err_not_implemented', { error: error })
-}
-
-// #region Auth Methods
-
-export const verifyUserLoginBody: ControllerAuthFunction<IUserLoginController, IUserLoginDecorators> = async function (req) {
-  const { username, password } = userLoginBodySchema.parse(req.body)
-  const user = await User.findByCredentials(username, password)
-  req.user = user
+  return serverReply(reply, 'err_not_implemented', { error: error, debug: ServerError.logErrors(error) })
 }
 
 // #region Opts
 
 export const userLoginController = {
   routeOpts: {
-    handler: userLoginHandler,
     errorHandler: userLoginErrorHandler,
+    handler: userLoginHandler,
   },
 } as const

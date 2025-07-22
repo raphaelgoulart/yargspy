@@ -7,8 +7,9 @@ import { DebugGlobalState } from '../app/stores/debug'
 import DebugUserProfile from '../components/debug/DebugUserProfile'
 import axios, { AxiosError } from 'axios'
 import type { GenericServerResponseObject } from '../app/types'
+import DebugUploadReplayFile from '../components/debug/DebugUploadReplayFile'
 
-const debugTabs = ['user_login', 'user_register', 'user_profile'] as const
+const debugTabs = ['user_login', 'user_register', 'user_profile', 'upload_replay_file'] as const
 
 export default function DebugPage() {
   const debugTabSelected = DebugGlobalState((x) => x.debugTabSelected)
@@ -21,6 +22,7 @@ export default function DebugPage() {
       isRequesting: false,
       lastRequest: null,
       hasUserToken: Boolean(localStorage.getItem('userToken')),
+      replayFileSelected: null,
     })
 
     if (debugTabSelected === 2 && hasUserToken) {
@@ -76,6 +78,7 @@ export default function DebugPage() {
             <DebugUserLogin />
             <DebugUserRegister />
             <DebugUserProfile />
+            <DebugUploadReplayFile />
           </div>
         </div>
       </main>

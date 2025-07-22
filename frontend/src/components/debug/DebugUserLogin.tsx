@@ -79,6 +79,26 @@ export default function DebugUserLogin() {
                   <h2 className="mb-2">{message}.</h2>
 
                   <div className="mb-2 rounded-sm bg-neutral-800 p-3">
+                    <h2 className="mr-auto mb-3 text-sm font-bold uppercase">{t('req_details')}</h2>
+                    <h3 className="text-xs font-bold uppercase">{t('url')}</h3>
+                    <p className="mb-2">{`${import.meta.env.VITE_SERVER_URI}/user/login`}</p>
+                    <h3 className="text-xs font-bold uppercase">{t('content_type')}</h3>
+                    <p>{t('json')}</p>
+                    <div className="h-3 w-full bg-transparent"></div>
+                    <BlockOfCode
+                      code={JSON.stringify(
+                        {
+                          username: username.length === 0 ? undefined : username,
+                          password: password.length === 0 ? undefined : password,
+                        },
+                        null,
+                        4
+                      )}
+                      className="text-xs"
+                    />
+                  </div>
+
+                  <div className="mb-2 rounded-sm bg-neutral-800 p-3">
                     <h2 className="mr-auto mb-3 text-sm font-bold uppercase">{t('res_json')}</h2>
                     <BlockOfCode code={JSON.stringify(lastRequest, null, 4)} className="text-xs" />
                   </div>
@@ -120,7 +140,7 @@ export default function DebugUserLogin() {
             </>
           ) : (
             <>
-              <p>{t('not_logged')}</p>
+              <p className="uppercase">{t('not_logged')}</p>
             </>
           )}
         </div>

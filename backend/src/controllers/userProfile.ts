@@ -1,25 +1,31 @@
 import { serverReply } from '../core.exports'
-import { User, type UserSchemaDocument } from '../models/User'
-import { ServerError, type ControllerAuthFunction, type ControllerErrorHandler, type ControllerHandler } from '../app.exports'
-import type { Schema } from 'mongoose'
+import { ServerError, type ControllerErrorHandler, type ControllerHandler } from '../app.exports'
+import type { UserSchemaDocument } from '../models/User'
 
 export interface IUserProfileController {}
 export interface IUserProfileDecorators {
-  user: {
-    _id: string
-    username: string
-    active: boolean
-    admin: boolean
-    createdAt: Date
-    updatedAt: Date
-  }
+  user?: UserSchemaDocument
 }
 
 // #region Handler
 
 const userProfileHandler: ControllerHandler<IUserProfileController, IUserProfileDecorators> = async function (req, reply) {
-  const user = req.user
-  serverReply(reply, 'success_user_profile', { user }, { username: user.username })
+  const user = req.user!
+  serverReply(
+    reply,
+    'success_user_profile',
+    {
+      user: {
+        _id: user._id,
+        username: user.username,
+        active: user.active,
+        admin: user.admin,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+    },
+    { username: user.username }
+  )
 }
 
 // #region Error Handler
@@ -29,21 +35,7 @@ const userProfileErrorHandler: ControllerErrorHandler<IUserProfileController> = 
   if (error instanceof ServerError) return serverReply(reply, error.serverErrorCode, error.data, error.messageValues)
 
   // Unknown error
-  return serverReply(reply, 'err_not_implemented', { error: error })
-}
-
-// #region Auth Methods
-
-export const verifyUserJWT: ControllerAuthFunction<IUserProfileController, IUserProfileDecorators> = async function (req) {
-  const { _id, username, password, createdAt, updatedAt, active, admin } = await User.findByToken(req.headers.authorization)
-  req.user = {
-    _id: _id as string,
-    username,
-    active,
-    admin,
-    createdAt,
-    updatedAt,
-  }
+  return serverReply(reply, 'err_not_implemented', { error: error, debug: ServerError.logErrors(error) })
 }
 
 // #region Opts

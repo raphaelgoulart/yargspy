@@ -6,14 +6,49 @@ import { ServerError, type ControllerErrorHandler, type ControllerHandler } from
 
 // #region Body Schema Validator
 export const userRegisterBodySchema = zod.object({
-  username: zod.string().min(3).max(32),
+  username: zod
+    .string()
+    .min(3)
+    .max(32)
+
+    // Some other stuff
+
+    .refine(
+      (arg) => {
+        // No spaces allowed
+        if (arg.match(/\s+/)) return false
+        return true
+      },
+      { error: 'err_user_register_username_nospace', params: { pattern: '/\\s+/' } }
+    )
+    .refine(
+      (arg) => {
+        // Real bad guys
+        if (arg.match(/\#|\%|\+/)) return false
+        return true
+      },
+      { error: 'err_user_register_username_invalid_type1', params: { pattern: '/\\#|\\%|\\+/' } }
+    )
+    .refine(
+      (arg) => {
+        // Cannot start or end with period, underscore, or hyphen
+        if (arg.match(/\.\.+|__+|--+/)) return false
+        return true
+      },
+      { error: 'err_user_register_username_invalid_type2', params: { pattern: '/\\.\\.+|__+/' } }
+    ),
+
   password: zod
     .string()
     .min(8)
     .max(48)
+
+    // Trigger not lowercase, uppercase, and numbers validation
     .regex(/[A-Z]/)
     .regex(/[a-z]/)
     .regex(/[0-9]/)
+
+    // In the end, any symbol is required
     .regex(/[^A-Za-z0-9]/),
 })
 
@@ -26,6 +61,7 @@ export interface IUserRegisterController {
 const userRegisterHandler: ControllerHandler<IUserRegisterController> = async function (req, reply) {
   const body = userRegisterBodySchema.parse(req.body)
   const user = new User(body)
+  await user.checkUsernameCaseInsensitive()
   await user.save()
   return serverReply(reply, 'success_user_register')
 }
@@ -64,7 +100,9 @@ const userRegisterErrorHandler: ControllerErrorHandler<IUserRegisterController> 
       if (issue.pattern === '/[^A-Za-z0-9]/') return serverReply(reply, 'err_user_register_password_nospecialchar')
     }
 
-    return serverReply(reply, 'err_unknown', { error: error })
+    if (issue.code === 'custom') return serverReply(reply, issue.message)
+
+    return serverReply(reply, 'err_invalid_input', { errors: error.issues })
   }
 
   // Faulty JSON serialization

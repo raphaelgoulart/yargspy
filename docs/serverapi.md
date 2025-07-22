@@ -7,6 +7,7 @@
 - [`POST` user/register](#post-userregister)
 - [`POST` user/login](#post-userlogin)
 - [`POST` user/profile](#post-userprofile)
+- [`POST` user/replay/send](#post-userreplaysend)
 
 ## Interfaces
 
@@ -144,7 +145,7 @@ Authorization required with valid user token.
 - `200 OK`
   - On success.
 - `401 Unauthorized`
-  - Invalid token (wrong format, expired token), inactive user register.
+  - Invalid token (wrong format, expired token), inactive user.
 - `501 Not Implemented`
   - On not implemented errors.
 
@@ -162,3 +163,20 @@ interface IUserProfileResponse extends GenericServerResponseObject {
   };
 }
 ```
+
+## `POST` user/replay/send
+
+**Description:**  
+Sends a REPLAY file to the server.
+
+**Headers:**  
+Authorization required with valid user token.
+
+**Responses**:
+
+- `200 OK`
+  - On success.
+- `401 Unauthorized`
+  - Invalid token (wrong format, expired token), inactive user.
+- `501 Not Implemented`
+  - On not implemented errors.

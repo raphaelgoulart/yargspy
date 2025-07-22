@@ -3,7 +3,7 @@ import { fixImportsPlugin } from 'esbuild-fix-imports-plugin'
 
 export default defineConfig({
   entry: ['src/**/*.ts'],
-  format: ['esm', 'cjs'],
+  format: ['esm'],
   external: ['node:*'],
   splitting: false,
   clean: true,
@@ -19,5 +19,5 @@ export default defineConfig({
   esbuildOptions: (options) => {
     options.banner = { js: '"use strict";' }
   },
-  outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
+  outExtension: () => ({ js: '.js' }),
 })

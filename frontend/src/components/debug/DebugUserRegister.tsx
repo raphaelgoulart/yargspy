@@ -69,6 +69,27 @@ export default function DebugUserRegister() {
                 <div className={clsx('rounded-sm p-3', statusCode === 0 ? 'bg-neutral-700' : statusCode < 400 ? 'bg-green-900' : 'bg-red-900')}>
                   <h1 className="mb-2 rounded-sm bg-neutral-800 px-1 font-mono text-lg uppercase">{statusFullName}</h1>
                   <h2 className="mb-2">{message}.</h2>
+
+                  <div className="mb-2 rounded-sm bg-neutral-800 p-3">
+                    <h2 className="mr-auto mb-3 text-sm font-bold uppercase">{t('req_details')}</h2>
+                    <h3 className="text-xs font-bold uppercase">{t('url')}</h3>
+                    <p className="mb-2">{`${import.meta.env.VITE_SERVER_URI}/user/register`}</p>
+                    <h3 className="text-xs font-bold uppercase">{t('content_type')}</h3>
+                    <p>{t('json')}</p>
+                    <div className="h-3 w-full bg-transparent"></div>
+                    <BlockOfCode
+                      code={JSON.stringify(
+                        {
+                          username: username.length === 0 ? undefined : username,
+                          password: password.length === 0 ? undefined : password,
+                        },
+                        null,
+                        4
+                      )}
+                      className="text-xs"
+                    />
+                  </div>
+
                   <div className="mb-2 rounded-sm bg-neutral-800 p-3">
                     <h2 className="mr-auto mb-3 text-sm font-bold uppercase">{t('res_json')}</h2>
                     <BlockOfCode code={JSON.stringify(lastRequest, null, 4)} className="text-xs" />

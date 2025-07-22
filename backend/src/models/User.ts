@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-import { Document, model, Model, Schema } from 'mongoose'
+import { type Document, model, type Model, Schema } from 'mongoose'
 import { bearerTokenVerifier, jwtSign, jwtVerify, passwordValidator } from '../utils.exports'
 import { ServerError } from '../app.exports'
 import 'dotenv/config'
@@ -36,6 +36,11 @@ export interface UserSchemaDocument extends UserSchemaInput, Document {
    * - - - -
    */
   generateToken(): Promise<string>
+  /**
+   * Performs a case-insensitive username validation.
+   * - - - -
+   */
+  checkUsernameCaseInsensitive(): Promise<void>
 }
 
 // Statics here
@@ -64,8 +69,6 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
     username: {
       type: String,
       required: true,
-      unique: true,
-      trim: true,
     },
     password: {
       type: String,
@@ -99,6 +102,20 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
         const token = jwtSign({ _id: this._id.toString(), admin: this.admin })
         return token
       },
+      async checkUsernameCaseInsensitive() {
+        const users = User.find()
+        let valid: boolean | 'typo' = true
+        for await (const user of users) {
+          if (user.username.toLowerCase() === this.username.toLowerCase()) {
+            if (user.username === this.username) valid = false
+            else valid = 'typo'
+            break
+          }
+        }
+
+        if (valid === 'typo') throw new ServerError('err_user_register_duplicated_username_typo', null, { username: this.username })
+        else if (!valid) throw new ServerError('err_user_register_duplicated_username', null, { username: this.username })
+      },
     },
     statics: {
       async findByToken(auth: string | undefined) {
@@ -110,7 +127,7 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
         return user
       },
       async findByCredentials(username: string, password: string) {
-        const user = await this.findOne({ username }).select(['+password', '+tokens'])
+        const user = await this.findOne({ username }).select(['+password'])
         if (!user) throw new ServerError('err_login_user_notfound', null, { username })
         const isMatch = await bcrypt.compare(password, user.password)
         if (!isMatch) throw new ServerError('err_login_password_validation')
@@ -120,6 +137,9 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
     },
   }
 )
+
+// Case insensitive usernames
+userSchema.index({ username: 1 }, { collation: { locale: 'en', strength: 2 } })
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next()

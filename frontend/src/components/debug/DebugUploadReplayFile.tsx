@@ -5,20 +5,103 @@ import { VscLoading } from '../../assets/icons'
 import clsx from 'clsx'
 import BlockOfCode from '../BlockOfCode'
 import { useTranslation } from 'react-i18next'
+import { useRef } from 'react'
+import axios, { AxiosError } from 'axios'
 
-export default function DebugUserProfile() {
+export default function DebugUploadReplayFile() {
   const debugTabSelected = DebugGlobalState((x) => x.debugTabSelected)
   const lastRequest = DebugGlobalState((x) => x.lastRequest) as DebugUserProfileResponseDecorators | null
+  const isRequesting = DebugGlobalState((x) => x.isRequesting)
   const isRequestingUserProfile = DebugGlobalState((x) => x.isRequestingUserProfile)
   const hasUserToken = DebugGlobalState((x) => x.hasUserToken)
+  const replayFileSelected = DebugGlobalState((x) => x.replayFileSelected)
   const setDebugGlobalState = DebugGlobalState((x) => x.setDebugGlobalState)
-  const isActivated = debugTabSelected === 2
+  const isActivated = debugTabSelected === 3
+
+  console.log(hasUserToken)
+
+  const inputRef = useRef<HTMLInputElement>(null)
   const { t } = useTranslation()
 
   return (
     <AnimatedComponent condition={isActivated}>
       <MotionSection {...createAnimation({ opacity: true })} className="!absolute w-full origin-top">
-        <h1 className="mb-4 text-5xl">{t('user_profile')}</h1>
+        <h1 className="mb-4 text-5xl">{t('upload_replay_file')}</h1>
+        <form
+          encType="multipart/form-data"
+          className="mb-2 border-b border-neutral-700 pb-2"
+          onSubmit={async (ev) => {
+            setDebugGlobalState({ isRequesting: true })
+            ev.preventDefault()
+            const form = new FormData()
+            form.append('replayFile', inputRef.current!.files![0])
+            form.append('name', 'teste')
+
+            try {
+              const { data } = await axios.post<GenericServerResponseObject>(`${import.meta.env.VITE_SERVER_URI}/user/replay/send`, form, { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('userToken')}` } })
+              setDebugGlobalState({ hasUserToken: true, lastRequest: data, isRequesting: false })
+            } catch (err) {
+              if (err instanceof AxiosError) {
+                if (err.response?.data) {
+                  setDebugGlobalState({ lastRequest: err.response?.data, isRequesting: false })
+                } else {
+                  setDebugGlobalState({ lastRequest: { statusCode: 503, statusName: 'Service Unavailable', statusFullName: '503 Service Unavailable', code: 'err_service_unavailable', message: 'Server is down' } })
+                }
+              }
+
+              setDebugGlobalState({ isRequesting: false })
+            }
+            // const loginBody = {
+            //   username: username.length === 0 ? undefined : username,
+            //   password: password.length === 0 ? undefined : password,
+            // } as const
+
+            // try {
+            //   const { data } = await axios.post<
+            //     GenericServerResponseObject & {
+            //       token: string
+            //     }
+            //   >(`${import.meta.env.VITE_SERVER_URI}/user/login`, loginBody, { responseType: 'json' })
+
+            //   localStorage.setItem('userToken', data.token)
+            //   setDebugGlobalState({ hasUserToken: true, lastRequest: data, isRequesting: false })
+            // } catch (err) {
+            //   if (err instanceof AxiosError) {
+            //     if (err.response?.data) {
+            //       setDebugGlobalState({ lastRequest: err.response?.data, isRequesting: false })
+            //     } else {
+            //       setDebugGlobalState({ lastRequest: { statusCode: 503, statusName: 'Service Unavailable', statusFullName: '503 Service Unavailable', code: 'err_service_unavailable', message: 'Server is down' } })
+            //     }
+            //   }
+
+            //   setDebugGlobalState({ isRequesting: false })
+            // }
+          }}
+        >
+          <div className="mb-2 w-full !flex-row items-center">
+            <h2 className="mr-auto mb-1 text-xs font-bold uppercase">Replay File</h2>
+            <button type="button" disabled={!hasUserToken} className="w-fit rounded-sm bg-cyan-700 px-2 py-0.5 text-xs font-bold uppercase hover:bg-cyan-600 disabled:!cursor-default disabled:bg-neutral-800 disabled:text-neutral-700" onClick={() => inputRef.current!.click()}>
+              Select REPLAY file
+            </button>
+          </div>
+          {replayFileSelected ? <p className="mb-4">Selected File: {replayFileSelected.name}</p> : <p className="mb-4">No REPLAY file selected</p>}
+          <input
+            type="file"
+            name="replayFile"
+            accept=".replay"
+            ref={inputRef}
+            hidden
+            onChange={(ev) => {
+              if (ev.target.files) setDebugGlobalState({ replayFileSelected: ev.target.files![0] })
+            }}
+          />
+          {/* <input name="username" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={username} onChange={(ev) => setDebugGlobalState({ username: ev.target.value })} />
+          <h2 className="mb-1 text-xs font-bold uppercase">{t('password')}</h2>
+          <input name="password" type="password" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={password} onChange={(ev) => setDebugGlobalState({ password: ev.target.value })} /> */}
+          <button disabled={!hasUserToken || isRequesting || !replayFileSelected} className="!disabled:cursor-default rounded-sm bg-cyan-700 py-2 uppercase hover:bg-cyan-600 disabled:!cursor-default disabled:bg-neutral-800 disabled:text-neutral-700">
+            Upload
+          </button>
+        </form>
         <h3 className="mb-2 text-xs font-bold uppercase">{t('last_response')}</h3>
         <div className="mb-2 border-b border-neutral-700 pb-2">
           <AnimatedComponent condition={isRequestingUserProfile}>
@@ -37,9 +120,9 @@ export default function DebugUserProfile() {
                   <div className="mb-2 rounded-sm bg-neutral-800 p-3">
                     <h2 className="mr-auto mb-3 text-sm font-bold uppercase">{t('req_details')}</h2>
                     <h3 className="text-xs font-bold uppercase">{t('url')}</h3>
-                    <p className="mb-2">{`${import.meta.env.VITE_SERVER_URI}/user/login`}</p>
+                    <p className="mb-2">{`${import.meta.env.VITE_SERVER_URI}/user/replay/send`}</p>
                     <h3 className="text-xs font-bold uppercase">{t('content_type')}</h3>
-                    <p className="mb-2">{t('not_available')}</p>
+                    <p className="mb-2">{t('formdata')}</p>
                     <h3 className="text-xs font-bold uppercase">{t('header_auth_message')}</h3>
                   </div>
                   <div className="mb-2 rounded-sm bg-neutral-800 p-3">

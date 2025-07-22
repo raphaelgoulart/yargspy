@@ -1,4 +1,4 @@
-import { Document, model, Model, Schema } from 'mongoose'
+import { type Document, model, type Model, Schema } from 'mongoose'
 import { Difficulty, Instrument } from './Song'
 
 // #region Enums

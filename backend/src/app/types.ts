@@ -1,4 +1,7 @@
-import type { FastifyInstance, FastifyError, FastifyRequest, FastifyReply, RouteGenericInterface } from 'fastify'
+import type { Multipart, FastifyMultipartBaseOptions, MultipartFile, SavedMultipartFile } from '@fastify/multipart'
+import type { FastifyInstance, FastifyError, FastifyRequest, FastifyReply, RouteGenericInterface, ContextConfigDefault, FastifySchema, preHandlerHookHandler } from 'fastify'
+import type { BusboyConfig } from '@fastify/busboy'
+import type { FastifyAuthFunction, FastifyAuthRelation } from '@fastify/auth'
 
 // Controllers
 export interface ControllerHandler<T extends RouteGenericInterface, D extends object = {}> {
@@ -44,4 +47,34 @@ export interface GenericServerUserTokenObject {
    * Tells if the user has admin privileges.
    */
   admin: boolean
+}
+
+export interface FastifyInstanceWithAuth extends FastifyInstance {
+  auth<Request extends FastifyRequest = FastifyRequest, Reply extends FastifyReply = FastifyReply>(
+    functions: FastifyAuthFunction<Request, Reply>[] | (FastifyAuthFunction<Request, Reply> | FastifyAuthFunction<Request, Reply>[])[],
+    options?: {
+      relation?: FastifyAuthRelation
+      run?: 'all'
+    }
+  ): preHandlerHookHandler<any, any, any, RouteGenericInterface, ContextConfigDefault, FastifySchema, any, any>
+}
+
+export interface FastifyMultipartDecorators {
+  isMultipart: () => boolean
+
+  formData: () => Promise<FormData>
+
+  // promise api
+  parts: (options?: Omit<BusboyConfig, 'headers'>) => AsyncIterableIterator<Multipart>
+
+  // Stream mode
+  file: (options?: Omit<BusboyConfig, 'headers'> | FastifyMultipartBaseOptions) => Promise<MultipartFile | undefined>
+  files: (options?: Omit<BusboyConfig, 'headers'> | FastifyMultipartBaseOptions) => AsyncIterableIterator<MultipartFile>
+
+  // Disk mode
+  saveRequestFiles: (options?: Omit<BusboyConfig, 'headers'> & { tmpdir?: string }) => Promise<Array<SavedMultipartFile>>
+  cleanRequestFiles: () => Promise<void>
+  tmpUploads: Array<string> | null
+  /** This will get populated as soon as a call to `saveRequestFiles` gets resolved. Avoiding any future duplicate work */
+  savedRequestFiles: Array<SavedMultipartFile> | null
 }

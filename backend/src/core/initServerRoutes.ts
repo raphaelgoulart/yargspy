@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import UserRoute from '../routes/User.route'
 import StatusRoute from '../routes/Status.route'
+import type { FastifyInstanceWithAuth } from '../app.exports'
 
 /**
  * Initialize all server routes.
@@ -9,5 +10,5 @@ import StatusRoute from '../routes/Status.route'
  */
 export const initServerRoutes = (app: FastifyInstance) => {
   StatusRoute(app)
-  UserRoute(app)
+  UserRoute(app as FastifyInstanceWithAuth)
 }

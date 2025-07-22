@@ -14,6 +14,7 @@
   --breakpoint-desktop: 1440px;
 
   --font-mono: 'Space Mono', monospace;
+  --font-text: 'Text Drop Distance', sans-serif;
 }
 
 /* Applies on all tags. Don't put Tailwind classes here, only raw CSS. */
@@ -23,7 +24,7 @@
 
 /* Globals tags */
 body {
-  @apply bg-neutral-900 text-neutral-300;
+  @apply bg-neutral-900 font-mono text-neutral-300;
 }
 
 /* 
