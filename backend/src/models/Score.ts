@@ -23,6 +23,28 @@ export const Engine = {
   Precision: 2,
 } as const
 
+export const GameMode = {
+  // Game modes are reserved in multiples of 5
+  // 0-4: Guitar
+  FiveFretGuitar: 0,
+  SixFretGuitar: 1,
+
+  // 5-9: Drums
+  FourLaneDrums: 5,
+  FiveLaneDrums: 6,
+  // EliteDrums = 7,
+
+  // 10-14: Pro instruments
+  ProGuitar: 10,
+  ProKeys: 11,
+
+  // 15-19: Vocals
+  Vocals: 15,
+
+  // 20-24: Other
+  // Dj = 20,
+} as const
+
 //#region Types
 
 export interface ScoreSchemaInput {
@@ -34,6 +56,7 @@ export interface ScoreSchemaInput {
   nightly: boolean
   yargCoreCommit: string
   hidden: boolean
+  gamemode: (typeof GameMode)[keyof typeof GameMode]
   instrument: (typeof Instrument)[keyof typeof Instrument]
   difficulty?: number
   engine?: number
@@ -112,6 +135,11 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>({
     required: true,
   },
   // main score metadata
+  gamemode: {
+    type: Number,
+    required: true,
+    enum: Object.values(GameMode),
+  },
   instrument: {
     type: Number,
     required: true,
