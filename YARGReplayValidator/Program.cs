@@ -23,7 +23,7 @@ static void InitYARGReplayValidator(ArgParseOptions options)
     long? hopoThreshold = options.HopoThreshold;
     bool eighthNoteHopo = options.EighthNoteHopo;
     int? hopofreq = options.HopoFreq;
-    
+
     bool isChart = Path.GetExtension(options.ChartFilePath) == ".chart";
 
     var parseSettings = YARGReplayValidatorCore.GetParseSettings(
@@ -61,19 +61,46 @@ static void ArgErrorsFallback(string[] args, IEnumerable<Error> errs)
   else if (args.Contains("--help"))
   {
     Console.WriteLine("ARGUMENTS:");
-    Console.WriteLine("(pos. arg 1)         | ReplayFilePath:");
-    Console.WriteLine("Path                 | The REPLAY file to be validated.\n");
-    Console.WriteLine("(pos. arg 2)         | ChartFilePath:");
-    Console.WriteLine("Path? (OPTIONAL)     | The chart of the song.");
-    Console.WriteLine("                     |");
-    Console.WriteLine("                     | Required argument when using certain read modes.\n");
-    Console.WriteLine("-m --read-mode       | The reading mode where this module will perform.");
-    Console.WriteLine("short                |");
-    Console.WriteLine("                     |");
-    Console.WriteLine("0                    | Validates REPLAY only.");
-    Console.WriteLine("1                    | Parses REPLAY and includes MIDI data (default).");
-    Console.WriteLine("2                    | Parses MIDI data only.");
-    Console.WriteLine("3                    | Returns song hash only.\n");
+    Console.WriteLine("(pos. arg 1)                     ReplayFilePath:");
+    Console.WriteLine("Path                             The REPLAY file to be validated.\n");
+
+    Console.WriteLine("(pos. arg 2)                     ChartFilePath:");
+    Console.WriteLine("Path (OPTIONAL)                  The chart of the song.");
+    Console.WriteLine("");
+    Console.WriteLine("                                 Required argument when using certain read modes.\n");
+
+    Console.WriteLine("-m --read-mode                   The reading mode where this module will perform.");
+    Console.WriteLine("number (OPTIONAL)");
+    Console.WriteLine("");
+    Console.WriteLine("0                                Validates REPLAY only.");
+    Console.WriteLine("1                                Parses REPLAY and includes MIDI data (default).");
+    Console.WriteLine("2                                Parses MIDI data only.");
+    Console.WriteLine("3                                Returns song hash only.\n");
+
+    Console.WriteLine("-c --is-rb3con                   Set this to true if the MIDI file came from a RB3CON,");
+    Console.WriteLine("bool (OPTIONAL)                  this will make it so notes closer to 10 ticks are");
+    Console.WriteLine("                                 snapped as chords (default: false).\n");
+
+    Console.WriteLine("-p --pro-drums                   If this is set to false, the chart will be read as");
+    Console.WriteLine("bool (OPTIONAL)                  all toms even if Pro Drums mode (default: false).\n");
+
+    Console.WriteLine("-g --five-lane-drums             Set this to true if the chart is a five lane drum chart,");
+    Console.WriteLine("bool (OPTIONAL)                  instead of four lane or Pro Drums (default: false).\n");
+
+    Console.WriteLine("-s --sus-cutoff-threshold        Overrides the default sustain cutoff threshold with");
+    Console.WriteLine("number (OPTIONAL)                a specified value in ticks.\n");
+
+    Console.WriteLine("-n --multiplier-note             Overrides the MIDI file note number for Star Power");
+    Console.WriteLine("number (OPTIONAL)                on 5-Fret Guitar.\n");
+
+    Console.WriteLine("-h --hopo-threshold              Overrides the default HOPO threshold with a specified");
+    Console.WriteLine("number (OPTIONAL)                value in ticks.\n");
+
+    Console.WriteLine("-e --eighth-note-hopo            Sets the HOPO threshold to be a 1/8th step (default: false).");
+    Console.WriteLine("bool (OPTIONAL)\n");
+
+    Console.WriteLine("-f --hopo-freq                   Overrides the natural HOPO threshold using numbers");
+    Console.WriteLine("number (OPTIONAL)                from 0 to 5.\n");
     Environment.Exit(0);
   }
   else if (errsCount > 0)
@@ -117,11 +144,11 @@ class ArgParseOptions
   public bool IsRB3CON { get; set; }
   [Option('p', "pro-drums", Required = false, Default = false)]
   public bool ProDrums { get; set; }
-  [Option('b', "five-lane-drums", Required = false, Default = false)]
+  [Option('g', "five-lane-drums", Required = false, Default = false)]
   public bool FiveLaneDrums { get; set; }
   [Option('s', "sus-cutoff-threshold", Required = false)]
   public long? SustainCutoffThreshold { get; set; }
-  [Option('m', "multiplier-note", Required = false)]
+  [Option('n', "multiplier-note", Required = false)]
   public int? MultiplierNote { get; set; }
   [Option('h', "hopo-threshold", Required = false)]
   public long? HopoThreshold { get; set; }
