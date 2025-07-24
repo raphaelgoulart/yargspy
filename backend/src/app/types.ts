@@ -63,7 +63,7 @@ export interface FastifyMultipartObject<F extends Record<string, Multipart> = {}
   fields: F
 }
 
-// #region Replay File
+// #region YARGReplayValidator
 
 // ???
 export interface ReplayCountObject {
@@ -176,4 +176,8 @@ export interface YARGReplayValidatorResults {
     starPowerCount: ReplayCountObject
   }
   hopoFrequency: number
+}
+
+export interface YARGReplayValidatorHashResults {
+  songChecksum: { hashBytes: string }
 }

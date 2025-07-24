@@ -1,6 +1,6 @@
 import type { YARGReplayValidatorResults } from '../app.exports'
 
-export const processReplayValidator = (obj: Record<string, any>) => {
+export const processReplayValidator = <T extends object>(obj: Record<string, any>) => {
   const output = new Map<string, any>()
   for (const objKeys of Object.keys(obj)) {
     const newKeys = `${objKeys.charAt(0).toLowerCase()}${objKeys.slice(1)}`
@@ -9,5 +9,5 @@ export const processReplayValidator = (obj: Record<string, any>) => {
     else output.set(newKeys, val)
   }
 
-  return Object.fromEntries(output.entries()) as YARGReplayValidatorResults
+  return Object.fromEntries(output.entries()) as T
 }

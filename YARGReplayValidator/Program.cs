@@ -38,10 +38,6 @@ static void InitYARGReplayValidator(ArgParseOptions options)
   {
     ExceptionsFallback(e);
   }
-  finally
-  {
-    Environment.Exit(1);
-  }
 }
 
 static void ArgErrorsFallback(string[] args, IEnumerable<Error> errs)
@@ -54,8 +50,8 @@ static void ArgErrorsFallback(string[] args, IEnumerable<Error> errs)
   // Console.WriteLine($"argsCount: {argsCount}\nerrsCount: {errsCount}");
   if (argsCount == 0)
   {
-    Console.WriteLine("ERROR:");
-    Console.WriteLine("No arguments provided.");
+    Console.Error.WriteLine("ERROR:");
+    Console.Error.WriteLine("No arguments provided.");
     Environment.Exit(1);
   }
   else if (args.Contains("--help"))
@@ -105,8 +101,8 @@ static void ArgErrorsFallback(string[] args, IEnumerable<Error> errs)
   }
   else if (errsCount > 0)
   {
-    if (errsCount > 1) Console.WriteLine("ERRORS:");
-    else Console.WriteLine("ERROR:");
+    if (errsCount > 1) Console.Error.WriteLine("ERRORS:");
+    else Console.Error.WriteLine("ERROR:");
 
     foreach (var err in errs)
     {
@@ -115,7 +111,7 @@ static void ArgErrorsFallback(string[] args, IEnumerable<Error> errs)
       {
         if (e.NameInfo.LongName == "read-mode")
         {
-          Console.WriteLine("Provided read mode value is not valid.\nValid values: 0, 1, 2, 3.");
+          Console.Error.WriteLine("Provided read mode value is not valid.\nValid values: 0, 1, 2, 3.\n");
         }
       }
     }
@@ -124,12 +120,12 @@ static void ArgErrorsFallback(string[] args, IEnumerable<Error> errs)
 
 static void ExceptionsFallback(Exception e)
 {
-  Console.WriteLine("YARG Replay Validator v0.1");
-  Console.WriteLine("To show help: --help\n");
+  Console.Error.WriteLine("YARG Replay Validator v0.1");
+  Console.Error.WriteLine("To show help: --help\n");
 
-  Console.WriteLine("ERROR:");
-  Console.WriteLine(e.Message);
-
+  Console.Error.WriteLine("ERROR:");
+  Console.Error.WriteLine(e.Message);
+  Environment.Exit(1);
 }
 
 class ArgParseOptions

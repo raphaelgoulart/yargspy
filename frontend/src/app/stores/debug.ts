@@ -10,6 +10,8 @@ export interface DebugGlobalStateProps {
   hasUserToken: boolean
   isRequestingUserProfile: boolean
   replayFileSelected: File | null
+  chartFileSelected: File | null
+  hasChartOnRequest: boolean
 }
 
 export interface DebugGlobalStateActions {
@@ -29,6 +31,8 @@ const DebugGlobalStateDefaultState: DebugGlobalStateProps = {
   hasUserToken: false,
   isRequestingUserProfile: false,
   replayFileSelected: null,
+  chartFileSelected: null,
+  hasChartOnRequest: false,
 }
 
 export const DebugGlobalState = create<DebugGlobalStateHook>()((set, get) => ({

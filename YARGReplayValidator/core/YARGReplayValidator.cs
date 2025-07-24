@@ -11,12 +11,36 @@ using YARG.Core.Replays.Analyzer;
 
 namespace YARGReplayValidator.Core
 {
+  public enum HOPOFreq : short
+  {
+    HOPOFreq0,
+    HOPOFreq1,
+    HOPOFreq2,
+    HOPOFreq3,
+    HOPOFreq4,
+    HOPOFreq5,
+  }
   public enum ReadMode : short
   {
-    ReplayOnly = 0, // validates replay only
-    ReplayAndMidi = 1, // parses replay and includes midi data
-    MidiOnly = 2, // parses midi data
-    ReturnSongHash = 3 // returns song hash and nothing else
+    /// <summary>
+    /// Validates REPLAY files only.
+    /// </summary>
+    ReplayOnly = 0,
+
+    /// <summary>
+    /// Validates REPLAY and MIDI/CHART files, including MIDI data.
+    /// </summary>
+    ReplayAndMidi = 1,
+
+    /// <summary>
+    /// Validates MIDI/CHART files only.
+    /// </summary>
+    MidiOnly = 2,
+
+    /// <summary>
+    /// Returns song hash and nothing else.
+    /// </summary>
+    ReturnSongHash = 3
   }
   public enum EngineValue : short
   {
@@ -45,7 +69,7 @@ namespace YARGReplayValidator.Core
       {
         if (!File.Exists(chartPath))
         {
-          throw new NotImplementedException($"Chart not included!");
+          throw new FileNotFoundException($"Chart not included!");
         }
         var chart = SongChart.FromFile(parseSettings, chartPath);
         var resolution = chart.Resolution;
