@@ -4,7 +4,7 @@ export const fastifyLoggerOptions: PinoLoggerOptions = {
   transport: {
     target: 'pino-pretty',
     options: {
-      translateTime: 'HH:MM:ss Z',
+      translateTime: 'SYS:standard',
       ignore: 'pid,hostname',
     },
   },

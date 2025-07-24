@@ -25,7 +25,12 @@ const serverStart = async () => {
   initServerRoutes(app)
 
   try {
-    await app.listen({ port })
+    await app.listen({
+      port,
+      listenTextResolver(address) {
+        return address
+      },
+    })
   } catch (err) {
     app.log.error(err)
     process.exit(1)

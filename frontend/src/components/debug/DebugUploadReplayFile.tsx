@@ -38,12 +38,9 @@ export default function DebugUploadReplayFile() {
             const form = new FormData()
             form.append('replayFile', replayInputRef.current!.files![0])
             if (hasChartOnRequest) form.append('chartFile', chartInputRef.current!.files![0])
-            form.append('requestType', hasChartOnRequest ? 'replayAndMidi' : 'replayOnly')
-            console.log(form)
 
             try {
-              const { data } = await axios.post<GenericServerResponseObject>(`${import.meta.env.VITE_SERVER_URI}/user/replay/register`, form, { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('userToken')}` }, timeout: 5000 })
-              console.log(data)
+              const { data } = await axios.post<GenericServerResponseObject>(`${import.meta.env.VITE_SERVER_URI}/user/replay/register`, form, { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('userToken')}` }, timeout: 10 * 1000 })
               setDebugGlobalState({ hasUserToken: true, lastRequest: data, isRequesting: false })
             } catch (err) {
               if (err instanceof AxiosError) {

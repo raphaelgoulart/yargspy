@@ -123,7 +123,9 @@ export const codeMap = {
   err_replay_nofileuploaded: [400, 'No YARG Replay file provided on the request body to register'],
   err_replay_invalid_replay_magic: [400, 'Provided YARG Replay file is invalid'],
   err_replay_invalid_midi_magic: [400, 'Provided MIDI file is invalid'],
-  err_replay_missing_chart: [412, 'The MIDI/CHART file of the song is required to validate replay'],
+  err_replay_invalid_chart_magic: [400, "Provided CHART file is invalid"],
+  err_replay_missing_chart: [406, 'The MIDI/CHART file of the song is required to validate replay'],
+  err_replay_invalid_chart: [406, "The provided CHART/MIDI file can't validate the provided REPLAY file"],
   success_replay_register: [201, 'Your score was registered successfully'],
 } as const
 

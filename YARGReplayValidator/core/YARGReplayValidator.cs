@@ -25,29 +25,29 @@ namespace YARGReplayValidator.Core
     /// <summary>
     /// Validates REPLAY files only.
     /// </summary>
-    ReplayOnly = 0,
+    ReplayOnly,
 
     /// <summary>
     /// Validates REPLAY and MIDI/CHART files, including MIDI data.
     /// </summary>
-    ReplayAndMidi = 1,
+    ReplayAndMidi,
 
     /// <summary>
     /// Validates MIDI/CHART files only.
     /// </summary>
-    MidiOnly = 2,
+    MidiOnly,
 
     /// <summary>
     /// Returns song hash and nothing else.
     /// </summary>
-    ReturnSongHash = 3
+    ReturnSongHash
   }
   public enum EngineValue : short
   {
-    Default = 0,
-    Casual = 1,
-    Precision = 2,
-    Unknown = -1
+    Unknown = -1,
+    Default,
+    Casual,
+    Precision,
   }
 
   public class YARGReplayValidatorCore
@@ -131,7 +131,7 @@ namespace YARGReplayValidator.Core
         // check if replay contains bots (it shouldn't)
         foreach (var frame in replayData.Frames)
         {
-          if (frame.Profile.IsBot) throw new Exception("Run contains bot(s); invalidated.");
+          if (frame.Profile.IsBot) throw new Exception("Provided REPLAY file can\'t have BOT players.");
         }
         // validate replay
         var results = ReplayAnalyzer.AnalyzeReplay(chart, replayData);
@@ -144,7 +144,7 @@ namespace YARGReplayValidator.Core
           }
           else
           {
-            throw new Exception("Replay band score and simulated band score don't match.");
+            throw new Exception("REPLAY file band score and simulated band score don't match.");
           }
         }
         output.Add("ReplayInfo", replayInfo);

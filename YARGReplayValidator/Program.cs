@@ -26,9 +26,7 @@ static void InitYARGReplayValidator(ArgParseOptions options)
 
     bool isChart = Path.GetExtension(options.ChartFilePath) == ".chart";
 
-    var parseSettings = YARGReplayValidatorCore.GetParseSettings(
-    isChart, isRB3CON, proDrums, fiveLaneDrums, sustainCutoffThreshold, multiplierNote, hopoThreshold, eighthNoteHopo, hopofreq, options.ChartFilePath
-  );
+    var parseSettings = YARGReplayValidatorCore.GetParseSettings(isChart, isRB3CON, proDrums, fiveLaneDrums, sustainCutoffThreshold, multiplierNote, hopoThreshold, eighthNoteHopo, hopofreq, options.ChartFilePath);
 
     var result = YARGReplayValidatorCore.ReadReplay(options.ReplayFilePath, readMode, options.ChartFilePath, parseSettings);
     Console.WriteLine(JsonConvert.SerializeObject(result));
@@ -47,7 +45,7 @@ static void ArgErrorsFallback(string[] args, IEnumerable<Error> errs)
 
   int argsCount = args.Length;
   int errsCount = errs.Count();
-  // Console.WriteLine($"argsCount: {argsCount}\nerrsCount: {errsCount}");
+  
   if (argsCount == 0)
   {
     Console.Error.WriteLine("ERROR:");
