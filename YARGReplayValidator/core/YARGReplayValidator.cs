@@ -128,6 +128,11 @@ namespace YARGReplayValidator.Core
           output.Add("SongChecksum", replayInfo.SongChecksum);
           return output;
         }
+        // check if replay contains bots (it shouldn't)
+        foreach (var frame in replayData.Frames)
+        {
+          if (frame.Profile.IsBot) throw new Exception("Run contains bot(s); invalidated.");
+        }
         // validate replay
         var results = ReplayAnalyzer.AnalyzeReplay(chart, replayData);
         var bandScore = results.Sum(x => x.ResultStats.TotalScore);
@@ -139,7 +144,7 @@ namespace YARGReplayValidator.Core
           }
           else
           {
-            // TODO: fetch and output differences for each replay frame
+            throw new Exception("Replay band score and simulated band score don't match.");
           }
         }
         output.Add("ReplayInfo", replayInfo);
