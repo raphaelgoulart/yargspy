@@ -77,13 +77,17 @@ export interface ScoreSchemaInput {
   averageMultiplier: number
   soloBonuses: number
   numPauses: number
+  ghostNotesHit: number
+  accentNotesHit: number
 }
 
 // Methods here
 export interface ScoreSchemaDocument extends ScoreSchemaInput, Document {}
 
 // Statics here
-export interface ScoreSchemaModel extends Model<ScoreSchemaDocument> {}
+export interface ScoreSchemaModel extends Model<ScoreSchemaDocument> {
+  findByChecksum(hash: string): Promise<ScoreSchemaDocument | null>
+}
 
 //#region Schema
 
@@ -231,12 +235,21 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>({
     required: true,
   },
   // the following stats aren't included in replay metadata yet, but might be in the future
-  /*ghostNotesHit: { // drums only
-        type: Number,
+  ghostNotesHit: { // drums only
+      type: Number,
+  },
+  accentNotesHit: { // drums only
+      type: Number,
+  }
+},
+{
+  statics: {
+    async findByChecksum(checksum: string) {
+      const score = await this.findOne({ checksum })
+
+      return score
     },
-    accentNotesHit: { // drums only
-        type: Number,
-    }*/
+  },
 })
 
 export const Score = model('Score', scoreSchema)

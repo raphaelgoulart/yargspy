@@ -57,7 +57,7 @@ export interface SongSchemaInput {
   sustain_cutoff_threshold?: number
   hopo_frequency?: number
   multiplier_note?: number
-  checksum: Schema.Types.Buffer
+  checksum: string
   isChart: boolean
   isRb3con: boolean
   availableInstruments: {
@@ -71,7 +71,7 @@ export interface SongSchemaDocument extends SongSchemaInput, Document {}
 
 // Statics here
 export interface SongSchemaModel extends Model<SongSchemaDocument> {
-  findByChecksum(hash: Buffer): Promise<SongSchemaDocument | null>
+  findByChecksum(hash: string): Promise<SongSchemaDocument | null>
 }
 
 // #region Schema
@@ -130,7 +130,7 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
   },
   {
     statics: {
-      async findByChecksum(checksum: Buffer) {
+      async findByChecksum(checksum: string) {
         const song = await this.findOne({ checksum })
 
         return song

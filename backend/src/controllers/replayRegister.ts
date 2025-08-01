@@ -5,6 +5,9 @@ import { ServerError, type ControllerErrorHandler, type ControllerHandler, type 
 import type { IUserProfileDecorators } from '../controllers.exports'
 import { serverReply } from '../core.exports'
 import { buildUniqueFilename, packageDirPath, processReplayValidator } from '../utils.exports'
+import crypto from 'crypto'
+import { Readable } from 'node:stream'
+import { ReadableStreamClone } from 'readable-stream-clone'
 
 export interface IReplayRegisterController {}
 export interface IReplayRegisterDecorators extends IUserProfileDecorators {}
@@ -22,13 +25,15 @@ export interface IReplayRegisterFileFieldObj {
 const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IReplayRegisterDecorators> = async function (req, reply) {
   const packageDir = packageDirPath()
   const uniqueFileName = buildUniqueFilename()
-  let replayPath = packageDir.gotoFile(`public/replay/${uniqueFileName}.replay`)
-  let midiPath = packageDir.gotoFile(`public/chart/${uniqueFileName}.mid`)    // TODO: mids/charts should be named after their hash
-  let chartPath = packageDir.gotoFile(`public/chart/${uniqueFileName}.chart`) // TODO: mids/charts should be named after their hash
+  let replayPath = packageDir.gotoFile(`public/temp/${uniqueFileName}.replay`) // files placed in temp folder; will be moved to proper folder if there's no error during validation
+  let midiPath =  packageDir.gotoFile(`public/temp/${uniqueFileName}.mid`)    // temp name; mids/charts should be named after their hash
+  let chartPath = packageDir.gotoFile(`public/temp/${uniqueFileName}.chart`) // temp name; mids/charts should be named after their hash
   let songPath = midiPath;
-  let iniPath = packageDir.gotoFile(`public/metadata/${uniqueFileName}.ini`)
-  let dtaPath = packageDir.gotoFile(`public/metadata/${uniqueFileName}.dta`)
+  let iniPath = packageDir.gotoFile(`public/temp/${uniqueFileName}.ini`)
+  let dtaPath = packageDir.gotoFile(`public/temp/${uniqueFileName}.dta`)
   const validatorPath = packageDir.gotoFile(Boolean(process.env.DEV) ? '../YARGReplayValidator/bin/Debug/net8.0/YARGReplayValidator.exe' : 'bin/YARGReplayValidator.exe')
+
+  let songHash: string;
 
   try {
     const parts = req.parts({ limits: { parts: 3 } })
@@ -38,25 +43,35 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
     // The file streams must have a handler so the streamed data can reach somewhere, otherwise the request will freeze here
     for await (const part of parts) { // TODO: improve this so each file has to come from the correct variable
       if (part.type === 'file') {
+        let fileStream = new ReadableStreamClone(part.file);
         let filePath: FilePath
-        if (part.fieldname == "replayFile" && part.filename.endsWith('.replay')) filePath = replayPath;
-        else if (part.fieldname == "chartFile" && part.filename.endsWith('.mid')) {
-          // TODO: change midiPath so its named [SHA-1 filehash].mid
-          filePath = midiPath
+        if (part.fieldname == "replayFile" && part.filename.endsWith('.replay')) {
+          filePath = replayPath;
+        } else if (part.fieldname == "chartFile" && part.filename.endsWith('.mid')) {
+          // change midiPath so its named [SHA-1 filehash].mid
+          let hashStream = new ReadableStreamClone(part.file);
+          const hash: Buffer = await getHash(hashStream);
+          songHash = hash.toString('base64'); // useful later
+          midiPath = packageDir.gotoFile(`public/chart/${hash.toString('hex')}.mid`)
+          //
+          filePath = midiPath;
+          songPath = filePath;
         } else if (part.fieldname == "chartFile" && part.filename.endsWith('.chart')) {
-          // TODO: change chartPath so its named [SHA-1 filehash].chart
+          // change chartPath so its named [SHA-1 filehash].chart
+          let hashStream = new ReadableStreamClone(part.file);
+          const hash: Buffer = await getHash(hashStream);
+          songHash = hash.toString('base64'); // useful later
+          chartPath = packageDir.gotoFile(`public/chart/${hash.toString('hex')}.chart`)
+          //
           filePath = chartPath;
           songPath = filePath;
-        }
-        else if (part.fieldname == "metadataFile" && part.filename.endsWith('.ini')) {
+        } else if (part.fieldname == "metadataFile" && part.filename.endsWith('.ini')) {
           filePath = iniPath;
-        }
-        else if (part.fieldname == "metadataFile" && part.filename.endsWith('.dta')) {
+        } else if (part.fieldname == "metadataFile" && part.filename.endsWith('.dta')) {
           filePath = dtaPath;
-        }
-        else throw new ServerError('err_replay_unsupportedfile') // TODO: NEW ERROR
+        } else throw new ServerError('err_replay_unsupportedfile') // TODO: NEW ERROR
 
-        await pipeline(part.file, await filePath.createWriteStream())
+        await pipeline(fileStream, await filePath.createWriteStream())
 
         fileFields.set(part.fieldname, {
           path: filePath.path,
@@ -113,7 +128,7 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
       // TODO: parse metadata for song/validator
     }
 
-    const { stdout, stderr } = await execAsync(`${validatorPath.fullname} "${replayPath.path}"${songPath ? ` "${songPath.path}"` : ''}`, { cwd: validatorPath.root, windowsHide: true })
+    const { stdout, stderr } = await execAsync(`./${validatorPath.fullname} "${replayPath.path}"${songPath ? ` "${songPath.path}"` : ''}`, { cwd: validatorPath.root, windowsHide: true })
 
     // This is where the runtime errors from YARGReplayValidator must be taken
     if (stderr) {
@@ -125,8 +140,10 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
 
     const data = processReplayValidator<YARGReplayValidatorHashResults>(JSON.parse(stdout))
 
-    // TODO: if !songFound, save song
-    // TODO: save replay in db
+    // TODO: check if replay checksum has been uploaded already; error out if so
+    // TODO: if !songFound, move mid/chart to correct folder and save song DB object
+    // TODO: else, delete temp mid/chart files
+    // TODO: move replay file to correct folder and save replay object in DB
 
     if (iniPath.exists) await chartPath.delete()
     if (dtaPath.exists) await chartPath.delete()
@@ -156,6 +173,13 @@ const replayRegisterErrorHandler: ControllerErrorHandler<IReplayRegisterControll
   // Unknown error
   return serverReply(reply, 'err_not_implemented', { error: error, debug: ServerError.logErrors(error) }, { resolution: error.message })
 }
+
+const getHash = (rs: Readable) => new Promise<Buffer>((resolve, reject) => {
+  const hash = crypto.createHash('sha1');
+  rs.on('error', reject);
+  rs.on('data', chunk => hash.update(chunk));
+  rs.on('end', () => resolve(hash.digest()));
+})
 
 // #region Opts
 
