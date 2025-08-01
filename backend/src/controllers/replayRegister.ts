@@ -54,7 +54,7 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
           filePath = dtaPath;
           metadataPath = filePath;
         } // TODO: same as above
-        else throw new ServerError('err_replay_unsupportedfile')
+        else throw new ServerError('err_replay_unsupportedfile') // TODO: NEW ERROR
 
         await pipeline(part.file, await filePath.createWriteStream())
 
@@ -92,6 +92,8 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
     let songFound = false;
 
     if (!songFound) {
+      if (!fileFields.get('chartFile')) throw new ServerError('err_replay_missing_chart')
+
       if (midiPath.exists) {
         const midiMagic = (await midiPath.readOffset(0, 4)).toString()
         if (midiMagic !== 'MThd') {
@@ -107,9 +109,6 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
           throw new ServerError('err_replay_invalid_chart_magic')
         }
       }
-
-      const chartFileType = fileFields.get('chartFile')
-      if (!chartFileType) throw new ServerError('err_replay_missing_chart')
 
       // TODO: parse metadata for song/validator
     }
