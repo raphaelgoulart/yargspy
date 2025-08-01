@@ -22,12 +22,14 @@
     "fast-jwt": "^6.0.2",
     "fastify": "^5.4.0",
     "fastify-plugin": "^5.0.1",
+    "ini": "^5.0.0",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.4",
     "node-lib": "file:..\\dependencies\\js\\node-lib-1.1.2.tgz",
     "zod": "^4.0.5"
   },
   "devDependencies": {
+    "@types/ini": "^4.1.1",
     "@types/node": "^24.0.14",
     "dotenv": "^17.2.0",
     "esbuild-fix-imports-plugin": "^1.0.21",

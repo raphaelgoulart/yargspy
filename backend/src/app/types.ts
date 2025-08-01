@@ -64,6 +64,7 @@ export interface FastifyMultipartObject<F extends Record<string, Multipart> = {}
 }
 
 // #region YARGReplayValidator
+// This section can be replaced anytime
 
 // ???
 export interface ReplayCountObject {

@@ -32,7 +32,7 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
     const fileFields = new Map<string, IReplayRegisterFileFieldObj>()
     const bodyMap = new Map<string, any>()
 
-    // The file streams must be handler, otherwise the request will freeze here
+    // The file streams must have a handler so the streamed data can reach somewhere, otherwise the request will freeze here
     for await (const part of parts) {
       if (part.type === 'file') {
         let filePath: FilePath
@@ -80,13 +80,12 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
 
     if (chartPath.exists) {
       let chartMagicBytes = (await chartPath.readOffset(0, 9)).toString('hex')
-      if (chartMagicBytes.startsWith('efbbbf')) chartMagicBytes = Buffer.from(chartMagicBytes.substring(6), 'hex').toString()
+      // Excluding BOM from UTF-8 files
+      if (chartMagicBytes.toLowerCase().startsWith('efbbbf')) chartMagicBytes = Buffer.from(chartMagicBytes.substring(6), 'hex').toString()
       if (chartMagicBytes !== '[Song]') {
         throw new ServerError('err_replay_invalid_chart_magic')
       }
     }
-
-    this.log.info(Object.fromEntries(fileFields.entries()))
 
     let songPath: FilePath | undefined = undefined
     const chartFileType = fileFields.get('chartFile')
@@ -94,9 +93,9 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
     if (chartFileType.filename.endsWith('.chart')) songPath = chartPath
     else songPath = midiPath
 
-    this.log.info(songPath.path)
-
     const { stdout, stderr } = await execAsync(`${validatorPath.fullname} "${replayPath.path}"${songPath ? ` "${songPath.path}"` : ''}`, { cwd: validatorPath.root, windowsHide: true })
+
+    // This is where the runtime errors from YARGReplayValidator must be taken
     if (stderr) {
       const errString = stderr.trim()
       if (errString.endsWith('Missing MIDI path/parse settings.')) throw new ServerError('err_replay_missing_chart')
