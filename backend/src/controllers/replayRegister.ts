@@ -22,9 +22,13 @@ export interface IReplayRegisterFileFieldObj {
 const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IReplayRegisterDecorators> = async function (req, reply) {
   const packageDir = packageDirPath()
   const uniqueFileName = buildUniqueFilename()
-  const replayPath = packageDir.gotoFile(`public/replay/${uniqueFileName}.replay`)
-  const midiPath = packageDir.gotoFile(`public/mid/${uniqueFileName}.mid`)
-  const chartPath = packageDir.gotoFile(`public/chart/${uniqueFileName}.chart`)
+  let replayPath = packageDir.gotoFile(`public/replay/${uniqueFileName}.replay`)
+  let midiPath = packageDir.gotoFile(`public/chart/${uniqueFileName}.mid`)    // TODO: mids/charts should be named after their hash(?)
+  let chartPath = packageDir.gotoFile(`public/chart/${uniqueFileName}.chart`) // TODO: mids/charts should be named after their hash(?)
+  let songPath = midiPath;
+  let iniPath = packageDir.gotoFile(`public/metadata/${uniqueFileName}.ini`)
+  let dtaPath = packageDir.gotoFile(`public/metadata/${uniqueFileName}.dta`)
+  let metadataPath = iniPath;
   const validatorPath = packageDir.gotoFile(Boolean(process.env.DEV) ? '../YARGReplayValidator/bin/Debug/net8.0/YARGReplayValidator.exe' : 'bin/YARGReplayValidator.exe')
 
   try {
@@ -33,12 +37,26 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
     const bodyMap = new Map<string, any>()
 
     // The file streams must have a handler so the streamed data can reach somewhere, otherwise the request will freeze here
-    for await (const part of parts) {
+    for await (const part of parts) { // TODO: improve this so each file has to come from the correct variable
       if (part.type === 'file') {
         let filePath: FilePath
-        if (part.filename.endsWith('.replay')) filePath = replayPath
-        else if (part.filename.endsWith('.mid')) filePath = midiPath
-        else filePath = chartPath
+        if (part.fieldname == "replayFile" && part.filename.endsWith('.replay')) filePath = replayPath;
+        else if (part.fieldname == "chartFile" && part.filename.endsWith('.mid')) {
+          // TODO: change midiPath so its named [SHA-1 filehash].mid(?)
+          filePath = midiPath
+        } else if (part.fieldname == "chartFile" && part.filename.endsWith('.chart')) {
+          // TODO: change chartPath so its renamed to [SHA-1 filehash].chart(?)
+          filePath = chartPath;
+          songPath = filePath;
+        }
+        else if (part.fieldname == "metadataFile" && part.filename.endsWith('.ini')) {
+          filePath = iniPath;
+        } // TODO: extract song metadata (probably do it later since it could in theory be an already-registered song)
+        else if (part.fieldname == "metadataFile" && part.filename.endsWith('.dta')) {
+          filePath = dtaPath;
+          metadataPath = filePath;
+        } // TODO: same as above
+        else throw new ServerError('err_replay_unsupportedfile')
 
         await pipeline(part.file, await filePath.createWriteStream())
 
@@ -71,27 +89,32 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
       throw new ServerError('err_replay_invalid_magic')
     }
 
-    if (midiPath.exists) {
-      const midiMagic = (await midiPath.readOffset(0, 4)).toString()
-      if (midiMagic !== 'MThd') {
-        throw new ServerError('err_replay_invalid_midi_magic')
-      }
-    }
+    // TODO: run validator to get replay song hash
+    // TODO: try to find song in database via hash
+    let songFound = false;
 
-    if (chartPath.exists) {
-      let chartMagicBytes = (await chartPath.readOffset(0, 9)).toString('hex')
-      // Excluding BOM from UTF-8 files
-      if (chartMagicBytes.toLowerCase().startsWith('efbbbf')) chartMagicBytes = Buffer.from(chartMagicBytes.substring(6), 'hex').toString()
-      if (chartMagicBytes !== '[Song]') {
-        throw new ServerError('err_replay_invalid_chart_magic')
+    if (!songFound) {
+      if (midiPath.exists) {
+        const midiMagic = (await midiPath.readOffset(0, 4)).toString()
+        if (midiMagic !== 'MThd') {
+          throw new ServerError('err_replay_invalid_midi_magic')
+        }
       }
-    }
 
-    let songPath: FilePath | undefined = undefined
-    const chartFileType = fileFields.get('chartFile')
-    if (!chartFileType) throw new ServerError('err_replay_missing_chart')
-    if (chartFileType.filename.endsWith('.chart')) songPath = chartPath
-    else songPath = midiPath
+      if (chartPath.exists) {
+        let chartMagicBytes = (await chartPath.readOffset(0, 9)).toString('hex')
+        // Excluding BOM from UTF-8 files
+        if (chartMagicBytes.toLowerCase().startsWith('efbbbf')) chartMagicBytes = Buffer.from(chartMagicBytes.substring(6), 'hex').toString()
+        if (chartMagicBytes !== '[Song]') {
+          throw new ServerError('err_replay_invalid_chart_magic')
+        }
+      }
+
+      const chartFileType = fileFields.get('chartFile')
+      if (!chartFileType) throw new ServerError('err_replay_missing_chart')
+
+      // TODO: parse metadata for song/validator
+    }
 
     const { stdout, stderr } = await execAsync(`${validatorPath.fullname} "${replayPath.path}"${songPath ? ` "${songPath.path}"` : ''}`, { cwd: validatorPath.root, windowsHide: true })
 
@@ -105,6 +128,12 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
 
     const data = processReplayValidator<YARGReplayValidatorHashResults>(JSON.parse(stdout))
 
+    // TODO: if !songFound, save song
+    // TODO: save replay in db
+
+    if (iniPath.exists) await chartPath.delete()
+    if (dtaPath.exists) await chartPath.delete()
+
     throw new ServerError('ok', data)
 
     serverReply(reply, 'ok', data)
@@ -112,6 +141,8 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
     if (replayPath.exists) await replayPath.delete()
     if (midiPath.exists) await midiPath.delete()
     if (chartPath.exists) await chartPath.delete()
+    if (iniPath.exists) await chartPath.delete()
+    if (dtaPath.exists) await chartPath.delete()
     throw err
   }
 }
