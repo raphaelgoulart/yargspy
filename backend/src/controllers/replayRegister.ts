@@ -23,8 +23,8 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
   const packageDir = packageDirPath()
   const uniqueFileName = buildUniqueFilename()
   let replayPath = packageDir.gotoFile(`public/replay/${uniqueFileName}.replay`)
-  let midiPath = packageDir.gotoFile(`public/chart/${uniqueFileName}.mid`)    // TODO: mids/charts should be named after their hash(?)
-  let chartPath = packageDir.gotoFile(`public/chart/${uniqueFileName}.chart`) // TODO: mids/charts should be named after their hash(?)
+  let midiPath = packageDir.gotoFile(`public/chart/${uniqueFileName}.mid`)    // TODO: mids/charts should be named after their hash
+  let chartPath = packageDir.gotoFile(`public/chart/${uniqueFileName}.chart`) // TODO: mids/charts should be named after their hash
   let songPath = midiPath;
   let iniPath = packageDir.gotoFile(`public/metadata/${uniqueFileName}.ini`)
   let dtaPath = packageDir.gotoFile(`public/metadata/${uniqueFileName}.dta`)
@@ -41,10 +41,10 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
         let filePath: FilePath
         if (part.fieldname == "replayFile" && part.filename.endsWith('.replay')) filePath = replayPath;
         else if (part.fieldname == "chartFile" && part.filename.endsWith('.mid')) {
-          // TODO: change midiPath so its named [SHA-1 filehash].mid(?)
+          // TODO: change midiPath so its named [SHA-1 filehash].mid
           filePath = midiPath
         } else if (part.fieldname == "chartFile" && part.filename.endsWith('.chart')) {
-          // TODO: change chartPath so its named [SHA-1 filehash].mid(?)
+          // TODO: change chartPath so its named [SHA-1 filehash].mid
           filePath = chartPath;
           songPath = filePath;
         }
