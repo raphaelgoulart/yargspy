@@ -44,7 +44,7 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
           // TODO: change midiPath so its named [SHA-1 filehash].mid
           filePath = midiPath
         } else if (part.fieldname == "chartFile" && part.filename.endsWith('.chart')) {
-          // TODO: change chartPath so its named [SHA-1 filehash].mid
+          // TODO: change chartPath so its named [SHA-1 filehash].chart
           filePath = chartPath;
           songPath = filePath;
         }
