@@ -41,7 +41,7 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
     const bodyMap = new Map<string, any>()
 
     // The file streams must have a handler so the streamed data can reach somewhere, otherwise the request will freeze here
-    for await (const part of parts) { // TODO: improve this so each file has to come from the correct variable
+    for await (const part of parts) {
       if (part.type === 'file') {
         let fileStream = new ReadableStreamClone(part.file);
         let filePath: FilePath
@@ -142,8 +142,11 @@ const replayRegisterHandler: ControllerHandler<IReplayRegisterController, IRepla
 
     // TODO: check if replay checksum has been uploaded already; error out if so
     // TODO: if !songFound, move mid/chart to correct folder and save song DB object
-    // TODO: else, delete temp mid/chart files
-    // TODO: move replay file to correct folder and save replay object in DB
+    // TODO: else, delete temp mid/chart files if they exist
+    // TODO: move replay file to correct folder
+    // TODO: create band score object (don't save yet)
+    // TODO: create child score object (for each player), save to DB, add to band score object (childrenScores)
+    // TODO: save band score object to DB
 
     if (iniPath.exists) await chartPath.delete()
     if (dtaPath.exists) await chartPath.delete()
