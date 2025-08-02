@@ -19,14 +19,17 @@
     "@fastify/multipart": "^9.0.3",
     "@fastify/static": "^8.2.0",
     "bcryptjs": "^3.0.2",
+    "crc": "^4.3.2",
     "fast-jwt": "^6.0.2",
     "fastify": "^5.4.0",
     "fastify-plugin": "^5.0.1",
     "ini": "^5.0.0",
+    "jschardet": "^3.1.4",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.4",
     "node-lib": "file:..\\dependencies\\js\\node-lib-1.1.2.tgz",
     "readable-stream-clone": "^1.0.0",
+    "set-default-options": "file:..\\dependencies\\js\\set-default-options-1.0.1.tgz",
     "zod": "^4.0.5"
   },
   "devDependencies": {
