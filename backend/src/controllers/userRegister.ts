@@ -2,63 +2,16 @@ import zod, { ZodError } from 'zod'
 import { serverReply } from '../core.exports'
 import { MongoError } from 'mongodb'
 import { User } from '../models/User'
-import { ServerError, type ControllerErrorHandler, type ControllerHandler } from '../app.exports'
+import { ServerError, userRegisterBodySchema } from '../app.exports'
+import type { FastifyHandlerFn, FastifyErrorHandlerFn } from '../lib.exports'
 
-// #region Body Schema Validator
-export const userRegisterBodySchema = zod.object({
-  username: zod
-    .string()
-    .min(3)
-    .max(32)
-
-    // Some other stuff
-
-    .refine(
-      (arg) => {
-        // No spaces allowed
-        if (arg.match(/\s+/)) return false
-        return true
-      },
-      { error: 'err_user_register_username_nospace', params: { pattern: '/\\s+/' } }
-    )
-    .refine(
-      (arg) => {
-        // Real bad guys
-        if (arg.match(/\#|\%|\+/)) return false
-        return true
-      },
-      { error: 'err_user_register_username_invalid_type1', params: { pattern: '/\\#|\\%|\\+/' } }
-    )
-    .refine(
-      (arg) => {
-        // Cannot start or end with period, underscore, or hyphen
-        if (arg.match(/\.\.+|__+|--+/)) return false
-        return true
-      },
-      { error: 'err_user_register_username_invalid_type2', params: { pattern: '/\\.\\.+|__+/' } }
-    ),
-
-  password: zod
-    .string()
-    .min(8)
-    .max(48)
-
-    // Trigger not lowercase, uppercase, and numbers validation
-    .regex(/[A-Z]/)
-    .regex(/[a-z]/)
-    .regex(/[0-9]/)
-
-    // In the end, any symbol is required
-    .regex(/[^A-Za-z0-9]/),
-})
-
-export interface IUserRegisterController {
-  Body: zod.infer<typeof userRegisterBodySchema>
+export interface IUserRegister {
+  body: zod.infer<typeof userRegisterBodySchema>
 }
 
 // #region Handler
 
-const userRegisterHandler: ControllerHandler<IUserRegisterController> = async function (req, reply) {
+const userRegisterHandler: FastifyHandlerFn<IUserRegister> = async function (req, reply) {
   const body = userRegisterBodySchema.parse(req.body)
   const user = new User(body)
   await user.checkUsernameCaseInsensitive()
@@ -68,7 +21,7 @@ const userRegisterHandler: ControllerHandler<IUserRegisterController> = async fu
 
 //#region Error Handler
 
-const userRegisterErrorHandler: ControllerErrorHandler<IUserRegisterController> = function (error, _, reply) {
+const userRegisterErrorHandler: FastifyErrorHandlerFn<IUserRegister> = function (error, _, reply) {
   if (error instanceof ZodError) {
     const issue = error.issues[0]
     if (issue.code === 'invalid_type') {
@@ -125,11 +78,9 @@ const userRegisterErrorHandler: ControllerErrorHandler<IUserRegisterController> 
   return serverReply(reply, 'err_not_implemented', { error: error })
 }
 
-// #region Opts
+// #region Controller
 
 export const userRegisterController = {
-  routeOpts: {
-    errorHandler: userRegisterErrorHandler,
-    handler: userRegisterHandler,
-  },
+  errorHandler: userRegisterErrorHandler,
+  handler: userRegisterHandler,
 } as const

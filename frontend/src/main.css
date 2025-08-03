@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
 @import 'tailwindcss';
 
 /* Tailwind config, see https://tailwindcss.com/docs/theme */
@@ -13,8 +13,7 @@
   --breakpoint-laptop-lg: 1366px;
   --breakpoint-desktop: 1440px;
 
-  --font-mono: 'Space Mono', monospace;
-  --font-text: 'Text Drop Distance', sans-serif;
+  --font-text: 'Jost', sans-serif;
 }
 
 /* Applies on all tags. Don't put Tailwind classes here, only raw CSS. */
@@ -24,7 +23,7 @@
 
 /* Globals tags */
 body {
-  @apply bg-neutral-900 font-mono text-neutral-300;
+  @apply bg-neutral-900 font-text text-neutral-300;
 }
 
 /* 

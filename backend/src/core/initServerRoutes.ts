@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import UserRoute from '../routes/User.route'
 import StatusRoute from '../routes/Status.route'
-import type { FastifyInstanceWithAuth } from '../app.exports'
+import type { FastifyInstanceWithAuth } from '../lib.exports'
 
 /**
  * Initialize all server routes.

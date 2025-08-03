@@ -1,24 +1,19 @@
 import zod, { ZodError } from 'zod'
 import type { UserSchemaDocument } from '../models/User'
-import { ServerError, type ControllerErrorHandler, type ControllerHandler } from '../app.exports'
+import { ServerError, userLoginBodySchema } from '../app.exports'
 import { serverReply } from '../core.exports'
+import type { FastifyErrorHandlerFn, FastifyHandlerFn } from '../lib.exports'
 
-// #region Body Schema Validator
-export const userLoginBodySchema = zod.object({
-  username: zod.string().nonempty().min(3).max(32),
-  password: zod.string().nonempty().min(8).max(48),
-})
-
-export interface IUserLoginController {
-  Body: zod.infer<typeof userLoginBodySchema>
-}
-export interface IUserLoginDecorators {
-  user?: UserSchemaDocument
+export interface IUserLogin {
+  body: zod.infer<typeof userLoginBodySchema>
+  decorators: {
+    user?: UserSchemaDocument
+  }
 }
 
 // #region Handler
 
-const userLoginHandler: ControllerHandler<IUserLoginController, IUserLoginDecorators> = async function (req, reply) {
+const userLoginHandler: FastifyHandlerFn<IUserLogin> = async function (req, reply) {
   const user = req.user!
   const token = await user.generateToken()
   serverReply(reply, 'suceess_user_login', { token })
@@ -26,7 +21,7 @@ const userLoginHandler: ControllerHandler<IUserLoginController, IUserLoginDecora
 
 // #region Error Handler
 
-const userLoginErrorHandler: ControllerErrorHandler<IUserLoginController> = function (error, _, reply) {
+const userLoginErrorHandler: FastifyErrorHandlerFn<IUserLogin> = function (error, _, reply) {
   if (error instanceof ZodError) {
     const issue = error.issues[0]
     if (issue.code === 'invalid_type') {
@@ -69,11 +64,9 @@ const userLoginErrorHandler: ControllerErrorHandler<IUserLoginController> = func
   return serverReply(reply, 'err_not_implemented', { error: error, debug: ServerError.logErrors(error) })
 }
 
-// #region Opts
+// #region Controller
 
 export const userLoginController = {
-  routeOpts: {
-    errorHandler: userLoginErrorHandler,
-    handler: userLoginHandler,
-  },
+  errorHandler: userLoginErrorHandler,
+  handler: userLoginHandler,
 } as const

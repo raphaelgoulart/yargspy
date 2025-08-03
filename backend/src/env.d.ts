@@ -4,6 +4,7 @@ declare global {
       PORT?: string
       MONGODB_URI?: string
       JWT_SECRET?: string
+      DEV?: string
     }
   }
 }

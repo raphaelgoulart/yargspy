@@ -7,7 +7,7 @@ import { randomByteFromRanges } from 'node-lib'
  * @returns {string}
  */
 export const buildUniqueFilename = (extension?: string): string => {
-  const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, '')
+  const timestamp = Date.now().toString()
   const random = randomByteFromRanges(3).toString('hex')
   return `${timestamp}_${random.toUpperCase()}${extension ? (extension.startsWith('.') ? extension : `.${extension}`) : ''}`
 }

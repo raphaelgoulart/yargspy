@@ -23,6 +23,7 @@ export interface GenericServerResponseObject {
    * An object with key values that can be replaced parameters inside the message string by using `{{paramName}}` flags inside the string.
    */
   messageValues?: Record<string, string>
+  requestTime: number
 }
 
 export interface DebugUserLoginResponseDecorators extends GenericServerResponseObject {

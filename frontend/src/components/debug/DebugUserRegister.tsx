@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios'
-import { AnimatedComponent, createAnimation, MotionDiv, MotionSection } from '../../lib.exports'
+import { AnimatedComponent, createAnimation, formatReqDuration, MotionDiv, MotionSection } from '../../lib.exports'
 import { DebugGlobalState } from '../../app/stores/debug'
 import type { DebugUserLoginResponseDecorators, GenericServerResponseObject } from '../../app/types'
 import { VscLoading } from '../../assets/icons'
@@ -30,16 +30,29 @@ export default function DebugUserRegister() {
               password: password.length === 0 ? undefined : password,
             } as const
 
+            const startTime = Date.now()
             try {
               const { data } = await axios.post<GenericServerResponseObject>(`${import.meta.env.VITE_SERVER_URI}/user/register`, loginBody, { responseType: 'json' })
 
-              setDebugGlobalState({ lastRequest: data, isRequesting: false })
+              setDebugGlobalState({
+                lastRequest: {
+                  ...data,
+                  requestTime: Date.now() - startTime,
+                },
+                isRequesting: false,
+              })
             } catch (err) {
               if (err instanceof AxiosError) {
                 if (err.response?.data) {
-                  setDebugGlobalState({ lastRequest: err.response?.data, isRequesting: false })
+                  setDebugGlobalState({
+                    lastRequest: {
+                      ...err.response?.data,
+                      requestTime: Date.now() - startTime,
+                    },
+                    isRequesting: false,
+                  })
                 } else {
-                  setDebugGlobalState({ lastRequest: { statusCode: 503, statusName: 'Service Unavailable', statusFullName: '503 Service Unavailable', code: 'err_service_unavailable', message: 'Server is down' } })
+                  setDebugGlobalState({ lastRequest: { statusCode: 503, statusName: 'Service Unavailable', statusFullName: '503 Service Unavailable', code: 'err_service_unavailable', message: 'Server is down', requestTime: Date.now() - startTime } })
                 }
               }
 
@@ -63,11 +76,14 @@ export default function DebugUserRegister() {
             </MotionDiv>
           </AnimatedComponent>
           {(() => {
-            const { code, message, statusCode, statusFullName, statusName, token }: DebugUserLoginResponseDecorators = lastRequest ?? { code: 'off', message: t('debug_make_first_req_message'), statusCode: 0, statusFullName: '000 Off', statusName: 'Off' }
+            const { code, message, statusCode, statusFullName, statusName, token, requestTime }: DebugUserLoginResponseDecorators = lastRequest ?? { code: 'off', message: t('debug_make_first_req_message'), statusCode: 0, statusFullName: '000 Off', statusName: 'Off', requestTime: 0 }
             return (
               <>
                 <div className={clsx('rounded-sm p-3', statusCode === 0 ? 'bg-neutral-700' : statusCode < 400 ? 'bg-green-900' : 'bg-red-900')}>
-                  <h1 className="mb-2 rounded-sm bg-neutral-800 px-1 font-mono text-lg uppercase">{statusFullName}</h1>
+                  <div className="mb-2 !flex-row items-center rounded-sm bg-neutral-800 px-1 font-mono text-lg ">
+                    <h1 className="mr-auto uppercase">{statusFullName}</h1>
+                    {requestTime > 0 && <h2 className='text-xs'>{formatReqDuration(requestTime)}</h2>}
+                  </div>
                   <h2 className="mb-2">{message}.</h2>
 
                   <div className="mb-2 rounded-sm bg-neutral-800 p-3">

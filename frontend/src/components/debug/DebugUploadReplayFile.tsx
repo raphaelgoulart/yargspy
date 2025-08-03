@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DebugGlobalState } from '../../app/stores/debug'
-import { AnimatedComponent, createAnimation, MotionDiv, MotionSection } from '../../lib.exports'
+import { AnimatedComponent, createAnimation, formatReqDuration, MotionDiv, MotionSection } from '../../lib.exports'
 import type { DebugUserProfileResponseDecorators, GenericServerResponseObject } from '../../app/types'
 import { VscLoading } from '../../assets/icons'
 import BlockOfCode from '../BlockOfCode'
@@ -13,16 +13,17 @@ export default function DebugUploadReplayFile() {
   const debugTabSelected = DebugGlobalState((x) => x.debugTabSelected)
   const lastRequest = DebugGlobalState((x) => x.lastRequest) as DebugUserProfileResponseDecorators | null
   const isRequesting = DebugGlobalState((x) => x.isRequesting)
-  const isRequestingUserProfile = DebugGlobalState((x) => x.isRequestingUserProfile)
   const hasUserToken = DebugGlobalState((x) => x.hasUserToken)
   const replayFileSelected = DebugGlobalState((x) => x.replayFileSelected)
   const chartFileSelected = DebugGlobalState((x) => x.chartFileSelected)
-  const hasChartOnRequest = DebugGlobalState((x) => x.hasChartOnRequest)
+  const songDataFileSelected = DebugGlobalState((x) => x.songDataFileSelected)
+  const hasSongDataOnReq = DebugGlobalState((x) => x.hasSongDataOnReq)
   const setDebugGlobalState = DebugGlobalState((x) => x.setDebugGlobalState)
   const isActivated = debugTabSelected === 3
 
   const replayInputRef = useRef<HTMLInputElement>(null)
   const chartInputRef = useRef<HTMLInputElement>(null)
+  const songDataInputRef = useRef<HTMLInputElement>(null)
   const { t } = useTranslation()
 
   return (
@@ -36,18 +37,30 @@ export default function DebugUploadReplayFile() {
             ev.preventDefault()
             setDebugGlobalState({ isRequesting: true })
             const form = new FormData()
+            form.append('reqType', hasSongDataOnReq ? 'complete' : 'replayOnly')
             form.append('replayFile', replayInputRef.current!.files![0])
-            if (hasChartOnRequest) form.append('chartFile', chartInputRef.current!.files![0])
+            if (hasSongDataOnReq) {
+              form.append('chartFile', chartInputRef.current!.files![0])
+              form.append('songDataFile', songDataInputRef.current!.files![0])
+            }
 
+            const startTime = Date.now()
             try {
               const { data } = await axios.post<GenericServerResponseObject>(`${import.meta.env.VITE_SERVER_URI}/user/replay/register`, form, { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('userToken')}` }, timeout: 10 * 1000 })
-              setDebugGlobalState({ hasUserToken: true, lastRequest: data, isRequesting: false })
+              setDebugGlobalState({
+                hasUserToken: true,
+                lastRequest: {
+                  ...data,
+                  requestTime: Date.now() - startTime,
+                },
+                isRequesting: false,
+              })
             } catch (err) {
               if (err instanceof AxiosError) {
                 if (err.response?.data) {
-                  setDebugGlobalState({ lastRequest: err.response?.data, isRequesting: false })
+                  setDebugGlobalState({ lastRequest: { ...err.response?.data, requestTime: Date.now() - startTime }, isRequesting: false })
                 } else {
-                  setDebugGlobalState({ lastRequest: { statusCode: 503, statusName: 'Service Unavailable', statusFullName: '503 Service Unavailable', code: 'err_service_unavailable', message: 'Server is down' } })
+                  setDebugGlobalState({ lastRequest: { statusCode: 503, statusName: 'Service Unavailable', statusFullName: '503 Service Unavailable', code: 'err_service_unavailable', message: 'Server is down', requestTime: Date.now() - startTime } })
                 }
               }
 
@@ -74,32 +87,54 @@ export default function DebugUploadReplayFile() {
           />
           <div className="mb-2 w-full !flex-row items-center">
             <CheckBox
-              condition={hasChartOnRequest}
+              condition={hasSongDataOnReq}
               type="button"
               className="mr-2 disabled:!cursor-default disabled:text-neutral-800"
               onClick={() => {
-                if (!hasChartOnRequest) setDebugGlobalState({ hasChartOnRequest: true })
-                else setDebugGlobalState({ hasChartOnRequest: false, chartFileSelected: null })
+                if (!hasSongDataOnReq) setDebugGlobalState({ hasSongDataOnReq: true, chartFileSelected: null, songDataFileSelected: null })
+                else setDebugGlobalState({ hasSongDataOnReq: false, chartFileSelected: null, songDataFileSelected: null })
               }}
               disabled={!hasUserToken}
             />
-            <h2 className="mr-auto text-xs font-bold uppercase">Chart/MIDI File</h2>
-            <button type="button" disabled={!hasUserToken || !hasChartOnRequest} className="w-fit rounded-sm bg-cyan-700 px-2 py-0.5 text-xs font-bold uppercase hover:bg-cyan-600 disabled:!cursor-default disabled:!bg-neutral-800 disabled:!text-neutral-700" onClick={() => chartInputRef.current!.click()}>
-              Select CHART/MIDI file
-            </button>
+            <h2 className="mr-auto text-xs font-bold uppercase">Includes Song Data</h2>
           </div>
-          {chartFileSelected ? <p className="mb-4">Selected File: {chartFileSelected.name}</p> : <p className="mb-4">No CHART/MIDI file selected</p>}
-          <input
-            type="file"
-            name="chartFile"
-            accept=".chart,.mid"
-            ref={chartInputRef}
-            hidden
-            onChange={(ev) => {
-              if (ev.target.files?.[0]) setDebugGlobalState({ chartFileSelected: ev.target.files[0] })
-            }}
-          />
-          <button disabled={!hasUserToken || isRequesting || !replayFileSelected || (hasChartOnRequest && !chartFileSelected)} className="!disabled:cursor-default rounded-sm bg-cyan-700 py-2 uppercase hover:bg-cyan-600 disabled:!cursor-default disabled:bg-neutral-800 disabled:text-neutral-700">
+
+          <div className="mb-4 !flex-row items-center">
+            <input
+              type="file"
+              name="chartFile"
+              accept=".chart,.mid"
+              ref={chartInputRef}
+              hidden
+              onChange={(ev) => {
+                if (ev.target.files?.[0]) setDebugGlobalState({ chartFileSelected: ev.target.files[0] })
+              }}
+            />
+            <input
+              type="file"
+              name="songData"
+              accept=".dta,.ini"
+              ref={songDataInputRef}
+              hidden
+              onChange={(ev) => {
+                if (ev.target.files?.[0]) setDebugGlobalState({ songDataFileSelected: ev.target.files[0] })
+              }}
+            />
+            <div className="mr-2 w-1/2 items-center rounded-sm border p-4">
+              <button type="button" disabled={!hasUserToken || !hasSongDataOnReq} className="mb-2 max-h-36 w-full rounded-sm bg-cyan-700 px-2 py-0.5 text-xs font-bold uppercase hover:bg-cyan-600 disabled:!cursor-default disabled:!bg-neutral-800 disabled:!text-neutral-700" onClick={() => chartInputRef.current!.click()}>
+                Select CHART/MIDI file
+              </button>
+              {chartFileSelected ? <p>Selected File: {chartFileSelected.name}</p> : <p>No CHART/MIDI file selected</p>}
+            </div>
+
+            <div className="w-1/2 items-center rounded-sm border p-4">
+              <button type="button" disabled={!hasUserToken || !hasSongDataOnReq} className="mb-2 max-h-36 w-full rounded-sm bg-cyan-700 px-2 py-0.5 text-xs font-bold uppercase hover:bg-cyan-600 disabled:!cursor-default disabled:!bg-neutral-800 disabled:!text-neutral-700" onClick={() => songDataInputRef.current!.click()}>
+                Select song data file
+              </button>
+              {songDataFileSelected ? <p>Selected File: {songDataFileSelected.name}</p> : <p>No song data file selected</p>}
+            </div>
+          </div>
+          <button disabled={!hasUserToken || isRequesting || !replayFileSelected || (hasSongDataOnReq && (!chartFileSelected || !songDataFileSelected))} className="!disabled:cursor-default rounded-sm bg-cyan-700 py-2 uppercase hover:bg-cyan-600 disabled:!cursor-default disabled:bg-neutral-800 disabled:text-neutral-700">
             Upload
           </button>
         </form>
@@ -111,11 +146,14 @@ export default function DebugUploadReplayFile() {
             </MotionDiv>
           </AnimatedComponent>
           {(() => {
-            const { code, message, statusCode, statusFullName, statusName }: GenericServerResponseObject = lastRequest ?? { code: 'off', message: t('debug_make_first_req_message'), statusCode: 0, statusFullName: '000 Off', statusName: 'Off' }
+            const { code, message, statusCode, statusFullName, statusName, requestTime }: GenericServerResponseObject = lastRequest ?? { code: 'off', message: t('debug_make_first_req_message'), statusCode: 0, statusFullName: '000 Off', statusName: 'Off', requestTime: 0 }
             return (
               <>
                 <div className={clsx('rounded-sm p-3', statusCode === 0 ? 'bg-neutral-700' : statusCode < 400 ? 'bg-green-900' : 'bg-red-900')}>
-                  <h1 className="mb-2 rounded-sm bg-neutral-800 px-1 font-mono text-lg uppercase">{statusFullName}</h1>
+                  <div className="mb-2 !flex-row items-center rounded-sm bg-neutral-800 px-1 font-mono text-lg">
+                    <h1 className="mr-auto uppercase">{statusFullName}</h1>
+                    {requestTime > 0 && <h2 className="text-xs">{formatReqDuration(requestTime)}</h2>}
+                  </div>
                   <h2 className="mb-2">{message}.</h2>
 
                   <div className="mb-2 rounded-sm bg-neutral-800 p-3">

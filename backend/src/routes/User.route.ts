@@ -1,13 +1,13 @@
 import { userLoginController, userProfileController, userRegisterController, replayRegisterController } from '../controllers.exports'
 import { verifyUserJWT, verifyUserLoginBody } from '../core.exports'
-import type { FastifyInstanceWithAuth } from '../app.exports'
+import type { FastifyInstanceWithAuth } from '../lib.exports'
 
 export default function UserRoute(app: FastifyInstanceWithAuth) {
   app.route({
     method: ['POST', 'HEAD'],
     url: '/user/register',
     logLevel: 'warn',
-    ...userRegisterController.routeOpts,
+    ...userRegisterController,
   })
 
   app.route({
@@ -15,7 +15,7 @@ export default function UserRoute(app: FastifyInstanceWithAuth) {
     url: '/user/login',
     logLevel: 'warn',
     preHandler: app.auth([verifyUserLoginBody]),
-    ...userLoginController.routeOpts,
+    ...userLoginController,
   })
 
   app.route({
@@ -23,7 +23,7 @@ export default function UserRoute(app: FastifyInstanceWithAuth) {
     url: '/user/profile',
     logLevel: 'warn',
     preHandler: app.auth([verifyUserJWT]),
-    ...userProfileController.routeOpts,
+    ...userProfileController,
   })
 
   app.route({
@@ -31,6 +31,6 @@ export default function UserRoute(app: FastifyInstanceWithAuth) {
     url: '/user/replay/register',
     logLevel: 'warn',
     preHandler: app.auth([verifyUserJWT]),
-    ...replayRegisterController.routeOpts,
+    ...replayRegisterController,
   })
 }

@@ -1,5 +1,5 @@
 import { DebugGlobalState } from '../../app/stores/debug'
-import { AnimatedComponent, createAnimation, MotionDiv, MotionSection } from '../../lib.exports'
+import { AnimatedComponent, createAnimation, formatReqDuration, MotionDiv, MotionSection } from '../../lib.exports'
 import type { DebugUserProfileResponseDecorators, GenericServerResponseObject } from '../../app/types'
 import { VscLoading } from '../../assets/icons'
 import clsx from 'clsx'
@@ -27,11 +27,14 @@ export default function DebugUserProfile() {
             </MotionDiv>
           </AnimatedComponent>
           {(() => {
-            const { code, message, statusCode, statusFullName, statusName }: GenericServerResponseObject = lastRequest ?? { code: 'off', message: t('debug_make_first_req_message'), statusCode: 0, statusFullName: '000 Off', statusName: 'Off' }
+            const { code, message, statusCode, statusFullName, statusName, requestTime }: GenericServerResponseObject = lastRequest ?? { code: 'off', message: t('debug_make_first_req_message'), statusCode: 0, statusFullName: '000 Off', statusName: 'Off', requestTime: 0 }
             return (
               <>
                 <div className={clsx('rounded-sm p-3', statusCode === 0 ? 'bg-neutral-700' : statusCode < 400 ? 'bg-green-900' : 'bg-red-900')}>
-                  <h1 className="mb-2 rounded-sm bg-neutral-800 px-1 font-mono text-lg uppercase">{statusFullName}</h1>
+                  <div className="mb-2 !flex-row items-center rounded-sm bg-neutral-800 px-1 font-mono text-lg">
+                    <h1 className="mr-auto uppercase">{statusFullName}</h1>
+                    {requestTime > 0 && <h2 className="text-xs">{formatReqDuration(requestTime)}</h2>}
+                  </div>
                   <h2 className="mb-2">{message}.</h2>
 
                   <div className="mb-2 rounded-sm bg-neutral-800 p-3">
@@ -59,7 +62,10 @@ export default function DebugUserProfile() {
                 <p className="mr-auto uppercase">{t('logged')}</p>
                 <button
                   onClick={async () => {
-                    if (hasUserToken) await navigator.clipboard.writeText(localStorage.getItem('userToken')!)
+                    if (hasUserToken) {
+                      await navigator.clipboard.writeText(localStorage.getItem('userToken')!)
+                      window.alert('Token copied to cliboard.')
+                    }
                   }}
                   className="mr-1 rounded-xs bg-slate-700 px-2 py-1 text-xs font-bold uppercase duration-200 hover:bg-slate-600"
                 >

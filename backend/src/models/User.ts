@@ -118,7 +118,7 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
       },
     },
     statics: {
-      async findByToken(auth: string | undefined) {
+      async findByToken(auth?: string) {
         const token = bearerTokenVerifier(auth)
         const decoded = jwtVerify(token)
         const user = await this.findOne({ _id: decoded._id })

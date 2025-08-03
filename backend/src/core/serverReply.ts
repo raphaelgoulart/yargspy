@@ -86,7 +86,7 @@ export const codeMap = {
   err_not_implemented: [501, 'Not implemented error: {{resolution}}'],
   err_syntax_json_body: [400, 'Response body JSON has a syntax error: {{additionalMessage}}'],
   err_unknown: [500, 'An unknown error occurred, please try again later'],
-  ok: [200, 'Request completed'],
+  ok: [200, 'Request completed by the server'],
 
   // user/register
   err_user_register_duplicated_username_typo: [409, 'Provided username {{username}} is a typo of another registered user'],

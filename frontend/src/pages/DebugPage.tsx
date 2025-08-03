@@ -31,6 +31,7 @@ export default function DebugPage() {
         lastRequest: null,
       })
 
+      const startTime = Date.now()
       try {
         const { data } = await axios.get<GenericServerResponseObject>(`${import.meta.env.VITE_SERVER_URI}/user/profile`, {
           responseType: 'json',
@@ -38,13 +39,19 @@ export default function DebugPage() {
             Authorization: `Bearer ${localStorage.getItem('userToken')}`,
           },
         })
-        setDebugGlobalState({ lastRequest: data, isRequestingUserProfile: false })
+        setDebugGlobalState({
+          lastRequest: {
+            ...data,
+            requestTime: Date.now() - startTime,
+          },
+          isRequestingUserProfile: false,
+        })
       } catch (err) {
         if (err instanceof AxiosError) {
           if (err.response?.data) {
-            setDebugGlobalState({ lastRequest: err.response?.data, isRequestingUserProfile: false })
+            setDebugGlobalState({ lastRequest: { ...err.response?.data, requestTime: Date.now() - startTime }, isRequestingUserProfile: false })
           } else {
-            setDebugGlobalState({ lastRequest: { statusCode: 503, statusName: 'Service Unavailable', statusFullName: '503 Service Unavailable', code: 'err_service_unavailable', message: 'Server is down' } })
+            setDebugGlobalState({ lastRequest: { statusCode: 503, statusName: 'Service Unavailable', statusFullName: '503 Service Unavailable', code: 'err_service_unavailable', message: 'Server is down', requestTime: 0 } })
           }
         }
 

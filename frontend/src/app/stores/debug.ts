@@ -5,13 +5,14 @@ export interface DebugGlobalStateProps {
   debugTabSelected: number
   username: string
   password: string
-  lastRequest: GenericServerResponseObject | null
+  lastRequest: (GenericServerResponseObject & { requestTime: number }) | null
   isRequesting: boolean
   hasUserToken: boolean
   isRequestingUserProfile: boolean
   replayFileSelected: File | null
   chartFileSelected: File | null
-  hasChartOnRequest: boolean
+  songDataFileSelected: File | null
+  hasSongDataOnReq: boolean
 }
 
 export interface DebugGlobalStateActions {
@@ -32,7 +33,8 @@ const DebugGlobalStateDefaultState: DebugGlobalStateProps = {
   isRequestingUserProfile: false,
   replayFileSelected: null,
   chartFileSelected: null,
-  hasChartOnRequest: false,
+  songDataFileSelected: null,
+  hasSongDataOnReq: false,
 }
 
 export const DebugGlobalState = create<DebugGlobalStateHook>()((set, get) => ({

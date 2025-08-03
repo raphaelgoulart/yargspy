@@ -1,18 +1,3 @@
-import type { Multipart, MultipartFile } from '@fastify/multipart'
-import type { FastifyInstance, FastifyError, FastifyRequest, FastifyReply, RouteGenericInterface, ContextConfigDefault, FastifySchema, preHandlerHookHandler } from 'fastify'
-import type { FastifyAuthFunction, FastifyAuthRelation } from '@fastify/auth'
-
-// #region Controllers
-export interface ControllerHandler<T extends RouteGenericInterface, D extends object = {}> {
-  (this: FastifyInstance, req: FastifyRequest<T> & D, reply: FastifyReply<T>): any
-}
-export interface ControllerErrorHandler<T extends RouteGenericInterface> {
-  (this: FastifyInstance, error: FastifyError, req: FastifyRequest<T>, reply: FastifyReply<T>): FastifyReply
-}
-export interface ControllerAuthFunction<T extends RouteGenericInterface, D extends object = {}> {
-  (this: FastifyInstance, request: FastifyRequest<T> & D, reply: FastifyReply<T>, done: (error?: Error) => void): void
-}
-
 // #region Server Responses and internal objects
 export interface GenericServerResponseObject {
   /**
@@ -46,21 +31,6 @@ export interface GenericServerUserTokenObject {
    * Tells if the user has admin privileges.
    */
   admin: boolean
-}
-
-//  #region Fastify Decorators
-export interface FastifyInstanceWithAuth extends FastifyInstance {
-  auth<Request extends FastifyRequest = FastifyRequest, Reply extends FastifyReply = FastifyReply>(
-    functions: FastifyAuthFunction<Request, Reply>[] | (FastifyAuthFunction<Request, Reply> | FastifyAuthFunction<Request, Reply>[])[],
-    options?: {
-      relation?: FastifyAuthRelation
-      run?: 'all'
-    }
-  ): preHandlerHookHandler<any, any, any, RouteGenericInterface, ContextConfigDefault, FastifySchema, any, any>
-}
-
-export interface FastifyMultipartObject<F extends Record<string, Multipart> = {}> extends Omit<MultipartFile, 'fields'> {
-  fields: F
 }
 
 // #region YARGReplayValidator
