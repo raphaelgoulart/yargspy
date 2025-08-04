@@ -53,8 +53,7 @@ export interface ScoreSchemaInput {
   filePath: string
   checksum: string
   childrenScores: { score: Schema.Types.ObjectId }[]
-  nightly: boolean
-  yargCoreCommit: string
+  version: string
   hidden: boolean
   gamemode: (typeof GameMode)[keyof typeof GameMode]
   instrument: (typeof Instrument)[keyof typeof Instrument]
@@ -122,13 +121,8 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>({
       },
     },
   ],
-  nightly: {
-    // stable build or nightly build?
-    type: Boolean,
-    required: true,
-  },
-  yargCoreCommit: {
-    // which version of YARG.Core was used to parse this replay?
+  version: {
+    // which version of the game was used to parse this replay?
     type: String,
     required: true,
   },

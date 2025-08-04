@@ -22,10 +22,8 @@ No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/
     - [ ] Add method to select all scores for that song (if a player has multiple scores, only the top-most in the selected criteria (score/notes hit) should be selected);
     - [ ] Store notes.mid + metadata that affects chart parsing (i.e. hopo_threshold) for replay validation.
 - [x] Score model (essentially replay file metadata, don't need to be as thorough though since the user can just download the replay for more data);
-    - [ ] Create tool to verify and extract replay data using YARG.Core (based on [ReplayCli](https://github.com/YARC-Official/YARG.Core/tree/master/ReplayCli))
-        - [ ] There should be two versions, one which targets stable and one which targets nightly
-        - [ ] If hosting on server, create cronjob to update the stable/nightly YARG.Core dlls if needed
-    - [ ] Figure out how to figure out YARG.Core version (git commit id?).
+    - [x] Create tool to verify and extract replay data using YARG.Core (based on [ReplayCli](https://github.com/YARC-Official/YARG.Core/tree/master/ReplayCli))
+        - [ ] (maybe) If hosting on server, create cronjob to update the YARG.Core dlls if needed
 - [ ] User model (more data?);
     - [ ] Add method to select all scores for that user (order by datetime desc).
 - [ ] User routes;
@@ -42,9 +40,7 @@ No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/
 ## Frontend
 Everything lol
 
-Framework suggestion: [Quasar](https://quasar.dev/) - Vue-based with tons of built-in components (but we should customize [fonts](https://quasar.dev/style/typography#default-font) and [color palette](https://quasar.dev/style/color-palette) to fit within the YARG aesthetic)
-
-We could make it ugly too, but if we're gonna do something, we gotta do it right! Go hard or go home.
+Should fit YARG design standards (color, BG and typography) whilst making sure to state that it's unofficial
 
 ## Long-term?
 - [ ] Custom YARG build?
