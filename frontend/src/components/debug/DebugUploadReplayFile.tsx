@@ -37,12 +37,12 @@ export default function DebugUploadReplayFile() {
             ev.preventDefault()
             setDebugGlobalState({ isRequesting: true })
             const form = new FormData()
-            form.append('reqType', hasSongDataOnReq ? 'complete' : 'replayOnly')
             form.append('replayFile', replayInputRef.current!.files![0])
             if (hasSongDataOnReq) {
               form.append('chartFile', chartInputRef.current!.files![0])
               form.append('songDataFile', songDataInputRef.current!.files![0])
             }
+            form.append('reqType', hasSongDataOnReq ? 'complete' : 'replayOnly')
 
             const startTime = Date.now()
             try {
@@ -120,18 +120,18 @@ export default function DebugUploadReplayFile() {
                 if (ev.target.files?.[0]) setDebugGlobalState({ songDataFileSelected: ev.target.files[0] })
               }}
             />
-            <div className="mr-2 w-1/2 items-center rounded-sm border p-4">
+            <div className={clsx('mr-2 h-full w-1/2 items-center rounded-sm border p-4', !hasUserToken || (!hasSongDataOnReq && '!border-neutral-800'))}>
               <button type="button" disabled={!hasUserToken || !hasSongDataOnReq} className="mb-2 max-h-36 w-full rounded-sm bg-cyan-700 px-2 py-0.5 text-xs font-bold uppercase hover:bg-cyan-600 disabled:!cursor-default disabled:!bg-neutral-800 disabled:!text-neutral-700" onClick={() => chartInputRef.current!.click()}>
                 Select CHART/MIDI file
               </button>
-              {chartFileSelected ? <p>Selected File: {chartFileSelected.name}</p> : <p>No CHART/MIDI file selected</p>}
+              <p className={clsx(!hasUserToken || (!hasSongDataOnReq && '!text-neutral-800'))}>{chartFileSelected ? <>Selected File: {chartFileSelected.name}</> : <>No CHART/MIDI file selected</>}</p>
             </div>
 
-            <div className="w-1/2 items-center rounded-sm border p-4">
+            <div className={clsx('h- w-1/2 items-center rounded-sm border p-4', !hasUserToken || (!hasSongDataOnReq && '!border-neutral-800'))}>
               <button type="button" disabled={!hasUserToken || !hasSongDataOnReq} className="mb-2 max-h-36 w-full rounded-sm bg-cyan-700 px-2 py-0.5 text-xs font-bold uppercase hover:bg-cyan-600 disabled:!cursor-default disabled:!bg-neutral-800 disabled:!text-neutral-700" onClick={() => songDataInputRef.current!.click()}>
                 Select song data file
               </button>
-              {songDataFileSelected ? <p>Selected File: {songDataFileSelected.name}</p> : <p>No song data file selected</p>}
+              <p className={clsx(!hasUserToken || (!hasSongDataOnReq && '!text-neutral-800'))}>{songDataFileSelected ? <>Selected File: {songDataFileSelected.name}</> : <>No song data file selected</>}</p>
             </div>
           </div>
           <button disabled={!hasUserToken || isRequesting || !replayFileSelected || (hasSongDataOnReq && (!chartFileSelected || !songDataFileSelected))} className="!disabled:cursor-default rounded-sm bg-cyan-700 py-2 uppercase hover:bg-cyan-600 disabled:!cursor-default disabled:bg-neutral-800 disabled:text-neutral-700">

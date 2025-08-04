@@ -1,5 +1,5 @@
 import { buildUniqueFilename } from './buildUniqueFilename'
-import { getServerTemp } from './getServerPaths'
+import { getServerPublic, getServerTemp } from './getServerPaths'
 
 export const createReplayRegisterTempPaths = () => {
   const temp = getServerTemp()
@@ -18,4 +18,9 @@ export const createReplayRegisterTempPaths = () => {
     if (dtaTemp.exists) await dtaTemp.delete()
   }
   return { replayTemp, midiTemp, chartTemp, iniTemp, dtaTemp, deleteAllTempFiles }
+}
+
+export const createReplayRegisterPaths = () => {
+  const publicFolder = getServerPublic()
+  const uid = buildUniqueFilename()
 }

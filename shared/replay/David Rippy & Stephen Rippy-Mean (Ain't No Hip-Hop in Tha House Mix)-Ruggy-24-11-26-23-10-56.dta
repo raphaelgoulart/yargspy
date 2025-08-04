@@ -1,0 +1,78 @@
+(7748mean
+        (name "Mean (Ain't No Hip-Hop in Tha House Mix)")
+        (artist "David Rippy & Stephen Rippy")
+        (master TRUE)
+        (song_id 1774800048)
+        (song
+                (name "songs/7748mean/7748mean")
+                (tracks
+                        ((drum (0 1 2 3 4))
+                         (bass (5 6))
+                         (guitar (7 8))
+                         (keys (9 10)))
+                )
+                (pans (0.0 -1.0 1.0 -1.0 1.0 -1.0 1.0 -1.0 1.0 -1.0 1.0 -1.0 1.0))
+                (vols (0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0))
+                (cores (-1 -1 -1 -1 -1 -1 -1 1 1 -1 -1 -1 -1))
+                (vocal_parts 0)
+                (drum_solo
+                        (seqs (kick.cue snare.cue tom1.cue tom2.cue crash.cue))
+                )
+                (drum_freestyle
+                        (seqs (kick.cue snare.cue hat.cue ride.cue crash.cue))
+                )
+                (mute_volume -96)
+                (mute_volume_vocals -12)
+                (hopo_threshold 90)
+        )
+        (song_scroll_speed 2300)
+        (bank sfx/tambourine_bank.milo)
+        (drum_bank sfx/kit01_bank.milo)
+        (anim_tempo kTempoSlow)
+        (preview 12664 42664)
+        (song_length 147797)
+        (rank
+                (drum 242)
+                (guitar 176)
+                (bass 135)
+                (keys 269)
+                (real_keys 269)
+                (real_guitar 208)
+                (real_bass 150)
+                (band 215)
+        )
+        (genre classical)
+        (sub_genre subgenre_classical)
+        (vocal_gender male)
+        (format 10)
+        (version 30)
+        (album_art TRUE)
+        (album_name "Age of Empires: The Rise of Rome (Original Soundtrack)")
+        (album_track_number 8)
+        (year_released 1998)
+        (rating 1)
+        (tuning_offset_cents 0)
+        (guide_pitch_volume -3.0)
+        (game_origin ugc_plus)
+        (encoding latin1)
+        (vocal_tonic_note 5)
+        (song_tonality 0)
+        (real_guitar_tuning (0 0 0 0 0 0))
+        (real_bass_tuning (0 0 0 0))
+        (author "Ruggy")
+        (pack_name "Age of Empires: The Rise of Rome Pack 01")
+
+;DO NOT EDIT THE FOLLOWING LINES MANUALLY
+;Created using Magma: C3 Roks Edition v3.3.5
+;Song authored by Ruggy
+;Song=Mean (Ain't No Hip-Hop in Tha House Mix)
+;Language(s)=English,
+;Karaoke=0
+;Multitrack=1
+;Convert=0
+;2xBass=0
+;RhythmKeys=0
+;RhythmBass=0
+;CATemh=1
+;ExpertOnly=0
+)

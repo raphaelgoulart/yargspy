@@ -27,8 +27,7 @@
     "jschardet": "^3.1.4",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.4",
-    "node-lib": "file:..\\dependencies\\js\\node-lib-1.1.2.tgz",
-    "readable-stream-clone": "^1.0.0",
+    "node-lib": "file:..\\dependencies\\js\\node-lib-1.2.0.tgz",
     "set-default-options": "file:..\\dependencies\\js\\set-default-options-1.0.1.tgz",
     "zod": "^4.0.5"
   },

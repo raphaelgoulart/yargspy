@@ -120,12 +120,14 @@ export const codeMap = {
   success_user_profile: [200, 'Profile data from user {{username}} has been retrieved successfully'],
 
   // replay/register
-  err_replay_nofileuploaded: [400, 'No YARG Replay file provided on the request body to register'],
-  err_replay_invalid_replay_magic: [400, 'Provided YARG Replay file is invalid'],
+  err_replay_nofileuploaded: [400, 'No YARG REPLAY file provided on the request body to register'],
+  err_replay_invalid_replay_magic: [400, 'Provided YARG REPLAY file is invalid'],
   err_replay_invalid_midi_magic: [400, 'Provided MIDI file is invalid'],
-  err_replay_invalid_chart_magic: [400, "Provided CHART file is invalid"],
-  err_replay_missing_chart: [406, 'The MIDI/CHART file of the song is required to validate replay'],
-  err_replay_invalid_chart: [406, "The provided CHART/MIDI file can't validate the provided REPLAY file"],
+  err_replay_invalid_chart_magic: [400, 'Provided CHART file is invalid'],
+  err_replay_songdata_required: [406, 'Song not registered in the server database, the MIDI/CHART file and the song metadata file is required to validate YARG Replay file and register new song'],
+  err_replay_invalid_chart: [406, "The provided CHART/MIDI file can't validate the provided YARG REPLAY file"],
+  err_replay_songhash_nomatch: [406, 'The provided CHART/MIDI file is not the same CHART/MIDI file used to play the song from the provided YARG REPLAY file'],
+  err_replay_register_no_reqtype: [400, 'No request type provided as value on the REPLAY register Form data'],
   success_replay_register: [201, 'Your score was registered successfully'],
 } as const
 

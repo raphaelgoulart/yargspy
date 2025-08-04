@@ -1,5 +1,6 @@
 import type { ContextConfigDefault, FastifyError, FastifyInstance, FastifyReply, FastifyRequest, FastifySchema, preHandlerHookHandler, RouteGenericInterface } from 'fastify'
 import type { FastifyAuthFunction, FastifyAuthRelation } from '@fastify/auth'
+import type { FilePath } from 'node-lib'
 
 export interface FastifyHandlerFnOpts {
   body?: Record<string, any>
@@ -29,7 +30,7 @@ export interface FastifyInstanceWithAuth extends FastifyInstance {
 }
 
 export interface FastifyFileFieldObject {
-  filePath: string
+  filePath: FilePath
   key: string
   fileName: string
   encoding: string

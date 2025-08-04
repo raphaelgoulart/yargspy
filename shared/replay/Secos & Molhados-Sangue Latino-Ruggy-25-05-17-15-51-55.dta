@@ -1,0 +1,71 @@
+(7748sanguelatino
+	(name "Sangue Latino")
+	(artist "Secos & Molhados")
+	(master TRUE)
+	(song_id 1774800027)
+	(song
+		(name "songs/7748sanguelatino/7748sanguelatino")
+		(tracks
+			((drum (0 1))
+			 (bass (2 3))
+			 (guitar (4 5))
+			 (vocals (6 7)))
+		)
+		(pans (-1.0 1.0 -1.0 1.0 -1.0 1.0 -1.0 1.0 -1.0 1.0))
+		(vols (0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0))
+		(cores (-1 -1 -1 -1 1 1 -1 -1 -1 -1))
+		(vocal_parts 1)
+		(drum_solo
+			(seqs (kick.cue snare.cue tom1.cue tom2.cue crash.cue))
+		)
+		(drum_freestyle
+			(seqs (kick.cue snare.cue hat.cue ride.cue crash.cue))
+		)
+	)
+	(bank sfx/tambourine_bank.milo)
+	(drum_bank sfx/kit01_bank.milo)
+	(anim_tempo kTempoMedium)
+	(song_scroll_speed 2300)
+	(preview 55604 85604)
+	(song_length 135401)
+	(rank
+		(drum 1)
+		(guitar 176)
+		(bass 135)
+		(vocals 175)
+		(keys 0)
+		(real_keys 0)
+		(real_guitar 0)
+		(real_bass 0)
+		(band 163)
+	)
+	(format 10)
+	(version 30)
+	(game_origin ugc_plus)
+	(encoding latin1)
+	(rating 1)
+	(genre glam)
+	(sub_genre subgenre_glam)
+	(vocal_gender male)
+	(year_released 1973)
+	(album_art TRUE)
+	(album_name "Secos & Molhados")
+	(album_track_number 1)
+	(vocal_tonic_note 2)
+	(song_tonality 0)
+	(author "Ruggy")
+
+;DO NOT EDIT THE FOLLOWING LINES MANUALLY
+;Created using Magma: C3 Roks Edition v3.3.5
+;Song authored by Ruggy
+;Song=Sangue Latino
+;Language(s)=English,
+;Karaoke=0
+;Multitrack=1
+;Convert=0
+;2xBass=0
+;RhythmKeys=0
+;RhythmBass=0
+;CATemh=1
+;ExpertOnly=0
+)

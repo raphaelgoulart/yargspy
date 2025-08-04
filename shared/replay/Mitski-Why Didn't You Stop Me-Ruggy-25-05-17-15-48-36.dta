@@ -1,0 +1,76 @@
+(7748whydidntyoustopme
+	(name "Why Didn't You Stop Me?")
+	(artist "Mitski")
+	(master TRUE)
+	(song_id 1774800025)
+	(song
+		(name "songs/7748whydidntyoustopme/7748whydidntyoustopme")
+		(tracks
+			((drum (0 1))
+			 (bass 2)
+			 (guitar 3)
+			 (vocals 4)
+			 (keys 5))
+		)
+		(pans (-1.0 1.0 0.0 0.0 0.0 0.0 -1.0 1.0))
+		(vols (0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0))
+		(cores (-1 -1 -1 1 -1 -1 -1 -1))
+		(vocal_parts 1)
+		(drum_solo
+			(seqs (kick.cue snare.cue tom1.cue tom2.cue crash.cue))
+		)
+		(drum_freestyle
+			(seqs (kick.cue snare.cue hat.cue ride.cue crash.cue))
+		)
+	)
+	(bank sfx/tambourine_bank.milo)
+	(drum_bank sfx/kit01_bank.milo)
+	(anim_tempo kTempoMedium)
+	(song_scroll_speed 2300)
+	(preview 22000 52000)
+	(song_length 144000)
+	(rank
+		(drum 178)
+		(guitar 176)
+		(bass 228)
+		(vocals 132)
+		(keys 153)
+		(real_keys 153)
+		(real_guitar 208)
+		(real_bass 325)
+		(band 163)
+	)
+	(solo (guitar))
+	(format 10)
+	(version 30)
+	(game_origin ugc_plus)
+	(encoding latin1)
+	(rating 1)
+	(genre indierock)
+	(sub_genre subgenre_indierock)
+	(vocal_gender female)
+	(year_released 2018)
+	(album_art TRUE)
+	(album_name "Be the Cowboy")
+	(album_track_number 2)
+	(vocal_tonic_note 4)
+	(song_tonality 0)
+	(real_guitar_tuning (0 0 0 0 0 0))
+	(real_bass_tuning (0 0 0 0))
+	(author "Ruggy")
+	(pack_name "Chart-a-thon 2018")
+
+;DO NOT EDIT THE FOLLOWING LINES MANUALLY
+;Created using Magma: C3 Roks Edition v3.3.5
+;Song authored by Ruggy
+;Song=Why Didn't You Stop Me?
+;Language(s)=English,
+;Karaoke=0
+;Multitrack=0
+;Convert=0
+;2xBass=0
+;RhythmKeys=0
+;RhythmBass=0
+;CATemh=1
+;ExpertOnly=0
+)
