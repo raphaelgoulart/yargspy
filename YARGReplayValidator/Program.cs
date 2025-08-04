@@ -76,7 +76,7 @@ static void ArgErrorsFallback(string[] args, IEnumerable<Error> errs)
     Console.WriteLine("                                 snapped as chords (default: false).\n");
 
     Console.WriteLine("-p --pro-drums                   If this is set to false, the chart will be read as");
-    Console.WriteLine("bool (OPTIONAL)                  all toms even if Pro Drums mode (default: false).\n");
+    Console.WriteLine("bool (OPTIONAL)                  all toms even if Pro Drums mode (default: true).\n");
 
     Console.WriteLine("-g --five-lane-drums             Set this to true if the chart is a five lane drum chart,");
     Console.WriteLine("bool (OPTIONAL)                  instead of four lane or Pro Drums (default: false).\n");
@@ -136,7 +136,7 @@ class ArgParseOptions
   public ReadMode ReadMode { get; set; }
   [Option('c', "is-rb3con", Required = false, Default = false)]
   public bool IsRB3CON { get; set; }
-  [Option('p', "pro-drums", Required = false, Default = false)]
+  [Option('p', "pro-drums", Required = false, Default = true)]
   public bool ProDrums { get; set; }
   [Option('g', "five-lane-drums", Required = false, Default = false)]
   public bool FiveLaneDrums { get; set; }
