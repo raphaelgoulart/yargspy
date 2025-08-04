@@ -23,7 +23,7 @@ export class YARGReplayValidatorAPI {
     const validatorPath = getValidatorPath()
     const replayFile = pathLikeToFilePath(replayFilePath)
 
-    const command = `"${validatorPath.fullname}" "${replayFile.path}" -m 3`
+    const command = `"./${validatorPath.fullname}" "${replayFile.path}" -m 3`
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
     if (stderr) throw new ServerError('err_unknown', { stderr })
 

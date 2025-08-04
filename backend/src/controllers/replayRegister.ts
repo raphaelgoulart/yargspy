@@ -7,6 +7,7 @@ import type { FastifyErrorHandlerFn, FastifyFileFieldObject, FastifyHandlerFn } 
 import { createReplayRegisterTempPaths, replayRegisterTempFileInputCheck, YARGReplayValidatorAPI } from '../utils.exports'
 import type { UserSchemaDocument } from '../models/User'
 import { Song } from '../models/Song'
+import { Score } from '../models/Score'
 
 export interface IReplayRegister {
   decorators: { user?: UserSchemaDocument }
@@ -70,26 +71,25 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
     // ...and one of these files must be the replay file
     if (!fileFields.has('replayFile')) throw new ServerError('err_replay_nofileuploaded')
 
+    // ...and replay must not have been uploaded already
+    const replayHash = await fileFields.get('replayFile')!.filePath.generateHash('sha256')
+    if (await Score.findByHash(replayHash)) throw new ServerError('err_replay_alreadyuploaded') // TODO: NEW ERROR
+
     // This is for requests that we know it's provided only the REPLAY file by the request itself
     // Only two pathways:
-    // - 1. The song doesn't exists in the DB, so the server replies the song metadata is required
-    // - 2. The song exists, and proceeds (???)
+    // - 1. The song doesn't exist in the DB, so the server replies the song data is required
+    // - 2. The song exists or the song data have been supplied
 
-    if (reqType === 'replayOnly') {
-      // Checking REPLAY file only for basic signature inspection
-      await replayRegisterTempFileInputCheck({ replayTemp, chartTemp, dtaTemp, iniTemp, midiTemp }, true)
+    const replayOnly = (reqType === 'replayOnly');
+    await replayRegisterTempFileInputCheck({ replayTemp, chartTemp, dtaTemp, iniTemp, midiTemp }, replayOnly);
 
-      const songHash = await YARGReplayValidatorAPI.returnSongHash(replayTemp)
-      const song = await Song.findByHash(songHash)
+    const songHash = await YARGReplayValidatorAPI.returnSongHash(replayTemp);
+    let song = await Song.findByHash(songHash);
+    const songFound = Boolean(song);
 
-      if (!song) throw new ServerError('err_replay_songdata_required')
+    if (replayOnly && !songFound) throw new ServerError('err_replay_songdata_required')
 
-      // Throws a new server error so the server can delete all files (used for debugging)
-      // Delete this and put a proper serverReply function call when finished debugging
-      throw new ServerError('ok', { song })
-    }
-
-    // Here is when we know all the files is provided
+    // Here is when we know all needed files are provided
     // So we have to do a LOT of checks
 
     const {
@@ -98,21 +98,33 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
       songDataFile: { filePath: songDataPath },
     } = Object.fromEntries(fileFields.entries()) as IReplayRegisterFileFieldsObject
 
-    // Checks if the REPLAY file song hash matches the provided chart file hash
-    const songHash = await YARGReplayValidatorAPI.returnSongHash(replayFilePath)
-    const chartFileHash = await chartFilePath.generateHash('sha1')
+    if (!songFound) { // If song isn't in database already...
+      // Checks if the REPLAY file song hash matches the provided chart file hash
+      const chartFileHash = await chartFilePath.generateHash('sha1')
 
-    if (songHash !== chartFileHash) throw new ServerError('err_replay_songhash_nomatch', { songHash, chartFileHash })
-
-    // Get the song entry, and register if it doesn't exists
-    const songEntry = await Song.findOne({ hash: songHash })
-    if (!songEntry) {
-      // Register song...
+      if (songHash !== chartFileHash) throw new ServerError('err_replay_songhash_nomatch', { songHash, chartFileHash })
+      
+      // Populate song object with ini/dta info (don't save to DB yet)
+      // TODO: 
     }
+
+    // Validate replay (if !songFound, use the ReadMode that extracts MIDI data as well)
+    // TODO: 
+
+    if (!songFound) {
+        // Add remaining song info to song object (i.e. hopo_threshold, instruments diffs and notes etc.) then save to DB
+        // TODO:
+    }
+    
+    // Create band score
+    // For each player, save instrument score, adding it to band score's `childrenScores` variable
+    // Save band score
+    // TODO:
 
     // Throws a new server error so the server can delete all files (used for debugging)
     // Delete this and put a proper serverReply function call when finished debugging
-    throw new ServerError('ok', { songHash, chartFileHash, songEntry })
+    const chartFileHash = await chartFilePath.generateHash('sha1') // REMOVE LATER
+    throw new ServerError('ok', { songHash, chartFileHash, song })
   } catch (err) {
     await deleteAllTempFiles()
     throw err

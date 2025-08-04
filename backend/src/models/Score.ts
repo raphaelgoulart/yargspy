@@ -86,7 +86,7 @@ export interface ScoreSchemaDocument extends ScoreSchemaInput, Document {}
 
 // Statics here
 export interface ScoreSchemaModel extends Model<ScoreSchemaDocument> {
-  findByChecksum(hash: string): Promise<ScoreSchemaDocument | null>
+  findByHash(hash: string): Promise<ScoreSchemaDocument | null>
 }
 
 //#region Schema
@@ -244,12 +244,10 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>({
 },
 {
   statics: {
-    async findByChecksum(checksum: string) {
-      const score = await this.findOne({ checksum })
-
-      return score
+    async findByHash(hash: string) {
+      return await this.findOne({ hash })
     },
   },
 })
 
-export const Score = model('Score', scoreSchema)
+export const Score = model<ScoreSchemaInput, ScoreSchemaModel>('Score', scoreSchema)
