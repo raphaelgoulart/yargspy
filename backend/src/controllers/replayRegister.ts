@@ -104,27 +104,24 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
 
       if (songHash !== chartFileHash) throw new ServerError('err_replay_songhash_nomatch', { songHash, chartFileHash })
       
-      // Populate song object with ini/dta info (don't save to DB yet)
       // TODO: 
+      // Populate song object with ini/dta info (don't save to DB yet)
     }
 
-    // Validate replay (if !songFound, use the ReadMode that extracts MIDI data as well)
-    // TODO: 
+    // Validate replay
+    const reply = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, songFound) // TODO: add song/extra params
+    // Throws a new server error so the server can delete all files (used for debugging)
+    throw new ServerError('ok', reply);
 
     if (!songFound) {
         // Add remaining song info to song object (i.e. hopo_threshold, instruments diffs and notes etc.) then save to DB
         // TODO:
     }
     
+    // TODO:
     // Create band score
     // For each player, save instrument score, adding it to band score's `childrenScores` variable
     // Save band score
-    // TODO:
-
-    // Throws a new server error so the server can delete all files (used for debugging)
-    // Delete this and put a proper serverReply function call when finished debugging
-    const chartFileHash = await chartFilePath.generateHash('sha1') // REMOVE LATER
-    throw new ServerError('ok', { songHash, chartFileHash, song })
   } catch (err) {
     await deleteAllTempFiles()
     throw err

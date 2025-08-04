@@ -1,10 +1,18 @@
 import { execAsync, pathLikeToFilePath, type BufferEncodingOrNull, type FilePathLikeTypes } from 'node-lib'
 import { getValidatorPath } from '../path/getServerPaths'
 import { ServerError } from '../../app.exports'
+import type { SongSchemaDocument } from '../../models/Song'
 
 export interface ValidatorReturnSongHashObject {
   songChecksum: { hashBytes: string }
 }
+
+export const ReadMode = {
+  ReplayOnly: 0,
+  ReplayAndMidi: 1,
+  MidiOnly: 2,
+  ReturnSongHash: 3,
+} as const
 
 export class YARGReplayValidatorAPI {
   static camelCaseKeyTransform<T extends object>(obj: Record<string, any>) {
@@ -23,7 +31,7 @@ export class YARGReplayValidatorAPI {
     const validatorPath = getValidatorPath()
     const replayFile = pathLikeToFilePath(replayFilePath)
 
-    const command = `"./${validatorPath.fullname}" "${replayFile.path}" -m 3`
+    const command = `"./${validatorPath.fullname}" "${replayFile.path}" -m ${ReadMode.ReturnSongHash}`
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
     if (stderr) throw new ServerError('err_unknown', { stderr })
 
@@ -43,5 +51,24 @@ export class YARGReplayValidatorAPI {
     } = await this.returnSongHashRaw(replayFile)
 
     return Buffer.from(checksumRaw, 'base64').toString(digest ?? 'hex')
+  }
+
+  static async returnReplayInfo(replayFilePath: FilePathLikeTypes, songFilePath: FilePathLikeTypes, replayOnly: boolean, song?: SongSchemaDocument, eighthnoteHopo?: Boolean, hopofreq?: Number): Promise<object> {
+    // TODO: song CANNOT BE NULLABLE THIS IS JUST FOR TEST
+    const validatorPath = getValidatorPath()
+    const replayFile = pathLikeToFilePath(replayFilePath)
+    const songFile = pathLikeToFilePath(songFilePath)
+
+    const readMode = replayOnly ? ReadMode.ReplayOnly : ReadMode.ReplayAndMidi;
+
+    let command = `"./${validatorPath.fullname}" "${replayFile.path}" "${songFile.path}" -m ${readMode}`
+    if (eighthnoteHopo !== undefined) command += " -e " + eighthnoteHopo ? "true" : "false"
+    if (hopofreq !== undefined) command += " -f " + hopofreq.toString();
+    // TODO: ADD INPUT PARAMETERS FROM SONG
+    //
+    const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
+    if (stderr) throw new ServerError('err_unknown', { stderr })
+
+    return JSON.parse(stdout) // TODO: types
   }
 }
