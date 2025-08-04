@@ -6,8 +6,10 @@ import { serverReply } from '../core.exports'
 import type { FastifyErrorHandlerFn, FastifyFileFieldObject, FastifyHandlerFn } from '../lib.exports'
 import { createReplayRegisterTempPaths, replayRegisterTempFileInputCheck, YARGReplayValidatorAPI } from '../utils.exports'
 import type { UserSchemaDocument } from '../models/User'
-import { Song } from '../models/Song'
+import { Song, type SongSchemaDocument } from '../models/Song'
 import { Score } from '../models/Score'
+import { readFile } from 'node:fs/promises'
+import { parse } from 'ini'
 
 export interface IReplayRegister {
   decorators: { user?: UserSchemaDocument }
@@ -98,18 +100,32 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
       songDataFile: { filePath: songDataPath },
     } = Object.fromEntries(fileFields.entries()) as IReplayRegisterFileFieldsObject
 
+    let eighthnoteHopo: Boolean | undefined;
+    let hopofreq: Number | undefined;
+
     if (!songFound) { // If song isn't in database already...
       // Checks if the REPLAY file song hash matches the provided chart file hash
       const chartFileHash = await chartFilePath.generateHash('sha1')
 
       if (songHash !== chartFileHash) throw new ServerError('err_replay_songhash_nomatch', { songHash, chartFileHash })
       
-      // TODO: 
       // Populate song object with ini/dta info (don't save to DB yet)
+      const isChart = chartFilePath.ext == ".chart"
+      song = new Song({
+        hash: songHash,
+        isChart: isChart,
+        isRb3con: !isChart && songDataPath.ext == ".dta"
+      });
+      const readMetadataResult = await readMetadata(song, songDataPath);
+      song = readMetadataResult.song;
+      eighthnoteHopo = readMetadataResult.eighthnoteHopo;
+      hopofreq = readMetadataResult.hopofreq;
+
+      throw new ServerError('ok', { song, eighthnoteHopo, hopofreq }); // TODO: DEBUG REMOVE LATER
     }
 
     // Validate replay
-    const reply = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, songFound) // TODO: add song/extra params
+    const reply = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, songFound, song!, eighthnoteHopo, hopofreq)
     // Throws a new server error so the server can delete all files (used for debugging)
     throw new ServerError('ok', reply);
 
@@ -127,6 +143,45 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
     throw err
   }
 }
+
+// #region Metadata read functions
+
+async function readMetadata(song: SongSchemaDocument, songDataPath: FilePath): Promise<{ song: SongSchemaDocument; eighthnoteHopo?: Boolean; hopofreq?: Number }> {
+  if (song.isRb3con) return readMetadataDTA(song, songDataPath);
+  return readMetadataINI(song, songDataPath);
+}
+
+async function readMetadataINI(song: SongSchemaDocument, songDataPath: FilePath): Promise<{ song: SongSchemaDocument; eighthnoteHopo?: Boolean; hopofreq?: Number }> {
+  let eighthnoteHopo: Boolean | undefined;
+  let hopofreq: Number | undefined;
+
+  let text = await songDataPath.read('utf-8');
+  const config = parse(text)
+
+  song.name = config.song.name;
+  song.artist = config.song.artist;
+  if ('charter' in config.song) song.charter = config.song.charter;
+  else if ('frets' in config.song) song.charter = config.song.frets;
+  if ('album' in config.song) song.album = config.song.album;
+  if ('year' in config.song) song.year = config.song.year.replace(', ', '');
+  if ('pro_drums' in config.song) song.pro_drums = config.song.pro_drums;
+  else if ('pro_drum' in config.song) song.pro_drums = config.song.pro_drum;
+  if ('five_lane_drums' in config.song) song.five_lane_drums = config.song.five_lane_drums;
+  if ('sustain_cutoff_threshold' in config.song) song.sustain_cutoff_threshold = config.song.sustain_cutoff_threshold;
+  if ('multiplier_note' in config.song) song.multiplier_note = config.song.multiplier_note;
+  else if ('star_power_note' in config.song) song.multiplier_note = config.song.star_power_note;
+  if ('hopo_frequency' in config.song) song.hopo_frequency = config.song.hopo_frequency;
+  else if ('eighthnote_hopo' in config.song) eighthnoteHopo = config.song.eighthnote_hopo;
+  else if ('hopofreq' in config.song) hopofreq = config.song.hopofreq;
+
+  return { song, eighthnoteHopo, hopofreq }
+}
+
+async function readMetadataDTA(song: SongSchemaDocument, songDataPath: FilePath): Promise<{ song: SongSchemaDocument; eighthnoteHopo?: Boolean; hopofreq?: Number }> {
+  // TODO: fill values based on DTA - eighthnoteHopo and hopofreq will ALWAYS be undefined as they're .ini only
+  return { song }
+}
+
 
 // #region Error Handler
 

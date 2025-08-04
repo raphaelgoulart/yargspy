@@ -53,8 +53,7 @@ export class YARGReplayValidatorAPI {
     return Buffer.from(checksumRaw, 'base64').toString(digest ?? 'hex')
   }
 
-  static async returnReplayInfo(replayFilePath: FilePathLikeTypes, songFilePath: FilePathLikeTypes, replayOnly: boolean, song?: SongSchemaDocument, eighthnoteHopo?: Boolean, hopofreq?: Number): Promise<object> {
-    // TODO: song CANNOT BE NULLABLE THIS IS JUST FOR TEST
+  static async returnReplayInfo(replayFilePath: FilePathLikeTypes, songFilePath: FilePathLikeTypes, replayOnly: boolean, song: SongSchemaDocument, eighthnoteHopo?: Boolean, hopofreq?: Number): Promise<object> {
     const validatorPath = getValidatorPath()
     const replayFile = pathLikeToFilePath(replayFilePath)
     const songFile = pathLikeToFilePath(songFilePath)
@@ -62,10 +61,16 @@ export class YARGReplayValidatorAPI {
     const readMode = replayOnly ? ReadMode.ReplayOnly : ReadMode.ReplayAndMidi;
 
     let command = `"./${validatorPath.fullname}" "${replayFile.path}" "${songFile.path}" -m ${readMode}`
-    if (eighthnoteHopo !== undefined) command += " -e " + eighthnoteHopo ? "true" : "false"
+    // Input parameters from Song
+    if (song.isRb3con) command += " -c true";
+    if (song.pro_drums !== undefined) command += " -p " + song.pro_drums ? "true" : "false"
+    if (song.five_lane_drums !== undefined) command += " -g " + song.five_lane_drums ? "true" : "false"
+    if (song.sustain_cutoff_threshold !== undefined) command += " -s " + song.sustain_cutoff_threshold.toString();
+    if (song.multiplier_note !== undefined) command += " -n " + song.multiplier_note.toString();
+    // Other input params
+    if (eighthnoteHopo !== undefined) command += " -e " + eighthnoteHopo ? "true" : "false";
     if (hopofreq !== undefined) command += " -f " + hopofreq.toString();
-    // TODO: ADD INPUT PARAMETERS FROM SONG
-    //
+    // TODO: test params
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
     if (stderr) throw new ServerError('err_unknown', { stderr })
 
