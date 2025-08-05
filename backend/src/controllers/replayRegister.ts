@@ -170,22 +170,23 @@ async function readMetadataINI(song: SongSchemaDocument, songDataPath: FilePath)
 
   let text = await songDataPath.read('utf-8');
   const config = parse(text)
+  const configSong = config.song ? config.song : config.Song; // both cases work
 
-  song.name = config.song.name;
-  song.artist = config.song.artist;
-  if ('charter' in config.song) song.charter = config.song.charter;
-  else if ('frets' in config.song) song.charter = config.song.frets;
-  if ('album' in config.song) song.album = config.song.album;
-  if ('year' in config.song) song.year = config.song.year.replace(', ', '');
-  if ('pro_drums' in config.song) song.pro_drums = getBooleanINI(config.song.pro_drums);
-  else if ('pro_drum' in config.song) song.pro_drums = getBooleanINI(config.song.pro_drum);
-  if ('five_lane_drums' in config.song) song.five_lane_drums = getBooleanINI(config.song.five_lane_drums);
-  if ('sustain_cutoff_threshold' in config.song) song.sustain_cutoff_threshold = config.song.sustain_cutoff_threshold;
-  if ('multiplier_note' in config.song) song.multiplier_note = config.song.multiplier_note;
-  else if ('star_power_note' in config.song) song.multiplier_note = config.song.star_power_note;
-  if ('hopo_frequency' in config.song) song.hopo_frequency = config.song.hopo_frequency;
-  else if ('eighthnote_hopo' in config.song) eighthnoteHopo = getBooleanINI(config.song.eighthnote_hopo);
-  else if ('hopofreq' in config.song) hopofreq = config.song.hopofreq;
+  song.name = configSong.name;
+  song.artist = configSong.artist;
+  if ('charter' in configSong) song.charter = configSong.charter;
+  else if ('frets' in configSong) song.charter = configSong.frets;
+  if ('album' in configSong) song.album = configSong.album;
+  if ('year' in configSong) song.year = configSong.year.replace(', ', '');
+  if ('pro_drums' in configSong) song.pro_drums = getBooleanINI(configSong.pro_drums);
+  else if ('pro_drum' in configSong) song.pro_drums = getBooleanINI(configSong.pro_drum);
+  if ('five_lane_drums' in configSong) song.five_lane_drums = getBooleanINI(configSong.five_lane_drums);
+  if ('sustain_cutoff_threshold' in configSong) song.sustain_cutoff_threshold = configSong.sustain_cutoff_threshold;
+  if ('multiplier_note' in configSong) song.multiplier_note = configSong.multiplier_note;
+  else if ('star_power_note' in configSong) song.multiplier_note = configSong.star_power_note;
+  if ('hopo_frequency' in configSong) song.hopo_frequency = configSong.hopo_frequency;
+  else if ('eighthnote_hopo' in configSong) eighthnoteHopo = getBooleanINI(configSong.eighthnote_hopo);
+  else if ('hopofreq' in configSong) hopofreq = configSong.hopofreq;
 
   return { song, eighthnoteHopo, hopofreq }
 }
