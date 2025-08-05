@@ -102,7 +102,7 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
     },
     // system metadata (hash etc)
     // SHA-1
-    hash: { type: String, required: true },
+    hash: { type: String, required: true, unique: true },
     isChart: { type: Boolean, required: true },
     isRb3con: { type: Boolean, default: false, required: true }, // info needed for replay validation
     // should probably fetch these using YARG.Core for consistency with the actual game
