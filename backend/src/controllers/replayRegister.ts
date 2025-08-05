@@ -120,19 +120,19 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
       song = readMetadataResult.song;
       eighthnoteHopo = readMetadataResult.eighthnoteHopo;
       hopofreq = readMetadataResult.hopofreq;
-
-      throw new ServerError('ok', { song, eighthnoteHopo, hopofreq }); // TODO: DEBUG REMOVE LATER
     }
 
     // Validate replay
     const reply = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, songFound, song!, eighthnoteHopo, hopofreq)
-    // Throws a new server error so the server can delete all files (used for debugging)
-    throw new ServerError('ok', reply);
 
     if (!songFound) {
         // Add remaining song info to song object (i.e. hopo_threshold, instruments diffs and notes etc.) then save to DB
-        // TODO:
+        if (song!.hopo_frequency === undefined && reply["HopoFrequency"] >= 0) song!.hopo_frequency = reply["HopoFrequency"];
+        // TODO: add ChartData values to song.availableInstruments
+        throw new ServerError('ok', song); // Throws a new server error so the server can delete all files (used for debugging)
     }
+
+    throw new ServerError('ok', reply); // Throws a new server error so the server can delete all files (used for debugging)
     
     // TODO:
     // Create band score

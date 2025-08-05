@@ -53,7 +53,7 @@ export class YARGReplayValidatorAPI {
     return Buffer.from(checksumRaw, 'base64').toString(digest ?? 'hex')
   }
 
-  static async returnReplayInfo(replayFilePath: FilePathLikeTypes, songFilePath: FilePathLikeTypes, replayOnly: boolean, song: SongSchemaDocument, eighthnoteHopo?: Boolean, hopofreq?: Number): Promise<object> {
+  static async returnReplayInfo(replayFilePath: FilePathLikeTypes, songFilePath: FilePathLikeTypes, replayOnly: boolean, song: SongSchemaDocument, eighthnoteHopo?: Boolean, hopofreq?: Number): Promise<Record<string, any>> {
     const validatorPath = getValidatorPath()
     const replayFile = pathLikeToFilePath(replayFilePath)
     const songFile = pathLikeToFilePath(songFilePath)

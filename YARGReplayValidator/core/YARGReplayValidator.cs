@@ -168,7 +168,8 @@ namespace YARGReplayValidator.Core
         Dictionary<byte, Dictionary<byte, long>> starPowerStorage = [];
         // fetch chart data
         foreach (var track in chart.FiveFretTracks)
-        {
+        { // TODO: refactor content of this foreach to separate method; apply foreach in other types of tracks as well (e.g. SixFretTracks, DrumsTracks etc.)
+          // check track types in https://github.com/YARC-Official/YARG.Core/blob/80e518350cec7928b421d819ef58f89c84c39975/YARG.Core/Chart/SongChart.cs#L30
           Dictionary<byte, long> diffNoteStorage = [];
           Dictionary<byte, long> diffStarPowerStorage = [];
           foreach (Difficulty diff in Enum.GetValues<Difficulty>())
