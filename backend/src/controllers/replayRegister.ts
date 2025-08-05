@@ -199,7 +199,7 @@ async function readMetadataDTA(song: SongSchemaDocument, songDataPath: FilePath)
 function getBooleanINI(value: any): boolean {
   // TODO: CONSIDER REPLACING INI LIBRARY INSTEAD OF USING THIS FUNCTION
   if (typeof value === "string" && value.toLowerCase().trim() == "false") return false;
-  return Boolean(value);
+  return value;
 }
 
 
