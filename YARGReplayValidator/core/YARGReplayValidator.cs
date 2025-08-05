@@ -174,12 +174,12 @@ namespace YARGReplayValidator.Core
           Dictionary<byte, long> diffStarPowerStorage = [];
           foreach (Difficulty diff in Enum.GetValues<Difficulty>())
           {
-            if (!track.TryGetDifficulty(diff, out var instrumentDifficulty) || instrumentDifficulty.Notes.Count == 0)
-            {
-              continue;
-            }
-            diffNoteStorage.Add((byte)diff, instrumentDifficulty.Notes.Count);
-            diffStarPowerStorage.Add((byte)diff, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
+            if (!track.TryGetDifficulty(diff, out var instrumentDifficulty)) continue;
+            var noteCount = instrumentDifficulty.Notes.Count;
+            if (noteCount == 0) continue;
+            var diffByte = (byte)diff;
+            diffNoteStorage.Add(diffByte, noteCount);
+            diffStarPowerStorage.Add(diffByte, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
           }
           if (diffNoteStorage.Count == 0) continue;
           noteStorage.Add((byte)track.Instrument, diffNoteStorage);
@@ -191,12 +191,12 @@ namespace YARGReplayValidator.Core
           Dictionary<byte, long> diffStarPowerStorage = [];
           foreach (Difficulty diff in Enum.GetValues<Difficulty>())
           {
-            if (!track.TryGetDifficulty(diff, out var instrumentDifficulty) || instrumentDifficulty.Notes.Count == 0)
-            {
-              continue;
-            }
-            diffNoteStorage.Add((byte)diff, instrumentDifficulty.Notes.Count);
-            diffStarPowerStorage.Add((byte)diff, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
+            if (!track.TryGetDifficulty(diff, out var instrumentDifficulty)) continue;
+            var noteCount = instrumentDifficulty.Notes.Count;
+            if (noteCount == 0) continue;
+            var diffByte = (byte)diff;
+            diffNoteStorage.Add(diffByte, noteCount);
+            diffStarPowerStorage.Add(diffByte, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
           }
           if (diffNoteStorage.Count == 0) continue;
           noteStorage.Add((byte)track.Instrument, diffNoteStorage);
@@ -208,13 +208,13 @@ namespace YARGReplayValidator.Core
           Dictionary<byte, long> diffStarPowerStorage = [];
           foreach (Difficulty diff in Enum.GetValues<Difficulty>())
           {
-            if (!track.TryGetDifficulty(diff, out var instrumentDifficulty) || instrumentDifficulty.Notes.Count == 0)
-            {
-              continue;
-            }
-            // TODO: if Expert+, check if there's the same number of notes as Expert - `continue;` if so (may not be needed)
-            diffNoteStorage.Add((byte)diff, instrumentDifficulty.Notes.Count);
-            diffStarPowerStorage.Add((byte)diff, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
+            if (!track.TryGetDifficulty(diff, out var instrumentDifficulty)) continue;
+            var noteCount = instrumentDifficulty.Notes.Count;
+            if (noteCount == 0) continue;
+            if (diff == Difficulty.ExpertPlus && noteCount == diffNoteStorage[(byte)Difficulty.Expert]) continue; // do not add X+ unless needed
+            var diffByte = (byte)diff;
+            diffNoteStorage.Add(diffByte, noteCount);
+            diffStarPowerStorage.Add(diffByte, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
           }
           if (diffNoteStorage.Count == 0) continue;
           noteStorage.Add((byte)track.Instrument, diffNoteStorage);
@@ -226,12 +226,12 @@ namespace YARGReplayValidator.Core
           Dictionary<byte, long> diffStarPowerStorage = [];
           foreach (Difficulty diff in Enum.GetValues<Difficulty>())
           {
-            if (!track.TryGetDifficulty(diff, out var instrumentDifficulty) || instrumentDifficulty.Notes.Count == 0)
-            {
-              continue;
-            }
-            diffNoteStorage.Add((byte)diff, instrumentDifficulty.Notes.Count);
-            diffStarPowerStorage.Add((byte)diff, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
+            if (!track.TryGetDifficulty(diff, out var instrumentDifficulty)) continue;
+            var noteCount = instrumentDifficulty.Notes.Count;
+            if (noteCount == 0) continue;
+            var diffByte = (byte)diff;
+            diffNoteStorage.Add(diffByte, noteCount);
+            diffStarPowerStorage.Add(diffByte, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
           }
           if (diffNoteStorage.Count == 0) continue;
           noteStorage.Add((byte)track.Instrument, diffNoteStorage);
@@ -255,8 +255,9 @@ namespace YARGReplayValidator.Core
           foreach (Difficulty diff in Enum.GetValues<Difficulty>())
           {
             if (diff == Difficulty.ExpertPlus) continue;
-            diffNoteStorage.Add((byte)diff, phraseCount);
-            diffStarPowerStorage.Add((byte)diff, starPowerCount);
+            var diffByte = (byte)diff;
+            diffNoteStorage.Add(diffByte, phraseCount);
+            diffStarPowerStorage.Add(diffByte, starPowerCount);
           }
           if (diffNoteStorage.Count == 0) continue;
           noteStorage.Add((byte)track.Instrument, diffNoteStorage);
@@ -266,12 +267,12 @@ namespace YARGReplayValidator.Core
         Dictionary<byte, long> diffStarPowerStoragePK = [];
         foreach (Difficulty diff in Enum.GetValues<Difficulty>())
         {
-          if (!chart.ProKeys.TryGetDifficulty(diff, out var instrumentDifficulty) || instrumentDifficulty.Notes.Count == 0)
-          {
-            continue;
-          }
-          diffNoteStoragePK.Add((byte)diff, instrumentDifficulty.Notes.Count);
-          diffStarPowerStoragePK.Add((byte)diff, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
+          if (!chart.ProKeys.TryGetDifficulty(diff, out var instrumentDifficulty)) continue;
+          var noteCount = instrumentDifficulty.Notes.Count;
+          if (noteCount == 0) continue;
+          var diffByte = (byte)diff;
+          diffNoteStoragePK.Add(diffByte, noteCount);
+          diffStarPowerStoragePK.Add(diffByte, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
         }
         if (diffNoteStoragePK.Count > 0)
         {
