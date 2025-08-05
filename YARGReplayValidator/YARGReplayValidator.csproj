@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <Reference Include="YARG.Core">
-      <HintPath>C:\Users\Ruggery\AppData\Local\YARC\YARG Installs\c6b5161b-8aeb-4e22-a5d1-13afd86e060c\installation\YARG_Data\Managed\YARG.Core.dll</HintPath>
+      <HintPath>bin\Debug\net8.0\YARG.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
 

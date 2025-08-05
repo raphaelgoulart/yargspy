@@ -134,7 +134,7 @@ namespace YARGReplayValidator.Core
           if (frame.Profile.IsBot) throw new Exception("Provided REPLAY file can\'t have BOT players.");
         }
         // validate replay
-        var results = ReplayAnalyzer.AnalyzeReplay(chart, replayData);
+        var results = ReplayAnalyzer.AnalyzeReplay(chart!, replayData);
         var bandScore = results.Sum(x => x.ResultStats.TotalScore);
         if (bandScore != replayInfo.BandScore)
         {
@@ -167,9 +167,9 @@ namespace YARGReplayValidator.Core
         Dictionary<byte, Dictionary<byte, long>> noteStorage = [];
         Dictionary<byte, Dictionary<byte, long>> starPowerStorage = [];
         // fetch chart data
-        foreach (var track in chart.FiveFretTracks)
-        { // TODO: refactor content of this foreach to separate method; apply foreach in other types of tracks as well (e.g. SixFretTracks, DrumsTracks etc.)
-          // check track types in https://github.com/YARC-Official/YARG.Core/blob/80e518350cec7928b421d819ef58f89c84c39975/YARG.Core/Chart/SongChart.cs#L30
+        // TODO: lots of repeat code, refactor later
+        foreach (var track in chart!.FiveFretTracks)
+        {
           Dictionary<byte, long> diffNoteStorage = [];
           Dictionary<byte, long> diffStarPowerStorage = [];
           foreach (Difficulty diff in Enum.GetValues<Difficulty>())
@@ -185,13 +185,107 @@ namespace YARGReplayValidator.Core
           noteStorage.Add((byte)track.Instrument, diffNoteStorage);
           starPowerStorage.Add((byte)track.Instrument, diffStarPowerStorage);
         }
+        foreach (var track in chart!.SixFretTracks)
+        {
+          Dictionary<byte, long> diffNoteStorage = [];
+          Dictionary<byte, long> diffStarPowerStorage = [];
+          foreach (Difficulty diff in Enum.GetValues<Difficulty>())
+          {
+            if (!track.TryGetDifficulty(diff, out var instrumentDifficulty) || instrumentDifficulty.Notes.Count == 0)
+            {
+              continue;
+            }
+            diffNoteStorage.Add((byte)diff, instrumentDifficulty.Notes.Count);
+            diffStarPowerStorage.Add((byte)diff, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
+          }
+          if (diffNoteStorage.Count == 0) continue;
+          noteStorage.Add((byte)track.Instrument, diffNoteStorage);
+          starPowerStorage.Add((byte)track.Instrument, diffStarPowerStorage);
+        }
+        foreach (var track in chart!.DrumsTracks)
+        {
+          Dictionary<byte, long> diffNoteStorage = [];
+          Dictionary<byte, long> diffStarPowerStorage = [];
+          foreach (Difficulty diff in Enum.GetValues<Difficulty>())
+          {
+            if (!track.TryGetDifficulty(diff, out var instrumentDifficulty) || instrumentDifficulty.Notes.Count == 0)
+            {
+              continue;
+            }
+            // TODO: if Expert+, check if there's the same number of notes as Expert - `continue;` if so (may not be needed)
+            diffNoteStorage.Add((byte)diff, instrumentDifficulty.Notes.Count);
+            diffStarPowerStorage.Add((byte)diff, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
+          }
+          if (diffNoteStorage.Count == 0) continue;
+          noteStorage.Add((byte)track.Instrument, diffNoteStorage);
+          starPowerStorage.Add((byte)track.Instrument, diffStarPowerStorage);
+        }
+        foreach (var track in chart!.ProGuitarTracks)
+        {
+          Dictionary<byte, long> diffNoteStorage = [];
+          Dictionary<byte, long> diffStarPowerStorage = [];
+          foreach (Difficulty diff in Enum.GetValues<Difficulty>())
+          {
+            if (!track.TryGetDifficulty(diff, out var instrumentDifficulty) || instrumentDifficulty.Notes.Count == 0)
+            {
+              continue;
+            }
+            diffNoteStorage.Add((byte)diff, instrumentDifficulty.Notes.Count);
+            diffStarPowerStorage.Add((byte)diff, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
+          }
+          if (diffNoteStorage.Count == 0) continue;
+          noteStorage.Add((byte)track.Instrument, diffNoteStorage);
+          starPowerStorage.Add((byte)track.Instrument, diffStarPowerStorage);
+        }
+        foreach (var track in chart!.VocalsTracks)
+        {
+          Dictionary<byte, long> diffNoteStorage = [];
+          Dictionary<byte, long> diffStarPowerStorage = [];
+          int phraseCount = 0;
+          int starPowerCount = 0;
+          foreach (var part in track.Parts)
+          {
+            if (part.IsEmpty) continue;
+            phraseCount = part.NotePhrases.Count();
+            starPowerCount = part.OtherPhrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count();
+            // we only need the first non-empty one
+            break;
+          }
+          if (phraseCount == 0) continue;
+          foreach (Difficulty diff in Enum.GetValues<Difficulty>())
+          {
+            if (diff == Difficulty.ExpertPlus) continue;
+            diffNoteStorage.Add((byte)diff, phraseCount);
+            diffStarPowerStorage.Add((byte)diff, starPowerCount);
+          }
+          if (diffNoteStorage.Count == 0) continue;
+          noteStorage.Add((byte)track.Instrument, diffNoteStorage);
+          starPowerStorage.Add((byte)track.Instrument, diffStarPowerStorage);
+        }
+        Dictionary<byte, long> diffNoteStoragePK = [];
+        Dictionary<byte, long> diffStarPowerStoragePK = [];
+        foreach (Difficulty diff in Enum.GetValues<Difficulty>())
+        {
+          if (!chart.ProKeys.TryGetDifficulty(diff, out var instrumentDifficulty) || instrumentDifficulty.Notes.Count == 0)
+          {
+            continue;
+          }
+          diffNoteStoragePK.Add((byte)diff, instrumentDifficulty.Notes.Count);
+          diffStarPowerStoragePK.Add((byte)diff, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
+        }
+        if (diffNoteStoragePK.Count > 0)
+        {
+          noteStorage.Add((byte)chart.ProKeys.Instrument, diffNoteStoragePK);
+          starPowerStorage.Add((byte)chart.ProKeys.Instrument, diffStarPowerStoragePK);
+        }
+        //
         Dictionary<string, object> chartDataStorage = new()
         {
             { "NoteCount", noteStorage },
             { "StarPowerCount", starPowerStorage }
         };
         output.Add("ChartData", chartDataStorage);
-        output.Add("HopoFrequency", parseSettings.Value.HopoThreshold); // needed because DB stores hopo_frequency, but .ini might contain eighthNoteHopo/hopofreq instead
+        output.Add("HopoFrequency", parseSettings!.Value.HopoThreshold); // needed because DB stores hopo_frequency, but .ini might contain eighthNoteHopo/hopofreq instead
       }
       return output;
     }
