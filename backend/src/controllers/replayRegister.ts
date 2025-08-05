@@ -6,7 +6,7 @@ import { serverReply } from '../core.exports'
 import type { FastifyErrorHandlerFn, FastifyFileFieldObject, FastifyHandlerFn } from '../lib.exports'
 import { createReplayRegisterTempPaths, replayRegisterTempFileInputCheck, YARGReplayValidatorAPI } from '../utils.exports'
 import type { UserSchemaDocument } from '../models/User'
-import { Song, type SongSchemaDocument } from '../models/Song'
+import { Song, Instrument, Difficulty, type SongSchemaDocument } from '../models/Song'
 import { Score } from '../models/Score'
 import { readFile } from 'node:fs/promises'
 import { parse } from 'ini'
@@ -126,10 +126,23 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
     const reply = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, songFound, song!, eighthnoteHopo, hopofreq)
 
     if (!songFound) {
-        // Add remaining song info to song object (i.e. hopo_threshold, instruments diffs and notes etc.) then save to DB
-        if (song!.hopo_frequency === undefined && reply["HopoFrequency"] >= 0) song!.hopo_frequency = reply["HopoFrequency"];
-        // TODO: add ChartData values to song.availableInstruments
-        throw new ServerError('ok', song); // Throws a new server error so the server can delete all files (used for debugging)
+      // Add remaining song info to song object (i.e. hopo_threshold, instruments diffs and notes etc.) then save to DB
+      if (song!.hopo_frequency === undefined && reply["HopoFrequency"] >= 0) song!.hopo_frequency = reply["HopoFrequency"];
+      song!.availableInstruments = []
+      Object.keys(reply["ChartData"]["NoteCount"]).forEach(inst => {
+        Object.keys(reply["ChartData"]["NoteCount"][inst]).forEach(diff => {
+          song!.availableInstruments.push(
+            {
+              instrument: Number(inst) as (typeof Instrument)[keyof typeof Instrument],
+              difficulty: Number(diff) as (typeof Difficulty)[keyof typeof Difficulty],
+              notes: reply["ChartData"]["NoteCount"][inst][diff],
+              starPowerPhrases: reply["ChartData"]["StarPowerCount"][inst][diff],
+            }
+          )
+        });
+      });
+      // TODO: save Song object after validator is fixed for non-five-fret insturments
+      throw new ServerError('ok', song); // Throws a new server error so the server can delete all files (used for debugging)
     }
 
     throw new ServerError('ok', reply); // Throws a new server error so the server can delete all files (used for debugging)
@@ -164,14 +177,14 @@ async function readMetadataINI(song: SongSchemaDocument, songDataPath: FilePath)
   else if ('frets' in config.song) song.charter = config.song.frets;
   if ('album' in config.song) song.album = config.song.album;
   if ('year' in config.song) song.year = config.song.year.replace(', ', '');
-  if ('pro_drums' in config.song) song.pro_drums = config.song.pro_drums;
-  else if ('pro_drum' in config.song) song.pro_drums = config.song.pro_drum;
-  if ('five_lane_drums' in config.song) song.five_lane_drums = config.song.five_lane_drums;
+  if ('pro_drums' in config.song) song.pro_drums = getBooleanINI(config.song.pro_drums);
+  else if ('pro_drum' in config.song) song.pro_drums = getBooleanINI(config.song.pro_drum);
+  if ('five_lane_drums' in config.song) song.five_lane_drums = getBooleanINI(config.song.five_lane_drums);
   if ('sustain_cutoff_threshold' in config.song) song.sustain_cutoff_threshold = config.song.sustain_cutoff_threshold;
   if ('multiplier_note' in config.song) song.multiplier_note = config.song.multiplier_note;
   else if ('star_power_note' in config.song) song.multiplier_note = config.song.star_power_note;
   if ('hopo_frequency' in config.song) song.hopo_frequency = config.song.hopo_frequency;
-  else if ('eighthnote_hopo' in config.song) eighthnoteHopo = config.song.eighthnote_hopo;
+  else if ('eighthnote_hopo' in config.song) eighthnoteHopo = getBooleanINI(config.song.eighthnote_hopo);
   else if ('hopofreq' in config.song) hopofreq = config.song.hopofreq;
 
   return { song, eighthnoteHopo, hopofreq }
@@ -180,6 +193,12 @@ async function readMetadataINI(song: SongSchemaDocument, songDataPath: FilePath)
 async function readMetadataDTA(song: SongSchemaDocument, songDataPath: FilePath): Promise<{ song: SongSchemaDocument; eighthnoteHopo?: Boolean; hopofreq?: Number }> {
   // TODO: fill values based on DTA - eighthnoteHopo and hopofreq will ALWAYS be undefined as they're .ini only
   return { song }
+}
+
+function getBooleanINI(value: any): boolean {
+  // TODO: CONSIDER REPLACING INI LIBRARY INSTEAD OF USING THIS FUNCTION
+  if (typeof value == "string" && value.toLowerCase().trim() == "false") return false;
+  return Boolean(value);
 }
 
 

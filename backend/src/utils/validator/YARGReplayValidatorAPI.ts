@@ -63,12 +63,12 @@ export class YARGReplayValidatorAPI {
     let command = `"./${validatorPath.fullname}" "${replayFile.path}" "${songFile.path}" -m ${readMode}`
     // Input parameters from Song
     if (song.isRb3con) command += " -c true";
-    if (song.pro_drums !== undefined) command += " -p " + song.pro_drums ? "true" : "false"
-    if (song.five_lane_drums !== undefined) command += " -g " + song.five_lane_drums ? "true" : "false"
+    if (song.pro_drums !== undefined) command += " -p " + (song.pro_drums ? "true" : "false")
+    if (song.five_lane_drums !== undefined) command += " -g " + (song.five_lane_drums ? "true" : "false")
     if (song.sustain_cutoff_threshold !== undefined) command += " -s " + song.sustain_cutoff_threshold.toString();
     if (song.multiplier_note !== undefined) command += " -n " + song.multiplier_note.toString();
     // Other input params
-    if (eighthnoteHopo !== undefined) command += " -e " + eighthnoteHopo ? "true" : "false";
+    if (eighthnoteHopo !== undefined) command += " -e " + (eighthnoteHopo ? "true" : "false");
     if (hopofreq !== undefined) command += " -f " + hopofreq.toString();
     // TODO: test params
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })

@@ -64,6 +64,7 @@ export interface SongSchemaInput {
     instrument: (typeof Instrument)[keyof typeof Instrument]
     difficulty: (typeof Difficulty)[keyof typeof Difficulty]
     notes: number
+    starPowerPhrases: number
   }[]
 }
 // Methods here
