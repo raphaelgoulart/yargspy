@@ -45,6 +45,10 @@ export const GameMode = {
   // Dj = 20,
 } as const
 
+export const GameVersion = {
+    v0_12_6_nightly: 0
+}
+
 //#region Types
 
 export interface ScoreSchemaInput {
@@ -53,7 +57,7 @@ export interface ScoreSchemaInput {
   filePath: string
   checksum: string
   childrenScores: { score: Schema.Types.ObjectId }[]
-  version: string
+  version: (typeof GameVersion)[keyof typeof GameVersion]
   hidden: boolean
   gamemode: (typeof GameMode)[keyof typeof GameMode]
   instrument: (typeof Instrument)[keyof typeof Instrument]
@@ -123,8 +127,9 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>({
   ],
   version: {
     // which version of the game was used to parse this replay?
-    type: String,
+    type: Number,
     required: true,
+    enum: Object.values(GameVersion),
   },
   hidden: {
     // cheated/bugged scores or banned users
