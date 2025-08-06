@@ -1,5 +1,6 @@
-import { createHash, pathLikeToFilePath, type FilePathLikeTypes } from 'node-lib'
+import { createHashFromBuffer, pathLikeToFilePath, type AllHashAlgorithms, type FilePathLikeTypes } from 'node-lib'
 import { createDTA, depackDTAContents, detectDTABufferEncoding, genNumericSongID, genTracksCountArray, isRB3CompatibleDTA, parseDTA, patchDTAEncodingFromDTAFileObject, sortDTA, stringifyDTA, type PartialDTAFile, type RB3CompatibleDTAFile, type SongDataCreationObject, type SongDataStringifyOptions, type SongSortingTypes } from './core.exports'
+import type { BinaryToTextEncoding } from 'node:crypto'
 
 /**
  * A class with methods related to DTA file parsing.
@@ -42,25 +43,28 @@ export class DTAParser {
    * Returns a SHA256 hash from a DTA file `Buffer`.
    * - - - -
    * @param {Buffer} dtaFileBuffer A `Buffer` object from a DTA file.
+   * @param {AllHashAlgorithms} [algorithm] The hash algorithm to use. Default is `'sha256'`.
+   * @param {BinaryToTextEncoding} [outputEncoding] The output encoding for the hash. Default is `'hex'`.
    * @returns {string}
    */
-  static calculateHashFromBuffer(dtaFileBuffer: Buffer): string {
+  static calculateHashFromBuffer(dtaFileBuffer: Buffer, algorithm: AllHashAlgorithms = 'sha256', outputEncoding: BinaryToTextEncoding = 'hex'): string {
     const parser = DTAParser.fromBuffer(dtaFileBuffer)
     parser.sort('ID')
     const dtaBuffer = Buffer.from(stringifyDTA(parser))
-    return createHash(dtaBuffer)
+    return createHashFromBuffer(dtaBuffer, algorithm, outputEncoding)
   }
 
   /**
    * Asynchronously reads and parses a DTA file and returns a SHA256 hash from it.
    * - - - -
    * @param {FilePathLikeTypes} dtaFilePath The path to a DTA file.
+   * @param {AllHashAlgorithms} [algorithm] The hash algorithm to use. Default is `'sha256'`.
+   * @param {BinaryToTextEncoding} [outputEncoding] The output encoding for the hash. Default is `'hex'`.
    * @returns {Promise<string>}
    */
-  static async calculateHashFromFile(dtaFilePath: FilePathLikeTypes): Promise<string> {
-    const dtaPath = pathLikeToFilePath(dtaFilePath)
-    const dtaBuffer = await dtaPath.read()
-    return DTAParser.calculateHashFromBuffer(dtaBuffer)
+  static async calculateHashFromFile(dtaFilePath: FilePathLikeTypes, algorithm: AllHashAlgorithms = 'sha256', outputEncoding: BinaryToTextEncoding = 'hex'): Promise<string> {
+    const dtaFileBuffer = await pathLikeToFilePath(dtaFilePath).read()
+    return DTAParser.calculateHashFromBuffer(dtaFileBuffer, algorithm, outputEncoding)
   }
 
   /**
@@ -307,13 +311,15 @@ export class DTAParser {
   /**
    * Calculates a SHA256 hash of the songs included on this class instance.
    * - - - -
+   * @param {AllHashAlgorithms} [algorithm] The hash algorithm to use. Default is `'sha256'`.
+   * @param {BinaryToTextEncoding} [outputEncoding] The output encoding for the hash. Default is `'hex'`.
    * @returns {string}
    */
-  calculateHash(): string {
+  calculateHash(algorithm: AllHashAlgorithms = 'sha256', outputEncoding: BinaryToTextEncoding = 'hex'): string {
     const parser = new DTAParser([...this.songs, ...this.updates])
     parser.sort('ID')
-    const dtaBuffer = Buffer.from(stringifyDTA(parser))
-    return createHash(dtaBuffer)
+    const dtaFileBuffer = Buffer.from(stringifyDTA(parser))
+    return createHashFromBuffer(dtaFileBuffer, algorithm, outputEncoding)
   }
 
   async export(destPath: FilePathLikeTypes, options?: SongDataStringifyOptions) {
