@@ -52,11 +52,11 @@ export interface SongSchemaInput {
   charter?: string
   album?: string
   year?: string
-  pro_drums?: boolean
-  five_lane_drums?: boolean
-  sustain_cutoff_threshold?: number
-  hopo_frequency?: number
-  multiplier_note?: number
+  proDrums?: boolean
+  fiveLaneDrums?: boolean
+  sustainCutoffThreshold?: number
+  hopoFrequency?: number
+  multiplierNote?: number
   hash: string
   isChart: boolean
   isRb3con: boolean
@@ -86,17 +86,17 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
     album: { type: String },
     year: { type: String },
     // chart-affecting metadata
-    pro_drums: {
+    proDrums: {
       //pro_drums //pro_drum
       type: Boolean,
     },
-    five_lane_drums: { type: Boolean },
-    sustain_cutoff_threshold: { type: Number },
-    hopo_frequency: {
+    fiveLaneDrums: { type: Boolean },
+    sustainCutoffThreshold: { type: Number },
+    hopoFrequency: {
       //hopo_frequency //hopofreq //eighthnote_hopo
       type: Number,
     },
-    multiplier_note: {
+    multiplierNote: {
       //multiplier_note //star_power_note
       type: Number,
     },

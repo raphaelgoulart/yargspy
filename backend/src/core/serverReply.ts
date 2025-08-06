@@ -1,5 +1,6 @@
 import type { FastifyReply } from 'fastify'
 import type { LiteralUnion } from 'type-fest'
+import 'dotenv/config'
 
 // #region Enums
 
@@ -120,7 +121,7 @@ export const codeMap = {
   success_user_profile: [200, 'Profile data from user {{username}} has been retrieved successfully'],
 
   // replay/register
-  err_replay_nofileuploaded: [400, 'No YARG REPLAY file provided on the request body to register'],
+  err_replay_nofileuploaded: [400, 'No YARG REPLAY file provided on the request form data to register'],
   err_replay_invalid_replay_magic: [400, 'Provided YARG REPLAY file is invalid'],
   err_replay_invalid_midi_magic: [400, 'Provided MIDI file is invalid'],
   err_replay_invalid_chart_magic: [400, 'Provided CHART file is invalid'],
@@ -128,6 +129,7 @@ export const codeMap = {
   err_replay_invalid_chart: [406, "The provided CHART/MIDI file can't validate the provided YARG REPLAY file"],
   err_replay_songhash_nomatch: [406, 'The provided CHART/MIDI file is not the same CHART/MIDI file used to play the song from the provided YARG REPLAY file'],
   err_replay_register_no_reqtype: [400, 'No request type provided as value on the REPLAY register Form data'],
+  err_replay_duplicated_score: [409, 'The provided YARG REPLAY has already been registered'],
   success_replay_register: [201, 'Your score was registered successfully'],
 } as const
 
@@ -148,9 +150,27 @@ export type DirectMessage = [HTTPCodes, string]
  * @returns {FastifyReply}
  */
 export const serverReply = (reply: FastifyReply, codeOrMessage: LiteralUnion<ReplyCodeNames, string> | DirectMessage, data?: Record<string, any> | null, messageValues?: Record<string, string>): FastifyReply => {
+  const isExplicitUnknownError = codeOrMessage === 'err_unknown'
+  const mustSendError = isExplicitUnknownError && process.env.DEV?.toLowerCase() === 'true'
   let statusCode: HTTPCodes = 500
   let statusName: HTTPCodeNames = 'Internal Server Error'
-  let message: string = 'An unknown error occurred'
+  let message: string = 'An unknown error occurred, please try again later'
+
+  if (isExplicitUnknownError) {
+    let send = {
+      statusCode,
+      statusName,
+      statusFullName: `${statusCode} ${statusName}`,
+      code: isExplicitUnknownError,
+      message,
+    }
+    if (mustSendError)
+      send = {
+        ...send,
+        ...data,
+      }
+    return reply.status(statusCode).send(send)
+  }
   if (Array.isArray(codeOrMessage)) {
     statusCode = codeOrMessage[0]
     statusName = httpCodes[codeOrMessage[0]]

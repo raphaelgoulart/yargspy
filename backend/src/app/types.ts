@@ -34,9 +34,7 @@ export interface GenericServerUserTokenObject {
 }
 
 // #region YARGReplayValidator
-// This section can be replaced anytime
 
-// ???
 export interface ReplayCountObject {
   [key: '0' | '1' | '2' | '3' | string]: { [key: '0' | '1' | '2' | '3' | '4' | string]: number }
 }

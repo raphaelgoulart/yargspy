@@ -1,15 +1,13 @@
-import { pipeline } from 'node:stream/promises'
 import { TokenError } from 'fast-jwt'
-import type { FilePath } from 'node-lib'
 import { ServerError } from '../app.exports'
 import { serverReply } from '../core.exports'
 import type { FastifyErrorHandlerFn, FastifyFileFieldObject, FastifyHandlerFn } from '../lib.exports'
-import { createReplayRegisterTempPaths, replayRegisterTempFileInputCheck, YARGReplayValidatorAPI } from '../utils.exports'
 import type { UserSchemaDocument } from '../models/User'
-import { Song, Instrument, Difficulty, type SongSchemaDocument } from '../models/Song'
+import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, YARGReplayValidatorAPI } from '../utils.exports'
+import type { FilePath } from 'node-lib'
+import { pipeline } from 'node:stream/promises'
 import { Score } from '../models/Score'
-import { readFile } from 'node:fs/promises'
-import { parse } from 'ini'
+import { Difficulty, Instrument, Song, type SongSchemaDocument } from '../models/Song'
 
 export interface IReplayRegister {
   decorators: { user?: UserSchemaDocument }
@@ -67,32 +65,11 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
 
     if (!reqType) throw new ServerError('err_replay_register_no_reqtype')
 
-    // It must have a file
+    // CHECK: Must have a file in the request
     if (fileFields.size === 0) throw new ServerError('err_replay_nofileuploaded')
 
-    // ...and one of these files must be the replay file
+    // CHECK: One of these files must be the replay file
     if (!fileFields.has('replayFile')) throw new ServerError('err_replay_nofileuploaded')
-
-    // ...and replay must not have been uploaded already
-    const replayHash = await fileFields.get('replayFile')!.filePath.generateHash('sha256')
-    if (await Score.findByHash(replayHash)) throw new ServerError('err_replay_alreadyuploaded') // TODO: NEW ERROR
-
-    // This is for requests that we know it's provided only the REPLAY file by the request itself
-    // Only two pathways:
-    // - 1. The song doesn't exist in the DB, so the server replies the song data is required
-    // - 2. The song exists or the song data have been supplied
-
-    const replayOnly = (reqType === 'replayOnly');
-    await replayRegisterTempFileInputCheck({ replayTemp, chartTemp, dtaTemp, iniTemp, midiTemp }, replayOnly);
-
-    const songHash = await YARGReplayValidatorAPI.returnSongHash(replayTemp);
-    let song = await Song.findByHash(songHash);
-    const songFound = Boolean(song);
-
-    if (replayOnly && !songFound) throw new ServerError('err_replay_songdata_required')
-
-    // Here is when we know all needed files are provided
-    // So we have to do a LOT of checks
 
     const {
       chartFile: { filePath: chartFilePath },
@@ -100,108 +77,80 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
       songDataFile: { filePath: songDataPath },
     } = Object.fromEntries(fileFields.entries()) as IReplayRegisterFileFieldsObject
 
-    let eighthnoteHopo: Boolean | undefined;
-    let hopofreq: Number | undefined;
+    // CHECK: Provided YARG REPLAY file must not have been uploaded already
+    const scoreHash = await replayFilePath.generateHash()
+    if (await Score.findByHash(scoreHash)) throw new ServerError('err_replay_duplicated_score')
 
-    if (!songFound) { // If song isn't in database already...
+    // CHECK: Replay file integrity (magic bytes)
+    await checkReplayFileIntegrity(replayTemp)
+
+    // If there's no entry for the song played on the REPLAY file, throw songdata required error response
+    const songHash = await YARGReplayValidatorAPI.returnSongHash(replayTemp)
+
+    let songEntry = await Song.findByHash(songHash)
+    const isSongEntryFound = Boolean(songEntry)
+    let eighthNoteHopo: boolean | undefined
+    let hopoFreq: number | undefined
+
+    const isReqReplayOnly = reqType === 'replayOnly'
+    if (isReqReplayOnly && !isSongEntryFound) throw new ServerError('err_replay_songdata_required')
+
+    // Here is when we know all needed files are provided
+    // So we have to do a LOT of checks
+
+    // CHECK: Chart files integrity (magic bytes)
+
+    // TODO: Better REPLAY file check (maybe header?)
+    await checkChartFilesIntegrity(chartTemp, midiTemp)
+    // TODO: Since text is very hard to check integrity, maybe trying to parse
+    //       both INI and DTA and reassure these files even
+    //       exists would be a good idea to avoid any malicious file
+    //       being injected in the server
+
+    if (!isSongEntryFound) {
+      // If song isn't in database already...
       // Checks if the REPLAY file song hash matches the provided chart file hash
       const chartFileHash = await chartFilePath.generateHash('sha1')
-
       if (songHash !== chartFileHash) throw new ServerError('err_replay_songhash_nomatch', { songHash, chartFileHash })
-      
-      // Populate song object with ini/dta info (don't save to DB yet)
-      const isChart = chartFilePath.ext == ".chart"
-      song = new Song({
-        hash: songHash,
-        isChart: isChart,
-        isRb3con: !isChart && songDataPath.ext == ".dta"
-      });
-      const readMetadataResult = await readMetadata(song, songDataPath);
-      song = readMetadataResult.song;
-      eighthnoteHopo = readMetadataResult.eighthnoteHopo;
-      hopofreq = readMetadataResult.hopofreq;
+
+      const { eighthNoteHopo: e, hopoFreq: f, ...newSongEntryOptions } = await createSongEntryInput(chartFilePath, chartFileHash, songDataPath)
+      songEntry = new Song(newSongEntryOptions)
     }
 
-    // Validate replay
-    const reply = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, songFound, song!, eighthnoteHopo, hopofreq)
+    // Unreacheable code?
+    if (!songEntry) throw new ServerError('err_unknown')
 
-    if (!songFound) {
+    // Validate REPLAY file
+    const replayInfo = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, isSongEntryFound, songEntry, eighthNoteHopo, hopoFreq)
+
+    if (!isSongEntryFound) {
       // Add remaining song info to song object (i.e. hopo_threshold, instruments diffs and notes etc.) then save to DB
-      if (song!.hopo_frequency === undefined && reply["HopoFrequency"] >= 0) song!.hopo_frequency = reply["HopoFrequency"];
-      song!.availableInstruments = []
-      Object.keys(reply["ChartData"]["NoteCount"]).forEach(inst => {
-        Object.keys(reply["ChartData"]["NoteCount"][inst]).forEach(diff => {
-          song!.availableInstruments.push(
-            {
-              instrument: Number(inst) as (typeof Instrument)[keyof typeof Instrument],
-              difficulty: Number(diff) as (typeof Difficulty)[keyof typeof Difficulty],
-              notes: reply["ChartData"]["NoteCount"][inst][diff],
-              starPowerPhrases: reply["ChartData"]["StarPowerCount"][inst][diff],
-            }
-          )
-        });
-      });
-      // TODO: save Song object after validator is fixed for non-five-fret insturments
-      throw new ServerError('ok', song); // Throws a new server error so the server can delete all files (used for debugging)
-    }
+      const { hopoFrequency } = replayInfo
+      if (songEntry.hopoFrequency === undefined && hopoFrequency >= 0) songEntry.hopoFrequency = hopoFrequency
+      const availableInstruments: SongSchemaDocument['availableInstruments'] = []
 
-    throw new ServerError('ok', reply); // Throws a new server error so the server can delete all files (used for debugging)
-    
-    // TODO:
-    // Create band score
-    // For each player, save instrument score, adding it to band score's `childrenScores` variable
-    // Save band score
+      const noteCountObjKeys = Object.keys(replayInfo.chartData.noteCount)
+      for (const instrumentValue of noteCountObjKeys) {
+        const partDiffObjKeys = Object.keys(replayInfo.chartData.noteCount[instrumentValue])
+
+        for (const partDifficultyValue of partDiffObjKeys) {
+          availableInstruments.push({
+            instrument: Number(instrumentValue) as (typeof Instrument)[keyof typeof Instrument],
+            difficulty: Number(partDifficultyValue) as (typeof Difficulty)[keyof typeof Difficulty],
+            notes: replayInfo.chartData.noteCount[instrumentValue][partDifficultyValue],
+            starPowerPhrases: replayInfo.chartData.starPowerCount[instrumentValue][partDifficultyValue],
+          })
+        }
+      }
+
+      songEntry.availableInstruments = availableInstruments
+    }
+    throw new ServerError('ok', { replayInfo, songEntry: songEntry.toJSON(), hopoFreq, eighthNoteHopo }) // TODO: DEBUG REMOVE LATER
   } catch (err) {
     await deleteAllTempFiles()
     throw err
   }
 }
-
-// #region Metadata read functions
-
-async function readMetadata(song: SongSchemaDocument, songDataPath: FilePath): Promise<{ song: SongSchemaDocument; eighthnoteHopo?: Boolean; hopofreq?: Number }> {
-  if (song.isRb3con) return readMetadataDTA(song, songDataPath);
-  return readMetadataINI(song, songDataPath);
-}
-
-async function readMetadataINI(song: SongSchemaDocument, songDataPath: FilePath): Promise<{ song: SongSchemaDocument; eighthnoteHopo?: Boolean; hopofreq?: Number }> {
-  let eighthnoteHopo: Boolean | undefined;
-  let hopofreq: Number | undefined;
-
-  let text = await songDataPath.read('utf-8');
-  const config = parse(text)
-  const configSong = config.song ? config.song : config.Song; // both cases work
-
-  song.name = configSong.name;
-  song.artist = configSong.artist;
-  if ('charter' in configSong) song.charter = configSong.charter;
-  else if ('frets' in configSong) song.charter = configSong.frets;
-  if ('album' in configSong) song.album = configSong.album;
-  if ('year' in configSong) song.year = configSong.year.replace(', ', '');
-  if ('pro_drums' in configSong) song.pro_drums = getBooleanINI(configSong.pro_drums);
-  else if ('pro_drum' in configSong) song.pro_drums = getBooleanINI(configSong.pro_drum);
-  if ('five_lane_drums' in configSong) song.five_lane_drums = getBooleanINI(configSong.five_lane_drums);
-  if ('sustain_cutoff_threshold' in configSong) song.sustain_cutoff_threshold = configSong.sustain_cutoff_threshold;
-  if ('multiplier_note' in configSong) song.multiplier_note = configSong.multiplier_note;
-  else if ('star_power_note' in configSong) song.multiplier_note = configSong.star_power_note;
-  if ('hopo_frequency' in configSong) song.hopo_frequency = configSong.hopo_frequency;
-  else if ('eighthnote_hopo' in configSong) eighthnoteHopo = getBooleanINI(configSong.eighthnote_hopo);
-  else if ('hopofreq' in configSong) hopofreq = configSong.hopofreq;
-
-  return { song, eighthnoteHopo, hopofreq }
-}
-
-async function readMetadataDTA(song: SongSchemaDocument, songDataPath: FilePath): Promise<{ song: SongSchemaDocument; eighthnoteHopo?: Boolean; hopofreq?: Number }> {
-  // TODO: fill values based on DTA - eighthnoteHopo and hopofreq will ALWAYS be undefined as they're .ini only
-  return { song }
-}
-
-function getBooleanINI(value: any): boolean {
-  // TODO: CONSIDER REPLACING INI LIBRARY INSTEAD OF USING THIS FUNCTION
-  if (typeof value === "string" && value.toLowerCase().trim() == "false") return false;
-  return value;
-}
-
 
 // #region Error Handler
 

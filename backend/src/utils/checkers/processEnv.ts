@@ -10,7 +10,7 @@ export interface EnvironmentCheckerReturnObject {
  * - - - -
  * @returns {EnvironmentCheckerReturnObject}
  */
-export const envCheck = (): EnvironmentCheckerReturnObject => {
+export const checkProcessEnv = (): EnvironmentCheckerReturnObject => {
   const port = Number(process.env.PORT || '5000')
   if (isNaN(port)) throw new TypeError(`Invalid server port number provided as environmente variable.`)
 

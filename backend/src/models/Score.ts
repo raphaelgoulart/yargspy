@@ -46,7 +46,7 @@ export const GameMode = {
 } as const
 
 export const GameVersion = {
-    v0_12_6_nightly: 0
+  v0_12_6_nightly: 0,
 }
 
 //#region Types
@@ -94,159 +94,163 @@ export interface ScoreSchemaModel extends Model<ScoreSchemaDocument> {
 
 //#region Schema
 
-const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>({
-  // system metadata
-  song: {
-    type: Schema.Types.ObjectId,
-    ref: 'Song',
-    required: true,
+const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
+  {
+    // system metadata
+    song: {
+      type: Schema.Types.ObjectId,
+      ref: 'Song',
+      required: true,
+    },
+    uploader: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    filePath: {
+      type: String,
+      required: true,
+    },
+    checksum: {
+      // SHA-1 - while one replay upload can create multiple scores (i.e. band scores), this should be checked on score upload to ensure a replay file is uploaded a single time only
+      type: String,
+      required: true,
+    },
+    childrenScores: [
+      // for band scores
+      {
+        score: {
+          type: Schema.Types.ObjectId,
+          ref: 'Score',
+          required: true,
+        },
+      },
+    ],
+    version: {
+      // which version of the game was used to parse this replay?
+      type: Number,
+      required: true,
+      enum: Object.values(GameVersion),
+    },
+    hidden: {
+      // cheated/bugged scores or banned users
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    // main score metadata
+    gamemode: {
+      type: Number,
+      required: true,
+      enum: Object.values(GameMode),
+    },
+    instrument: {
+      type: Number,
+      required: true,
+      enum: Object.values(Instrument),
+    },
+    difficulty: {
+      // can be null for band scores
+      type: Number,
+      enum: Object.values(Difficulty),
+    },
+    engine: {
+      // (Default / Casual / Precision) can be null for band scores
+      type: Number,
+      enum: Object.values(Engine),
+    },
+    modifiers: [
+      {
+        modifier: {
+          type: Number,
+          required: true,
+          enum: Object.values(Modifier),
+        },
+      },
+    ],
+    songSpeed: {
+      type: Number,
+      required: true,
+    },
+    datetime: {
+      // can be fetched from server (upload time) or replay metadata; i'd rather go with server
+      type: Date,
+      required: true,
+    },
+    profileName: {
+      type: String,
+    },
+    score: {
+      type: Number,
+      required: true,
+    },
+    stars: {
+      type: Number,
+      required: true,
+    },
+    notesHit: {
+      // on vocals these are phrases
+      type: Number,
+      required: true,
+    },
+    maxCombo: {
+      type: Number,
+      required: true,
+    },
+    percent: {
+      // this is needed for vocals since its % is calculated in ticks, and not phrases, but can be null for other instruments
+      type: Number,
+    },
+    // less essential but "fun" score metadata (borrowed from scorespy)
+    starPowerPhrasesHit: {
+      type: Number,
+      required: true,
+    },
+    starPowerActivationCount: {
+      type: Number,
+      required: true,
+    },
+    overhits: {
+      // overstrums for 5-fret, unused in vocals (hence optional)
+      type: Number,
+    },
+    ghostInputs: {
+      // 5-fret only (hence optional)
+      type: Number,
+    },
+    sustainScore: {
+      // 5-fret only (hence optional)
+      type: Number,
+    },
+    averageMultiplier: {
+      type: Number,
+      required: true,
+    },
+    soloBonuses: {
+      type: Number,
+      required: true,
+    },
+    numPauses: {
+      type: Number,
+      required: true,
+    },
+    // the following stats aren't included in replay metadata yet, but might be in the future
+    ghostNotesHit: {
+      // drums only
+      type: Number,
+    },
+    accentNotesHit: {
+      // drums only
+      type: Number,
+    },
   },
-  uploader: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  filePath: {
-    type: String,
-    required: true,
-  },
-  checksum: {
-    // SHA-1 - while one replay upload can create multiple scores (i.e. band scores), this should be checked on score upload to ensure a replay file is uploaded a single time only
-    type: String,
-    required: true,
-  },
-  childrenScores: [
-    // for band scores
-    {
-      score: {
-        type: Schema.Types.ObjectId,
-        ref: 'Score',
-        required: true,
+  {
+    statics: {
+      async findByHash(hash: string) {
+        return await this.findOne({ hash })
       },
     },
-  ],
-  version: {
-    // which version of the game was used to parse this replay?
-    type: Number,
-    required: true,
-    enum: Object.values(GameVersion),
-  },
-  hidden: {
-    // cheated/bugged scores or banned users
-    type: Boolean,
-    default: false,
-    required: true,
-  },
-  // main score metadata
-  gamemode: {
-    type: Number,
-    required: true,
-    enum: Object.values(GameMode),
-  },
-  instrument: {
-    type: Number,
-    required: true,
-    enum: Object.values(Instrument),
-  },
-  difficulty: {
-    // can be null for band scores
-    type: Number,
-    enum: Object.values(Difficulty),
-  },
-  engine: {
-    // (Default / Casual / Precision) can be null for band scores
-    type: Number,
-    enum: Object.values(Engine),
-  },
-  modifiers: [
-    {
-      modifier: {
-        type: Number,
-        required: true,
-        enum: Object.values(Modifier),
-      },
-    },
-  ],
-  songSpeed: {
-    type: Number,
-    required: true,
-  },
-  datetime: {
-    // can be fetched from server (upload time) or replay metadata; i'd rather go with server
-    type: Date,
-    required: true,
-  },
-  profileName: {
-    type: String,
-  },
-  score: {
-    type: Number,
-    required: true,
-  },
-  stars: {
-    type: Number,
-    required: true,
-  },
-  notesHit: {
-    // on vocals these are phrases
-    type: Number,
-    required: true,
-  },
-  maxCombo: {
-    type: Number,
-    required: true,
-  },
-  percent: {
-    // this is needed for vocals since its % is calculated in ticks, and not phrases, but can be null for other instruments
-    type: Number,
-  },
-  // less essential but "fun" score metadata (borrowed from scorespy)
-  starPowerPhrasesHit: {
-    type: Number,
-    required: true,
-  },
-  starPowerActivationCount: {
-    type: Number,
-    required: true,
-  },
-  overhits: {
-    // overstrums for 5-fret, unused in vocals (hence optional)
-    type: Number,
-  },
-  ghostInputs: {
-    // 5-fret only (hence optional)
-    type: Number,
-  },
-  sustainScore: {
-    // 5-fret only (hence optional)
-    type: Number,
-  },
-  averageMultiplier: {
-    type: Number,
-    required: true,
-  },
-  soloBonuses: {
-    type: Number,
-    required: true,
-  },
-  numPauses: {
-    type: Number,
-    required: true,
-  },
-  // the following stats aren't included in replay metadata yet, but might be in the future
-  ghostNotesHit: { // drums only
-      type: Number,
-  },
-  accentNotesHit: { // drums only
-      type: Number,
   }
-},
-{
-  statics: {
-    async findByHash(hash: string) {
-      return await this.findOne({ hash })
-    },
-  },
-})
+)
 
 export const Score = model<ScoreSchemaInput, ScoreSchemaModel>('Score', scoreSchema)
