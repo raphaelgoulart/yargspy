@@ -51,7 +51,7 @@ export class YARGReplayValidatorAPI {
 
     const command = `"./${validatorPath.fullname}" "${replayFile.path}" -m ${this.readMode.returnSongHash}`
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
-    if (stderr) throw new ServerError('err_unknown', { stderr })
+    if (stderr) throw new ServerError('err_unknown', { error: stderr, errorOrigin: 'YARGReplayValidatorAPI.returnSongHash()' })
 
     return this.camelCaseKeyTransform<ValidatorReturnSongHashObject>(JSON.parse(stdout))
   }
@@ -93,7 +93,7 @@ export class YARGReplayValidatorAPI {
     if (hopoFreq !== undefined) command += ` -f ${hopoFreq.toString()}`
 
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
-    if (stderr) throw new ServerError('err_unknown', { stderr })
+    if (stderr) throw new ServerError('err_unknown', { error: stderr, errorOrigin: 'YARGReplayValidatorAPI.returnReplayInfo()' })
 
     return this.camelCaseKeyTransform<YARGReplayValidatorResults>(JSON.parse(stdout))
   }

@@ -2,23 +2,26 @@ import type { FilePath } from 'node-lib'
 import type { SongSchemaInput } from '../../models/Song'
 import { DTAParser } from '../../lib.exports'
 import { parse as iniParser } from 'ini'
+import { ServerError } from '../../app.exports'
+
+export type INIBooleanStringValueTypes = 'true' | 'false' | '1' | '0'
 
 export type INISongDataObject = {
-  [key in 'song' | 'Song']: {
+  [key in 'song' | 'Song']?: {
     name: string
     artist: string
     charter?: string
     frets?: string
     album?: string
     year?: string
-    pro_drums?: 'true' | 'false'
-    pro_drum?: 'true' | 'false'
-    five_lane_drums?: 'true' | 'false'
+    pro_drums?: INIBooleanStringValueTypes
+    pro_drum?: INIBooleanStringValueTypes
+    five_lane_drums?: INIBooleanStringValueTypes
     sustain_cutoff_threshold?: string
     multiplier_note?: string
     star_power_note?: string
     hopo_frequency?: string
-    eighthnote_hopo?: 'true' | 'false'
+    eighthnote_hopo?: INIBooleanStringValueTypes
     hopofreq?: string
   }
 }
@@ -28,7 +31,7 @@ export type SongEntryCreatorObject = SongSchemaInput & {
   eighthNoteHopo: boolean
 }
 
-export const evalBooleanString = (text: 'true' | 'false') => (text.toLowerCase().trim() === 'true' ? true : false)
+export const evalBooleanString = (text: INIBooleanStringValueTypes) => (text.toLowerCase().trim() === 'true' || text.toLowerCase().trim() === '1' ? true : false)
 export const evalNumberString = (text: string) => Number(text)
 export const booleanToString = (val: boolean) => (val ? 'true' : 'false')
 
@@ -56,7 +59,9 @@ export const createSongEntryInput = async (chartFilePath: FilePath, chartFileHas
   } else {
     const ini = iniParser(await songDataPath.read('utf8')) as INISongDataObject
 
-    const { artist, name, album, charter, eighthnote_hopo, five_lane_drums, frets, hopo_frequency, hopofreq, multiplier_note, pro_drum, pro_drums, star_power_note, sustain_cutoff_threshold, year } = ini.song ?? ini.Song
+    if (!ini.song && !ini.Song) throw new ServerError('err_unknown', { error: `No Song/song attribute found while trying to parse INI file "${songDataPath.path}"` })
+
+    const { artist, name, album, charter, eighthnote_hopo, five_lane_drums, frets, hopo_frequency, hopofreq, multiplier_note, pro_drum, pro_drums, star_power_note, sustain_cutoff_threshold, year } = ini.song ?? ini.Song!
 
     newSongEntryMap.set('name', name)
     newSongEntryMap.set('artist', artist)

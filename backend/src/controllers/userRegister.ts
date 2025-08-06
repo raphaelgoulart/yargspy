@@ -75,7 +75,7 @@ const userRegisterErrorHandler: FastifyErrorHandlerFn<IUserRegister> = function 
   if (error instanceof ServerError) return serverReply(reply, error.serverErrorCode, error.data, error.messageValues)
 
   // Unknown error
-  return serverReply(reply, 'err_not_implemented', { error: error })
+  return serverReply(reply, 'err_unknown', { error, debug: ServerError.logErrors(error) })
 }
 
 // #region Controller

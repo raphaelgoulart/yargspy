@@ -61,7 +61,7 @@ const userLoginErrorHandler: FastifyErrorHandlerFn<IUserLogin> = function (error
   if (error.code === 'FST_ERR_CTP_EMPTY_JSON_BODY') return serverReply(reply, 'err_empty_json_body')
 
   if (error instanceof ServerError) return serverReply(reply, error.serverErrorCode, error.data, error.messageValues)
-  return serverReply(reply, 'err_not_implemented', { error: error, debug: ServerError.logErrors(error) })
+  return serverReply(reply, 'err_unknown', { error, debug: ServerError.logErrors(error) })
 }
 
 // #region Controller

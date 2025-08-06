@@ -84,7 +84,6 @@ export const codeMap = {
   err_invalid_auth_format: [401, 'Invalid authorization string format found on request headers'],
   err_invalid_auth: [401, 'The provided authorization token is not valid. Please logout this session, validate a new login and try again'],
   err_invalid_input: [401, 'Some request validation method on the server declined your request due to validation errors on fields'],
-  err_not_implemented: [501, 'Not implemented error: {{resolution}}'],
   err_syntax_json_body: [400, 'Response body JSON has a syntax error: {{additionalMessage}}'],
   err_unknown: [500, 'An unknown error occurred, please try again later'],
   ok: [200, 'Request completed by the server'],

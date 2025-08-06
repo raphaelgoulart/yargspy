@@ -118,7 +118,7 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
     }
 
     // Unreacheable code?
-    if (!songEntry) throw new ServerError('err_unknown')
+    if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts', line 121" })
 
     // Validate REPLAY file
     const replayInfo = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, isSongEntryFound, songEntry, eighthNoteHopo, hopoFreq)
@@ -163,7 +163,7 @@ const replayRegisterErrorHandler: FastifyErrorHandlerFn<IReplayRegister> = funct
   if (error instanceof TokenError && error.code === 'FAST_JWT_MALFORMED') return serverReply(reply, 'err_invalid_auth_format', { token: req.headers.authorization })
 
   // Unknown error
-  return serverReply(reply, 'err_not_implemented', { error: error, debug: ServerError.logErrors(error) }, { resolution: error.message })
+  return serverReply(reply, 'err_unknown', { error, debug: ServerError.logErrors(error) })
 }
 
 // #region Controller

@@ -40,7 +40,7 @@ const userProfileErrorHandler: FastifyErrorHandlerFn = function (error, req, rep
   // Incomplete Authorization string on headers (Only sent "Bearer " or "Bearer null", for example).
   if (error instanceof TokenError && error.code === 'FAST_JWT_MALFORMED') return serverReply(reply, 'err_invalid_auth_format', { token: req.headers.authorization })
   // Unknown error
-  return serverReply(reply, 'err_not_implemented', { error: error, debug: ServerError.logErrors(error) })
+  return serverReply(reply, 'err_unknown', { error, debug: ServerError.logErrors(error) })
 }
 
 // #region Controller
