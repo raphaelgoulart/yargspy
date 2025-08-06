@@ -2,15 +2,6 @@ import { type Document, type Model, model, Schema } from 'mongoose'
 
 // #region Enums
 
-export const Difficulty = {
-  Beginner: 0,
-  Easy: 1,
-  Medium: 2,
-  Hard: 3,
-  Expert: 4,
-  ExpertPlus: 5,
-} as const
-
 export const Instrument = {
   // Instruments are reserved in multiples of 10
   // 0-9: 5-fret guitar
@@ -42,6 +33,15 @@ export const Instrument = {
   // DjSingle: 50,
   // DjDouble: 51,
   Band: 255, // byte.MaxValue
+} as const
+
+export const Difficulty = {
+  Beginner: 0,
+  Easy: 1,
+  Medium: 2,
+  Hard: 3,
+  Expert: 4,
+  ExpertPlus: 5,
 } as const
 
 // #region Types

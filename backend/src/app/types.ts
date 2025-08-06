@@ -1,3 +1,5 @@
+import type { Difficulty, Instrument } from '../models/Song'
+
 // #region Server Responses and internal objects
 export interface GenericServerResponseObject {
   /**
@@ -35,8 +37,10 @@ export interface GenericServerUserTokenObject {
 
 // #region YARGReplayValidator
 
-export interface ReplayCountObject {
-  [key: '0' | '1' | '2' | '3' | string]: { [key: '0' | '1' | '2' | '3' | '4' | string]: number }
+export type ReplayCountObject = {
+  [key in (typeof Instrument)[keyof typeof Instrument] as string]: {
+    [key in (typeof Difficulty)[keyof typeof Difficulty] as string]: number
+  }
 }
 
 export interface ReplayChecksumObject {

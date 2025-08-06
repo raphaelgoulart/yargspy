@@ -129,8 +129,8 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
       if (songEntry.hopoFrequency === undefined && hopoFrequency >= 0) songEntry.hopoFrequency = hopoFrequency
       const availableInstruments: SongSchemaDocument['availableInstruments'] = []
 
-      const noteCountObjKeys = Object.keys(replayInfo.chartData.noteCount)
-      for (const instrumentValue of noteCountObjKeys) {
+      const instrObjKeys = Object.keys(replayInfo.chartData.noteCount)
+      for (const instrumentValue of instrObjKeys) {
         const partDiffObjKeys = Object.keys(replayInfo.chartData.noteCount[instrumentValue])
 
         for (const partDifficultyValue of partDiffObjKeys) {
