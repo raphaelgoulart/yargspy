@@ -82,6 +82,7 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
     if (await Score.findByHash(scoreHash)) throw new ServerError('err_replay_duplicated_score')
 
     // CHECK: Replay file integrity (magic bytes)
+    // TODO: Better REPLAY file check (maybe entire header?)
     await checkReplayFileIntegrity(replayTemp)
 
     // If there's no entry for the song played on the REPLAY file, throw songdata required error response
@@ -99,8 +100,6 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
     // So we have to do a LOT of checks
 
     // CHECK: Chart files integrity (magic bytes)
-
-    // TODO: Better REPLAY file check (maybe header?)
     await checkChartFilesIntegrity(chartTemp, midiTemp)
     // TODO: Since text is very hard to check integrity, maybe trying to parse
     //       both INI and DTA and reassure these files even
@@ -145,6 +144,7 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
 
       songEntry.availableInstruments = availableInstruments
     }
+
     throw new ServerError('ok', { replayInfo, songEntry: songEntry.toJSON(), hopoFreq, eighthNoteHopo }) // TODO: DEBUG REMOVE LATER
   } catch (err) {
     await deleteAllTempFiles()

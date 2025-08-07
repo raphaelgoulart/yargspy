@@ -137,7 +137,7 @@ export type HTTPCodes = keyof typeof httpCodes
 export type HTTPCodeNames = (typeof httpCodes)[HTTPCodes]
 export type DirectMessage = [HTTPCodes, string]
 
-// #region Function
+// #region Functions
 
 /**
  * Builds and sends stardardized replies to user's requests throughout the server routes.
@@ -160,7 +160,7 @@ export const serverReply = (reply: FastifyReply, codeOrMessage: LiteralUnion<Rep
       statusCode,
       statusName,
       statusFullName: `${statusCode} ${statusName}`,
-      code: isExplicitUnknownError,
+      code: 'err_unknown',
       message,
     }
     if (mustSendError)

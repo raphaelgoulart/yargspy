@@ -1,9 +1,123 @@
 import { execAsync, pathLikeToFilePath, type BufferEncodingOrNull, type FilePathLikeTypes } from 'node-lib'
-import { ServerError, type YARGReplayValidatorResults } from '../../app.exports'
-import type { SongSchemaDocument } from '../../models/Song'
+import { ServerError } from '../../app.exports'
+import type { Difficulty, Instrument, SongSchemaDocument } from '../../models/Song'
 import { booleanToString, getValidatorPath } from '../../utils.exports'
 
-export interface ValidatorReturnSongHashObject {
+export type ReplayCountObject = {
+  [key in (typeof Instrument)[keyof typeof Instrument] as string]: {
+    [key in (typeof Difficulty)[keyof typeof Difficulty] as string]: number
+  }
+}
+
+export interface ReplayChecksumObject {
+  hashBytes: string
+}
+export interface YARGReplayValidatorResults {
+  replayInfo: {
+    filePath: string
+    replayName: string
+    replayVersion: number
+    engineVersion: number
+    replayChecksum: ReplayChecksumObject
+    songName: string
+    artistName: string
+    charterName: string
+    songSpeed: number
+    bandScore: number
+    bandStars: number
+    replayLength: number
+    date: string
+    songChecksum: ReplayChecksumObject
+    stats: {
+      '0': {
+        totalNotes: number
+        numNotesHit: number
+        percentageHit: number
+        overstrums: number
+        ghostInputs: number
+        soloBonuses: number
+        playerName: string
+        score: number
+        stars: number
+        totalOverdrivePhrases: number
+        numOverdrivePhrasesHit: number
+        numOverdriveActivations: number
+        averageMultiplier: number
+        numPauses: number
+      }
+    }
+  }
+  replayData: {
+    '0': {
+      profile: {
+        id: string
+        name: string
+        isBot: boolean
+        gameMode: number
+        noteSpeed: number
+        highwayLength: number
+        leftyFlip: boolean
+        rangeEnabled: boolean
+        autoConnectOrder: null
+        inputCalibrationMilliseconds: number
+        enginePreset: string
+        themePreset: string
+        colorProfile: string
+        cameraPreset: string
+        highwayPreset: string
+        currentInstrument: number
+        currentDifficulty: number
+        difficultyFallback: number
+        harmonyIndex: number
+        inputCalibrationSeconds: number
+        hasValidInstrument: boolean
+        currentModifiers: number
+      }
+      stats: {
+        overstrums: number
+        hoposStrummed: number
+        ghostInputs: number
+        committedScore: number
+        pendingScore: number
+        noteScore: number
+        sustainScore: number
+        multiplierScore: number
+        combo: number
+        maxCombo: number
+        scoreMultiplier: number
+        notesHit: number
+        totalNotes: number
+        starPowerTickAmount: number
+        totalStarPowerTicks: number
+        totalStarPowerBarsFilled: number
+        starPowerActivationCount: number
+        timeInStarPower: number
+        starPowerWhammyTicks: number
+        isStarPowerActive: boolean
+        starPowerPhrasesHit: number
+        totalStarPowerPhrases: number
+        soloBonuses: number
+        starPowerScore: number
+        stars: number
+        totalScore: number
+        starScore: number
+        comboInBandUnits: number
+        bandComboUnits: number
+        notesMissed: number
+        percent: number
+        starPowerPhrasesMissed: number
+      }
+      engine: number
+    }
+  }
+  chartData: {
+    noteCount: ReplayCountObject
+    starPowerCount: ReplayCountObject
+  }
+  hopoFrequency: number
+}
+
+export interface YARGReplayValidatorHashResults {
   songChecksum: { hashBytes: string }
 }
 
@@ -43,9 +157,9 @@ export class YARGReplayValidatorAPI {
    * This method returns a raw unprocessed JSON object directly from the `YARGReplayValidator` process.
    * - - - -
    * @param {FilePathLikeTypes} replayFilePath The path to the YARG REPLAY file to extract the song's hash.
-   * @returns {Promise<ValidatorReturnSongHashObject>}
+   * @returns {Promise<YARGReplayValidatorHashResults>}
    */
-  static async returnSongHashRaw(replayFilePath: FilePathLikeTypes): Promise<ValidatorReturnSongHashObject> {
+  static async returnSongHashRaw(replayFilePath: FilePathLikeTypes): Promise<YARGReplayValidatorHashResults> {
     const validatorPath = getValidatorPath()
     const replayFile = pathLikeToFilePath(replayFilePath)
 
@@ -53,7 +167,7 @@ export class YARGReplayValidatorAPI {
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
     if (stderr) throw new ServerError('err_unknown', { error: stderr, errorOrigin: 'YARGReplayValidatorAPI.returnSongHash()' })
 
-    return this.camelCaseKeyTransform<ValidatorReturnSongHashObject>(JSON.parse(stdout))
+    return this.camelCaseKeyTransform<YARGReplayValidatorHashResults>(JSON.parse(stdout))
   }
 
   /**
