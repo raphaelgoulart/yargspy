@@ -120,7 +120,7 @@ export const codeMap = {
   success_user_profile: [200, 'Profile data from user {{username}} has been retrieved successfully'],
 
   // replay/register
-  err_replay_nofileuploaded: [400, 'No YARG REPLAY file provided on the request form data to register'],
+  err_replay_no_replay_uploaded: [400, 'No YARG REPLAY file provided on the request form data to register'],
   err_replay_invalid_replay_magic: [400, 'Provided YARG REPLAY file is invalid'],
   err_replay_invalid_midi_magic: [400, 'Provided MIDI file is invalid'],
   err_replay_invalid_chart_magic: [400, 'Provided CHART file is invalid'],

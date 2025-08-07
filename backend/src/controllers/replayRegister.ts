@@ -3,7 +3,7 @@ import { ServerError } from '../app.exports'
 import { serverReply } from '../core.exports'
 import type { FastifyErrorHandlerFn, FastifyFileFieldObject, FastifyHandlerFn } from '../lib.exports'
 import type { UserSchemaDocument } from '../models/User'
-import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getServerPublic, YARGReplayValidatorAPI } from '../utils.exports'
+import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, getServerPublic, YARGReplayValidatorAPI } from '../utils.exports'
 import { FilePath } from 'node-lib'
 import { pipeline } from 'node:stream/promises'
 import { Score } from '../models/Score'
@@ -17,8 +17,10 @@ export interface IReplayRegisterBody {
   reqType?: 'replayOnly' | 'complete'
 }
 
-export type IReplayRegisterFileFieldsObject = {
-  [key in 'replayFile' | 'chartFile' | 'songDataFile']: FastifyFileFieldObject
+export interface IReplayRegisterFileFieldsObject {
+  replayFile: FastifyFileFieldObject
+  chartFile?: FastifyFileFieldObject
+  songDataFile?: FastifyFileFieldObject
 }
 
 // #region Handler
@@ -66,22 +68,23 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
     if (!reqType) throw new ServerError('err_replay_register_no_reqtype')
 
     // CHECK: Must have a file in the request
-    if (fileFields.size === 0) throw new ServerError('err_replay_nofileuploaded')
+    if (fileFields.size === 0) throw new ServerError('err_replay_no_replay_uploaded')
 
     // CHECK: One of these files must be the replay file
-    if (!fileFields.has('replayFile')) throw new ServerError('err_replay_nofileuploaded')
+    if (!fileFields.has('replayFile')) throw new ServerError('err_replay_no_replay_uploaded')
 
     const isReqReplayOnly = reqType === 'replayOnly'
-    
-    const replayFilePath = fileFields.get('replayFile')!.filePath;
-    const songDataPath = isReqReplayOnly ? undefined : fileFields.get('songDataFile')!.filePath;
-    let chartFilePath = isReqReplayOnly ? undefined : fileFields.get('chartFile')!.filePath;
 
-    //const {
-    //  chartFile: { filePath: chartFilePath },
-    //  replayFile: { filePath: replayFilePath },
-    //  songDataFile: { filePath: songDataPath },
-    //} = Object.fromEntries(fileFields.entries()) as IReplayRegisterFileFieldsObject
+    const {
+      replayFile: { filePath: replayFilePath },
+      ...completeFieldsObj
+    } = Object.fromEntries(fileFields.entries()) as unknown as IReplayRegisterFileFieldsObject
+
+    let chartFilePath: FilePath | null = null
+    let songDataPath: FilePath | null = null
+
+    if (completeFieldsObj.chartFile) chartFilePath = completeFieldsObj.chartFile.filePath
+    if (completeFieldsObj.songDataFile) songDataPath = completeFieldsObj.songDataFile.filePath
 
     // CHECK: Provided YARG REPLAY file must not have been uploaded already
     const scoreHash = await replayFilePath.generateHash()
@@ -91,12 +94,11 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
     // TODO: Better REPLAY file check (maybe entire header?)
     await checkReplayFileIntegrity(replayTemp)
 
-    // If there's no entry for the song played on the REPLAY file, throw songdata required error response
     const songHash = await YARGReplayValidatorAPI.returnSongHash(replayTemp)
-
     let songEntry = await Song.findByHash(songHash)
     const isSongEntryFound = Boolean(songEntry)
 
+    // If there's no entry for the song played on the REPLAY file for REPLAY only requests, throw songdata required error response
     if (isReqReplayOnly && !isSongEntryFound) throw new ServerError('err_replay_songdata_required')
 
     let eighthNoteHopo: boolean | undefined
@@ -112,38 +114,32 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
     //       exists would be a good idea to avoid any malicious file
     //       being injected in the server
 
-    const chartFormat = (song: SongSchemaDocument | null): string | undefined => {
-        if (song) return song!.isChart ? ".chart" : ".mid";
-        return undefined;
-    }
-    const chartFileName = (song: SongSchemaDocument | null): string | undefined => {
-        if (song) return song!.hash + chartFormat(song!);
-        return undefined;
-    }
-    const destChartFilePath = (song: SongSchemaDocument | null): FilePath | undefined => {
-        if (song) return getServerPublic().gotoDir('chart').gotoFile(chartFileName(song)!);
-        return undefined;
-    }
-
     if (!isSongEntryFound) {
       // If song isn't in database already...
-      // Checks if the REPLAY file song hash matches the provided chart file hash
-      const chartFileHash = await chartFilePath!.generateHash('sha1')
-      if (songHash !== chartFileHash) throw new ServerError('err_replay_songhash_nomatch', { songHash, chartFileHash })
+      // Narrowing down: For this path, chart and song data are required and must return an error if now provided
+      if (!chartFilePath) throw new ServerError('err_replay_songdata_required')
+      if (!songDataPath) throw new ServerError('err_replay_songdata_required')
 
-      const { eighthNoteHopo: e, hopoFreq: f, ...newSongEntryOptions } = await createSongEntryInput(chartFilePath!, chartFileHash, songDataPath!)
+      // Checks if the REPLAY file song hash matches the provided chart file hash
+      const chartFileHash = await chartFilePath.generateHash('sha1')
+      if (songHash !== chartFileHash) throw new ServerError('err_replay_songhash_nomatch')
+
+      const { eighthNoteHopo: e, hopoFreq: f, ...newSongEntryOptions } = await createSongEntryInput(chartFilePath, chartFileHash, songDataPath)
       songEntry = new Song(newSongEntryOptions)
+      eighthNoteHopo = e
+      hopoFreq = f
     } else {
+      if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts', line 146" })
       // TODO: test
       // TODO: in prod get file from S3 and put in temp folder if using AWS
-      chartFilePath = destChartFilePath(songEntry) // TODO: if DEV only
+      chartFilePath = getChartFilePathFromSongEntry(songEntry) // TODO: if DEV only
     }
 
     // Unreacheable code?
-    if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts', line 121" })
+    if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts', line 153" })
 
     // Validate REPLAY file
-    const replayInfo = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath!, isSongEntryFound, songEntry, eighthNoteHopo, hopoFreq)
+    const replayInfo = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, isSongEntryFound, songEntry, eighthNoteHopo, hopoFreq)
 
     if (!isSongEntryFound) {
       // Add remaining song info to song object (i.e. hopo_threshold, instruments diffs and notes etc.) then save to DB
@@ -167,10 +163,8 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
 
       songEntry.availableInstruments = availableInstruments
       // TODO: on prod, upload to S3 instead of copy
-      await chartFilePath!.copy(destChartFilePath(songEntry)!, true); // TODO: if DEV only
-      await chartFilePath!.delete();
-      await songDataPath!.delete();
-      await songEntry.save();
+      await chartFilePath.rename(getChartFilePathFromSongEntry(songEntry)) // TODO: if DEV only
+      await songEntry.save()
     }
 
     throw new ServerError('ok', { replayInfo, songEntry: songEntry.toJSON(), hopoFreq, eighthNoteHopo }) // TODO: DEBUG REMOVE LATER
