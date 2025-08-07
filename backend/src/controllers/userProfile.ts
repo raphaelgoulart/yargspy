@@ -13,7 +13,9 @@ export interface IUserProfile {
 // #region Handler
 
 const userProfileHandler: FastifyHandlerFn<IUserProfile> = async function (req, reply) {
-  const user = req.user!
+  const user = req.user
+  if (!user) throw new ServerError('err_invalid_auth')
+
   serverReply(
     reply,
     'success_user_profile',

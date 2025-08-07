@@ -5,18 +5,19 @@ import type { FilePath } from 'node-lib'
 export interface FastifyHandlerFnOpts {
   body?: Record<string, any>
   decorators?: Record<string, any>
+  query?: Record<string, any>
 }
 
 export interface FastifyHandlerFn<T extends FastifyHandlerFnOpts = {}> {
-  (this: FastifyInstance, req: FastifyRequest<{ Body: T['body'] }> & T['decorators'], reply: FastifyReply<{ Body: T['body'] }>): any
+  (this: FastifyInstance, req: FastifyRequest<{ Body: T['body']; Querystring: T['query'] }> & T['decorators'], reply: FastifyReply<{ Body: T['body']; Querystring: T['query'] }>): any
 }
 
 export interface FastifyErrorHandlerFn<T extends FastifyHandlerFnOpts = {}> {
-  (this: FastifyInstance, error: FastifyError, req: FastifyRequest<{ Body: T['body'] }> & T['decorators'], reply: FastifyReply<{ Body: T['body'] }>): any
+  (this: FastifyInstance, error: FastifyError, req: FastifyRequest<{ Body: T['body']; Querystring: T['query'] }> & T['decorators'], reply: FastifyReply<{ Body: T['body']; Querystring: T['query'] }>): any
 }
 
 export interface FastifyAuthHandlerFn<T extends FastifyHandlerFnOpts = {}> {
-  (this: FastifyInstance, req: FastifyRequest<{ Body: T['body'] }> & T['decorators'], reply: FastifyReply<{ Body: T['body'] }>, done: (error?: Error) => void): void
+  (this: FastifyInstance, req: FastifyRequest<{ Body: T['body']; Querystring: T['query'] }> & T['decorators'], reply: FastifyReply<{ Body: T['body']; Querystring: T['query'] }>, done: (error?: Error) => void): void
 }
 
 export interface FastifyInstanceWithAuth extends FastifyInstance {

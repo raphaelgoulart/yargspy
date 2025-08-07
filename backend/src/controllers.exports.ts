@@ -1,3 +1,4 @@
+export * from './controllers/publicSong'
 export * from './controllers/replayRegister'
 export * from './controllers/userLogin'
 export * from './controllers/userProfile'

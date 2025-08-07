@@ -88,6 +88,9 @@ export const codeMap = {
   err_unknown: [500, 'An unknown error occurred, please try again later'],
   ok: [200, 'Request completed by the server'],
 
+  // public/song
+  err_song_invalid_query: [400, 'Missing parameters on query: {{params}}'],
+
   // user/register
   err_user_register_duplicated_username_typo: [409, 'Provided username {{username}} is a typo of another registered user'],
   err_user_register_duplicated_username: [409, 'Provided username {{username}} is already being used'],
