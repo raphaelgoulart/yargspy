@@ -163,10 +163,14 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
 
       songEntry.availableInstruments = availableInstruments
 
-      if (isDev()) await songEntry.save()
-      else {
+      if (isDev()) {
+        await chartFilePath.rename(getChartFilePathFromSongEntry(songEntry));
+      } else {
         // TODO: on prod, upload to S3 instead of copy
+        await chartFilePath.delete();
       }
+      await songDataPath!.delete();
+      await songEntry.save()
     }
 
     throw new ServerError('ok', { replayInfo, songEntry: songEntry.toJSON(), hopoFreq, eighthNoteHopo }) // TODO: DEBUG REMOVE LATER
