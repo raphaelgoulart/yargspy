@@ -3,17 +3,22 @@ import fastifyAuth from '@fastify/auth'
 import fastifyCors from '@fastify/cors'
 import fastifyMultipart from '@fastify/multipart'
 import fastifyStatic from '@fastify/static'
-import { checkProcessEnv, getServerRoot } from './utils.exports'
+import { checkProcessEnv, getServerRoot, isDev } from './utils.exports'
 import { fastifyLoggerOptions, mongoDBConnectPlugin } from './app.exports'
 import { initServerRoutes } from './core/initServerRoutes'
 import 'dotenv/config'
 
 const serverStart = async () => {
+  console.log('YARGLB Server v0.0.1\n')
   // Init fastify
   const app = fastify({ logger: fastifyLoggerOptions, disableRequestLogging: true })
 
+  app.log.info('Initializing Server...')
+
   // Check environment variables
   const { port, mongoDBURI } = checkProcessEnv()
+
+  if (isDev()) app.log.warn('Server running in development mode!')
 
   // Connect to MongoDB and add plugins
   await app.register(mongoDBConnectPlugin, { mongoDBURI })
