@@ -1,11 +1,11 @@
-import zod, { ZodError } from 'zod'
+import { ZodError, type infer as ZodInfer } from 'zod'
 import type { UserSchemaDocument } from '../models/User'
-import { ServerError, userLoginBodySchema } from '../app.exports'
+import { ServerError, type userLoginBodySchema } from '../app.exports'
 import { serverReply } from '../core.exports'
 import type { FastifyErrorHandlerFn, FastifyHandlerFn } from '../lib.exports'
 
 export interface IUserLogin {
-  body: zod.infer<typeof userLoginBodySchema>
+  body: ZodInfer<typeof userLoginBodySchema>
   decorators: {
     user?: UserSchemaDocument
   }

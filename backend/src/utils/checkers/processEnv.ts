@@ -1,5 +1,3 @@
-import 'dotenv/config'
-
 export interface EnvironmentCheckerReturnObject {
   port: number
   mongoDBURI: string

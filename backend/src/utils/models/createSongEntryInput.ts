@@ -1,10 +1,9 @@
+import { parse as iniParser } from 'ini'
 import type { FilePath } from 'node-lib'
 import type { SongSchemaInput } from '../../models/Song'
 import { DTAParser } from '../../lib.exports'
-import { parse as iniParser } from 'ini'
 import { ServerError } from '../../app.exports'
-
-export type INIBooleanStringValueTypes = 'true' | 'false' | '1' | '0'
+import { evalBooleanString, type BooleanStringValueTypes } from '../../utils.exports'
 
 export type INISongDataObject = {
   [key in 'song' | 'Song']?: {
@@ -14,14 +13,14 @@ export type INISongDataObject = {
     frets?: string
     album?: string
     year?: string
-    pro_drums?: INIBooleanStringValueTypes
-    pro_drum?: INIBooleanStringValueTypes
-    five_lane_drums?: INIBooleanStringValueTypes
+    pro_drums?: BooleanStringValueTypes
+    pro_drum?: BooleanStringValueTypes
+    five_lane_drums?: BooleanStringValueTypes
     sustain_cutoff_threshold?: string
     multiplier_note?: string
     star_power_note?: string
     hopo_frequency?: string
-    eighthnote_hopo?: INIBooleanStringValueTypes
+    eighthnote_hopo?: BooleanStringValueTypes
     hopofreq?: string
   }
 }
@@ -31,7 +30,6 @@ export type SongEntryCreatorObject = SongSchemaInput & {
   eighthNoteHopo: boolean
 }
 
-export const evalBooleanString = (text: INIBooleanStringValueTypes) => (text.toLowerCase().trim() === 'true' || text.toLowerCase().trim() === '1' ? true : false)
 export const evalNumberString = (text: string) => Number(text)
 export const booleanToString = (val: boolean) => (val ? 'true' : 'false')
 

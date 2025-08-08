@@ -2,7 +2,6 @@ import bcrypt from 'bcryptjs'
 import { type Document, model, type Model, Schema } from 'mongoose'
 import { bearerTokenVerifier, jwtSign, jwtVerify, passwordValidator } from '../utils.exports'
 import { ServerError } from '../app.exports'
-import 'dotenv/config'
 
 export interface UserSchemaInput {
   /**

@@ -1,6 +1,6 @@
 import type { FastifyReply } from 'fastify'
 import type { LiteralUnion } from 'type-fest'
-import 'dotenv/config'
+import { isDev } from '../utils.exports'
 
 // #region Enums
 
@@ -153,7 +153,7 @@ export type DirectMessage = [HTTPCodes, string]
  */
 export const serverReply = (reply: FastifyReply, codeOrMessage: LiteralUnion<ReplyCodeNames, string> | DirectMessage, data?: Record<string, any> | null, messageValues?: Record<string, string>): FastifyReply => {
   const isExplicitUnknownError = codeOrMessage === 'err_unknown'
-  const mustSendError = isExplicitUnknownError && process.env.DEV?.toLowerCase() === 'true'
+  const mustSendError = isExplicitUnknownError && isDev()
   let statusCode: HTTPCodes = 500
   let statusName: HTTPCodeNames = 'Internal Server Error'
   let message: string = 'An unknown error occurred, please try again later'

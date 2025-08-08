@@ -1,4 +1,4 @@
-import zod, { ZodError } from 'zod'
+import { ZodError, type infer as ZodInfer } from 'zod'
 import { serverReply } from '../core.exports'
 import { MongoError } from 'mongodb'
 import { User } from '../models/User'
@@ -6,7 +6,7 @@ import { ServerError, userRegisterBodySchema } from '../app.exports'
 import type { FastifyHandlerFn, FastifyErrorHandlerFn } from '../lib.exports'
 
 export interface IUserRegister {
-  body: zod.infer<typeof userRegisterBodySchema>
+  body: ZodInfer<typeof userRegisterBodySchema>
 }
 
 // #region Handler

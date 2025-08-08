@@ -1,7 +1,7 @@
 import { TokenError } from 'fast-jwt'
 import { ServerError } from '../app.exports'
 import { serverReply } from '../core.exports'
-import type { FastifyErrorHandlerFn, FastifyFileFieldObject, FastifyHandlerFn } from '../lib.exports'
+import type { FastifyErrorHandlerFn, FastifyHandlerFn } from '../lib.exports'
 import type { UserSchemaDocument } from '../models/User'
 import { getServerPublic } from '../utils.exports'
 

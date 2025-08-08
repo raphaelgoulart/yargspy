@@ -1,4 +1,4 @@
-import { publicSongController, userRegisterController } from '../controllers.exports'
+import { publicSongController } from '../controllers.exports'
 import type { FastifyInstanceWithAuth } from '../lib.exports'
 
 export default function PublicRoute(app: FastifyInstanceWithAuth) {

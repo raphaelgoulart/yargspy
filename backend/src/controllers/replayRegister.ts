@@ -3,11 +3,11 @@ import { ServerError } from '../app.exports'
 import { serverReply } from '../core.exports'
 import type { FastifyErrorHandlerFn, FastifyFileFieldObject, FastifyHandlerFn } from '../lib.exports'
 import type { UserSchemaDocument } from '../models/User'
-import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, getServerPublic, YARGReplayValidatorAPI } from '../utils.exports'
-import { FilePath } from 'node-lib'
+import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, isDev, YARGReplayValidatorAPI } from '../utils.exports'
+import type { FilePath } from 'node-lib'
 import { pipeline } from 'node:stream/promises'
 import { Score } from '../models/Score'
-import { Difficulty, Instrument, Song, type SongSchemaDocument } from '../models/Song'
+import { type Difficulty, type Instrument, Song, type SongSchemaDocument } from '../models/Song'
 
 export interface IReplayRegister {
   decorators: { user?: UserSchemaDocument }
@@ -129,14 +129,14 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
       eighthNoteHopo = e
       hopoFreq = f
     } else {
-      if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts', line 146" })
+      if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts', line 132" })
       // TODO: test
       // TODO: in prod get file from S3 and put in temp folder if using AWS
       chartFilePath = getChartFilePathFromSongEntry(songEntry) // TODO: if DEV only
     }
 
-    // Unreacheable code?
-    if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts', line 153" })
+    // Unreacheable code: Either the song entry is found or filled with the provided chart and song metadata files above
+    if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts', line 139" })
 
     // Validate REPLAY file
     const replayInfo = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, isSongEntryFound, songEntry, eighthNoteHopo, hopoFreq)
@@ -162,9 +162,11 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
       }
 
       songEntry.availableInstruments = availableInstruments
-      // TODO: on prod, upload to S3 instead of copy
-      await chartFilePath.rename(getChartFilePathFromSongEntry(songEntry)) // TODO: if DEV only
-      await songEntry.save()
+
+      if (isDev()) await songEntry.save()
+      else {
+        // TODO: on prod, upload to S3 instead of copy
+      }
     }
 
     throw new ServerError('ok', { replayInfo, songEntry: songEntry.toJSON(), hopoFreq, eighthNoteHopo }) // TODO: DEBUG REMOVE LATER

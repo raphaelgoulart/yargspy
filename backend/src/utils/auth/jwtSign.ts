@@ -1,5 +1,4 @@
 import { createSigner, createVerifier } from 'fast-jwt'
-import 'dotenv/config'
 
 /**
  * Returns a function that can sign JsonWebTokens.

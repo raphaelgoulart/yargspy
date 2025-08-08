@@ -1,12 +1,12 @@
 import fastify from 'fastify'
 import fastifyAuth from '@fastify/auth'
+import fastifyCors from '@fastify/cors'
 import fastifyMultipart from '@fastify/multipart'
-import cors from '@fastify/cors'
+import fastifyStatic from '@fastify/static'
 import { checkProcessEnv, getServerRoot } from './utils.exports'
 import { fastifyLoggerOptions, mongoDBConnectPlugin } from './app.exports'
 import { initServerRoutes } from './core/initServerRoutes'
 import 'dotenv/config'
-import fastifyStatic from '@fastify/static'
 
 const serverStart = async () => {
   // Init fastify
@@ -17,7 +17,7 @@ const serverStart = async () => {
 
   // Connect to MongoDB and add plugins
   await app.register(mongoDBConnectPlugin, { mongoDBURI })
-  await app.register(cors)
+  await app.register(fastifyCors)
   await app.register(fastifyAuth)
   await app.register(fastifyMultipart)
   await app.register(fastifyStatic, { root: getServerRoot().gotoDir('public').path, prefix: '/public/' })
