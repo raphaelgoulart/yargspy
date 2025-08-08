@@ -1,7 +1,7 @@
+import type { FastifyInstance } from 'fastify'
 import { publicSongController } from '../controllers.exports'
-import type { FastifyInstanceWithAuth } from '../lib.exports'
 
-export default function PublicRoute(app: FastifyInstanceWithAuth) {
+export default function PublicRoute(app: FastifyInstance) {
   app.route({
     method: ['GET', 'HEAD'],
     url: '/public/song',

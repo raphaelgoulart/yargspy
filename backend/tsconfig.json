@@ -14,7 +14,8 @@
     "sourceMap": true,
     "lib": ["ESNext"],
     "forceConsistentCasingInFileNames": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "types": ["@fastify/auth", "@fastify/cors", "@fastify/multipart", "@fastify/static"]
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"],
   "exclude": ["node_modules"]

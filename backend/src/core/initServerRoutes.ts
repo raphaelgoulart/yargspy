@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify'
-import UserRoute from '../routes/User.route'
-import StatusRoute from '../routes/Status.route'
-import type { FastifyInstanceWithAuth } from '../lib.exports'
 import PublicRoute from '../routes/Public.route'
+import ReplayRoute from '../routes/Replay.route'
+import StatusRoute from '../routes/Status.route'
+import UserRoute from '../routes/User.route'
 
 /**
  * Initialize all server routes.
@@ -10,7 +10,8 @@ import PublicRoute from '../routes/Public.route'
  * @param {FastifyInstance} app The created fastify instance.
  */
 export const initServerRoutes = (app: FastifyInstance) => {
+  PublicRoute(app)
+  ReplayRoute(app)
   StatusRoute(app)
-  UserRoute(app as FastifyInstanceWithAuth)
-  PublicRoute(app as FastifyInstanceWithAuth)
+  UserRoute(app)
 }

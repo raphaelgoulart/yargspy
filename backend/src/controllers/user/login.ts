@@ -1,8 +1,8 @@
 import { ZodError, type infer as ZodInfer } from 'zod'
-import type { UserSchemaDocument } from '../models/User'
-import { ServerError, type userLoginBodySchema } from '../app.exports'
-import { serverReply } from '../core.exports'
-import type { FastifyErrorHandlerFn, FastifyHandlerFn } from '../lib.exports'
+import { type userLoginBodySchema, ServerError } from '../../app.exports'
+import { serverReply } from '../../core.exports'
+import type { ServerHandler, ServerErrorHandler } from '../../lib.exports'
+import type { UserSchemaDocument } from '../../models/User'
 
 export interface IUserLogin {
   body: ZodInfer<typeof userLoginBodySchema>
@@ -13,7 +13,7 @@ export interface IUserLogin {
 
 // #region Handler
 
-const userLoginHandler: FastifyHandlerFn<IUserLogin> = async function (req, reply) {
+const userLoginHandler: ServerHandler<IUserLogin> = async function (req, reply) {
   const user = req.user!
   const token = await user.generateToken()
   serverReply(reply, 'suceess_user_login', { token })
@@ -21,7 +21,7 @@ const userLoginHandler: FastifyHandlerFn<IUserLogin> = async function (req, repl
 
 // #region Error Handler
 
-const userLoginErrorHandler: FastifyErrorHandlerFn<IUserLogin> = function (error, _, reply) {
+const userLoginErrorHandler: ServerErrorHandler<IUserLogin> = function (error, _, reply) {
   if (error instanceof ZodError) {
     const issue = error.issues[0]
     if (issue.code === 'invalid_type') {

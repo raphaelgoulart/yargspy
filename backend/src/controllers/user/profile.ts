@@ -1,8 +1,8 @@
 import { TokenError } from 'fast-jwt'
-import { serverReply } from '../core.exports'
-import { ServerError } from '../app.exports'
-import type { UserSchemaDocument } from '../models/User'
-import type { FastifyErrorHandlerFn, FastifyHandlerFn } from '../lib.exports'
+import { ServerError } from '../../app.exports'
+import { serverReply } from '../../core.exports'
+import type { ServerHandler, ServerErrorHandler } from '../../lib.exports'
+import type { UserSchemaDocument } from '../../models/User'
 
 export interface IUserProfile {
   decorators: {
@@ -12,7 +12,7 @@ export interface IUserProfile {
 
 // #region Handler
 
-const userProfileHandler: FastifyHandlerFn<IUserProfile> = async function (req, reply) {
+const userProfileHandler: ServerHandler<IUserProfile> = async function (req, reply) {
   const user = req.user
   if (!user) throw new ServerError('err_invalid_auth')
 
@@ -35,7 +35,7 @@ const userProfileHandler: FastifyHandlerFn<IUserProfile> = async function (req, 
 
 // #region Error Handler
 
-const userProfileErrorHandler: FastifyErrorHandlerFn = function (error, req, reply) {
+const userProfileErrorHandler: ServerErrorHandler = function (error, req, reply) {
   // Generic ServerError
   if (error instanceof ServerError) return serverReply(reply, error.serverErrorCode, error.data, error.messageValues)
 

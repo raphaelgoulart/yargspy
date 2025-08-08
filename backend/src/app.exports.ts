@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 export * from './app/bodySchemas'
 export * from './app/db'
 export * from './app/error'

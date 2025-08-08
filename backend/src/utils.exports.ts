@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 export * from './utils/auth/bearerTokenVerifier'
 export * from './utils/auth/jwtSign'
 export * from './utils/auth/passwordValidator'

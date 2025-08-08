@@ -1,13 +1,13 @@
-import { TokenError } from 'fast-jwt'
-import { ServerError } from '../app.exports'
-import { serverReply } from '../core.exports'
-import type { FastifyErrorHandlerFn, FastifyFileFieldObject, FastifyHandlerFn } from '../lib.exports'
-import type { UserSchemaDocument } from '../models/User'
-import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, isDev, YARGReplayValidatorAPI } from '../utils.exports'
-import type { FilePath } from 'node-lib'
 import { pipeline } from 'node:stream/promises'
-import { Score } from '../models/Score'
-import { type Difficulty, type Instrument, Song, type SongSchemaDocument } from '../models/Song'
+import { TokenError } from 'fast-jwt'
+import type { FilePath } from 'node-lib'
+import type { ServerErrorHandler, ServerHandler, ServerRequestFileFieldObject } from '../../lib.exports'
+import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, isDev, YARGReplayValidatorAPI } from '../../utils.exports'
+import { ServerError } from '../../app.exports'
+import { serverReply } from '../../core.exports'
+import { Score } from '../../models/Score'
+import { type Difficulty, type Instrument, Song, type SongSchemaDocument } from '../../models/Song'
+import type { UserSchemaDocument } from '../../models/User'
 
 export interface IReplayRegister {
   decorators: { user?: UserSchemaDocument }
@@ -18,19 +18,19 @@ export interface IReplayRegisterBody {
 }
 
 export interface IReplayRegisterFileFieldsObject {
-  replayFile: FastifyFileFieldObject
-  chartFile?: FastifyFileFieldObject
-  songDataFile?: FastifyFileFieldObject
+  replayFile: ServerRequestFileFieldObject
+  chartFile?: ServerRequestFileFieldObject
+  songDataFile?: ServerRequestFileFieldObject
 }
 
 // #region Handler
 
-const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function (req, reply) {
+const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (req, reply) {
   const { chartTemp, dtaTemp, iniTemp, midiTemp, replayTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
 
   try {
     const parts = req.parts({ limits: { parts: 4 } })
-    const fileFields = new Map<string, FastifyFileFieldObject>()
+    const fileFields = new Map<string, ServerRequestFileFieldObject>()
     const bodyMap = new Map<string, any>()
 
     // The file streams must have a handler so the streamed data can reach somewhere,
@@ -178,7 +178,7 @@ const replayRegisterHandler: FastifyHandlerFn<IReplayRegister> = async function 
 
 // #region Error Handler
 
-const replayRegisterErrorHandler: FastifyErrorHandlerFn<IReplayRegister> = function (error, req, reply) {
+const replayRegisterErrorHandler: ServerErrorHandler<IReplayRegister> = function (error, req, reply) {
   req.log.error(error)
   // Generic ServerError
   if (error instanceof ServerError) return serverReply(reply, error.serverErrorCode, error.data, error.messageValues)

@@ -1,21 +1,22 @@
 import { TokenError } from 'fast-jwt'
-import { ServerError } from '../app.exports'
-import { serverReply } from '../core.exports'
-import type { FastifyErrorHandlerFn, FastifyHandlerFn } from '../lib.exports'
-import type { UserSchemaDocument } from '../models/User'
-import { getServerPublic } from '../utils.exports'
+import { ServerError } from '../../app.exports'
+import { serverReply } from '../../core.exports'
+import type { ServerErrorHandler, ServerHandler } from '../../lib.exports'
+import { getServerPublic } from '../../utils.exports'
+import type { UserSchemaDocument } from '../../models/User'
 
 export interface IPublicSong {
   decorators: { user?: UserSchemaDocument }
   query: {
     type?: 'replay' | 'chart'
     id?: string
+    accessKey?: string
   }
 }
 
 // #region Handler
 
-const publicSongHandler: FastifyHandlerFn<IPublicSong> = async function (req, reply) {
+const publicSongHandler: ServerHandler<IPublicSong> = async function (req, reply) {
   const missingQuery: string[] = []
   if (!req.query.id) missingQuery.push('id')
   if (!req.query.type) missingQuery.push('type')
@@ -28,6 +29,8 @@ const publicSongHandler: FastifyHandlerFn<IPublicSong> = async function (req, re
     if (replay.exists) reply.sendFile(replayPath)
     else throw new ServerError([404, `YARG REPLAY file with ID ${id} not found`])
   } else {
+    // CHART/MIDI files requires a special key value to validate the request, the key is assigned in the server .env file
+    if (!req.query.accessKey || !process.env.PUBLIC_CHART_FILE_ACCESS_KEY || req.query.accessKey !== process.env.PUBLIC_CHART_FILE_ACCESS_KEY) throw new ServerError([403, 'Forbidden'])
     const chartPath = `chart/${id}.chart`
     const midiPath = `chart/${id}.mid`
     const chart = getServerPublic().gotoFile(chartPath)
@@ -40,7 +43,7 @@ const publicSongHandler: FastifyHandlerFn<IPublicSong> = async function (req, re
 
 // #region Error Handler
 
-const publicSongErrorHandler: FastifyErrorHandlerFn<IPublicSong> = function (error, req, reply) {
+const publicSongErrorHandler: ServerErrorHandler<IPublicSong> = function (error, req, reply) {
   req.log.error(error)
   // Generic ServerError
   if (error instanceof ServerError) return serverReply(reply, error.serverErrorCode, error.data, error.messageValues)

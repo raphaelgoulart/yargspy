@@ -1,9 +1,9 @@
-import { ZodError, type infer as ZodInfer } from 'zod'
-import { serverReply } from '../core.exports'
 import { MongoError } from 'mongodb'
-import { User } from '../models/User'
-import { ServerError, userRegisterBodySchema } from '../app.exports'
-import type { FastifyHandlerFn, FastifyErrorHandlerFn } from '../lib.exports'
+import { ZodError, type infer as ZodInfer } from 'zod'
+import { ServerError, userRegisterBodySchema } from '../../app.exports'
+import { serverReply } from '../../core.exports'
+import type { ServerHandler, ServerErrorHandler } from '../../lib.exports'
+import { User } from '../../models/User'
 
 export interface IUserRegister {
   body: ZodInfer<typeof userRegisterBodySchema>
@@ -11,7 +11,7 @@ export interface IUserRegister {
 
 // #region Handler
 
-const userRegisterHandler: FastifyHandlerFn<IUserRegister> = async function (req, reply) {
+const userRegisterHandler: ServerHandler<IUserRegister> = async function (req, reply) {
   const body = userRegisterBodySchema.parse(req.body)
   const user = new User(body)
   await user.checkUsernameCaseInsensitive()
@@ -21,7 +21,7 @@ const userRegisterHandler: FastifyHandlerFn<IUserRegister> = async function (req
 
 //#region Error Handler
 
-const userRegisterErrorHandler: FastifyErrorHandlerFn<IUserRegister> = function (error, _, reply) {
+const userRegisterErrorHandler: ServerErrorHandler<IUserRegister> = function (error, _, reply) {
   if (error instanceof ZodError) {
     const issue = error.issues[0]
     if (issue.code === 'invalid_type') {

@@ -1,5 +1,9 @@
-export * from './controllers/publicSong'
-export * from './controllers/replayRegister'
-export * from './controllers/userLogin'
-export * from './controllers/userProfile'
-export * from './controllers/userRegister'
+import 'dotenv/config'
+
+export * from './controllers/public/song'
+
+export * from './controllers/replay/register'
+
+export * from './controllers/user/login'
+export * from './controllers/user/profile'
+export * from './controllers/user/register'
