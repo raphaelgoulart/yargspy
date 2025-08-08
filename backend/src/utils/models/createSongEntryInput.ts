@@ -52,7 +52,7 @@ export const createSongEntryInput = async (chartFilePath: FilePath, chartFileHas
     newSongEntryMap.set('artist', artist)
     if (author) newSongEntryMap.set('charter', author)
     if (album_name) newSongEntryMap.set('album', album_name)
-    newSongEntryMap.set('year', year_released)
+    newSongEntryMap.set('year', year_released.toString())
     newSongEntryMap.set('proDrums', true)
     newSongEntryMap.set('fiveLaneDrums', false)
     newSongEntryMap.set('hopoFrequency', hopo_threshold ?? 170)
@@ -69,8 +69,8 @@ export const createSongEntryInput = async (chartFilePath: FilePath, chartFileHas
     if (charter) newSongEntryMap.set('charter', charter)
     else if (frets) newSongEntryMap.set('charter', frets)
 
-    newSongEntryMap.set('album', album ?? 'N/A')
-    newSongEntryMap.set('year', year)
+    if (album) newSongEntryMap.set('album', album)
+    if (year) newSongEntryMap.set('year', year)
 
     if (pro_drums) newSongEntryMap.set('proDrums', evalBooleanString(pro_drums))
     else if (pro_drum) newSongEntryMap.set('proDrums', evalBooleanString(pro_drum))
