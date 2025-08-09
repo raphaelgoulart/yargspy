@@ -59,29 +59,29 @@ export interface ScoreSchemaInput {
   childrenScores: { score: Schema.Types.ObjectId }[]
   version: (typeof GameVersion)[keyof typeof GameVersion]
   hidden: boolean
-  gamemode: (typeof GameMode)[keyof typeof GameMode]
   instrument: (typeof Instrument)[keyof typeof Instrument]
+  gamemode?: (typeof GameMode)[keyof typeof GameMode]
   difficulty?: number
   engine?: number
   modifiers: { modifier: (typeof Modifier)[keyof typeof Modifier] }[]
   songSpeed: number
   datetime: Date
-  profileName: string
+  profileName?: string
   score: number
   stars: number
-  notesHit: number
-  maxCombo: number
-  percent: number
-  starPowerPhrasesHit: number
-  starPowerActivationCount: number
-  overhits: number
-  ghostInputs: number
-  sustainScore: number
-  averageMultiplier: number
-  soloBonuses: number
-  numPauses: number
-  ghostNotesHit: number
-  accentNotesHit: number
+  notesHit?: number
+  maxCombo?: number
+  percent?: number
+  starPowerPhrasesHit?: number
+  starPowerActivationCount?: number
+  overhits?: number
+  ghostInputs?: number
+  sustainScore?: number
+  averageMultiplier?: number
+  soloBonuses?: number
+  numPauses?: number
+  ghostNotesHit?: number
+  accentNotesHit?: number
 }
 
 // Methods here
@@ -139,18 +139,16 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
       required: true,
     },
     // main score metadata
-    gamemode: {
-      type: Number,
-      required: true,
-      enum: Object.values(GameMode),
-    },
     instrument: {
       type: Number,
-      required: true,
       enum: Object.values(Instrument),
+      required: true
     },
-    difficulty: {
-      // can be null for band scores
+    gamemode: { // can be null for band scores
+      type: Number,
+      enum: Object.values(GameMode),
+    },
+    difficulty: { // can be null for band scores
       type: Number,
       enum: Object.values(Difficulty),
     },
@@ -188,27 +186,23 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
       type: Number,
       required: true,
     },
-    notesHit: {
+    notesHit: { // can be null for band scores
       // on vocals these are phrases
       type: Number,
-      required: true,
     },
-    maxCombo: {
+    maxCombo: { // can be null for band scores
       type: Number,
-      required: true,
     },
     percent: {
       // this is needed for vocals since its % is calculated in ticks, and not phrases, but can be null for other instruments
       type: Number,
     },
     // less essential but "fun" score metadata (borrowed from scorespy)
-    starPowerPhrasesHit: {
+    starPowerPhrasesHit: { // can be null for band scores
       type: Number,
-      required: true,
     },
-    starPowerActivationCount: {
+    starPowerActivationCount: { // can be null for band scores
       type: Number,
-      required: true,
     },
     overhits: {
       // overstrums for 5-fret, unused in vocals (hence optional)
@@ -222,19 +216,15 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
       // 5-fret only (hence optional)
       type: Number,
     },
-    averageMultiplier: {
+    averageMultiplier: { // can be null for band scores
       type: Number,
-      required: true,
     },
-    soloBonuses: {
+    soloBonuses: { // can be null for band scores
       type: Number,
-      required: true,
     },
-    numPauses: {
+    numPauses: { // can be null for band scores
       type: Number,
-      required: true,
     },
-    // the following stats aren't included in replay metadata yet, but might be in the future
     ghostNotesHit: {
       // drums only
       type: Number,
