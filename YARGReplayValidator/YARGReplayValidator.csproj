@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="YARG.Core">
-      <HintPath>bin\Debug\net8.0\YARG.Core.dll</HintPath>
+    <Reference Include="YARG.Core.Package">
+      <HintPath>bin\Debug\net8.0\YARG.Core.Package.dll</HintPath>
     </Reference>
   </ItemGroup>
 

@@ -112,7 +112,7 @@ namespace YARGReplayValidator.Core
 
       if (readMode != ReadMode.MidiOnly)
       {
-        (var result, replayInfo, replayData) = ReplayIO.TryDeserialize(replayFilePath);
+        (var result, replayInfo, replayData) = ReplayIO.TryDeserialize(replayFilePath, new ReplayReadOptions { KeepFrameTimes = false });
 
 
         if (result != ReplayReadResult.Valid)
@@ -134,7 +134,7 @@ namespace YARGReplayValidator.Core
           if (frame.Profile.IsBot) throw new Exception("Provided REPLAY file can\'t have BOT players.");
         }
         // validate replay
-        var results = ReplayAnalyzer.AnalyzeReplay(chart!, replayData);
+        var results = ReplayAnalyzer.AnalyzeReplay(chart!, replayInfo, replayData);
         var bandScore = results.Sum(x => x.ResultStats.TotalScore);
         if (bandScore != replayInfo.BandScore)
         {

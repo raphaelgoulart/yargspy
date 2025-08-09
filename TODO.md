@@ -30,8 +30,8 @@ No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/
     - [ ] Edit user (only user itself and admin)
 - [ ] Score routes;
     - [ ] Upload score (replay file)
-        - [ ] If notes.mid hash isn't found in Songs, the song is auto-created based on uploaded song.ini/notes.mid;
-        - [ ] If there's no uploaded song.ini/notes.mid, but it is needed, return reply prompting user for it.
+        - [x] If notes.mid hash isn't found in Songs, the song is auto-created based on uploaded song.ini/notes.mid;
+        - [x] If there's no uploaded song.ini/notes.mid, but it is needed, return reply prompting user for it.
 - [ ] Admin routes;
     - [ ] Ban user (deactivates the account, hides all their scores) / unban user 
     - [ ] Edit/delete song
