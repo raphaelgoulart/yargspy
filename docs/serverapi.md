@@ -7,7 +7,8 @@
 - [`POST` user/register](#post-userregister)
 - [`POST` user/login](#post-userlogin)
 - [`POST` user/profile](#post-userprofile)
-- [`POST` user/replay/register](#post-userreplayregister)
+- [`POST` user/all](#post-userall)
+- [`POST` replay/register](#post-replayregister)
 
 ## Interfaces
 
@@ -96,7 +97,7 @@ interface IUserRegisterBodySchema {
   - On incomplete requests, response body JSON syntax errors, invalid body inputs.
 - `409 Conflict`
   - When a user tries to register a username that's already registered.
-- `501 Not Implemented`
+- `500 Internal Server Error`
   - On not implemented errors.
 
 ## `POST` user/login
@@ -121,7 +122,7 @@ interface IUserLoginBodySchema {
   - On incomplete requests, response body JSON syntax errors, invalid body inputs, unregistered user.
 - `401 Unauthorized`
   - When the provided user exists but provided password doesn't match, inactive user register.
-- `501 Not Implemented`
+- `500 Internal Server Error`
   - On not implemented errors.
 
 **Response Body**:
@@ -146,25 +147,75 @@ Authorization required with valid user token.
   - On success.
 - `401 Unauthorized`
   - Invalid token (wrong format, expired token), inactive user.
-- `501 Not Implemented`
+- `500 Internal Server Error`
   - On not implemented errors.
 
 **Response Body**:
 
 ```ts
+interface UserSchemaDocument {
+  _id: string;
+  username: string;
+  active: boolean;
+  admin: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 interface IUserProfileResponse extends GenericServerResponseObject {
-  user?: {
-    _id: string;
-    username: string;
-    active: boolean;
-    admin: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-  };
+  user?: UserSchemaDocument;
 }
 ```
 
-## `POST` user/replay/register
+## `POST` user/all
+
+**Description:**  
+Retrieves all user entries from the database.
+
+**Headers:**  
+Authorization required with valid user token.
+
+**Query Strings Values:**
+
+| KEY     | TYPE   | DESCRIPTION                                                                |
+| ------- | ------ | -------------------------------------------------------------------------- |
+| `page`  | number | Specifies the page number of the results to retrieve. Default is `1`.      |
+| `limit` | number | Specifies the maximum number of users to return per page. Default is `15`. |
+
+**Responses**:
+
+- `200 OK`
+  - On success.
+- `401 Unauthorized`
+  - Invalid token (wrong format, expired token), inactive user.
+- `500 Internal Server Error`
+  - On not implemented errors.
+
+**Response Body**:
+
+```ts
+interface UserSchemaDocument {
+  _id: string;
+  username: string;
+  active: boolean;
+  admin: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface IUserProfileResponse extends GenericServerResponseObject {
+  // Information about the user, only is assigned a
+  // value when the server is in development mode
+  user?: UserSchemaDocument;
+  totalEntries: number;
+  totalPages: number;
+  page: number;
+  limit: number;
+  entries: UserSchemaDocument[];
+}
+```
+
+## `POST` replay/register
 
 **Description:**  
 Sends a REPLAY file to the server.
@@ -172,4 +223,25 @@ Sends a REPLAY file to the server.
 **Headers:**  
 Authorization required with valid user token.
 
-IN PROGRESS
+**Form Data Values:**
+
+| KEY          | TYPE                         | DESCRIPTION                                                                                                                                   |
+| ------------ | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| replayFile   | `File`                       | The YARG REPLAY file to be registered                                                                                                         |
+| chartFile    | `File?`                      | `OPTIONAL` The chart file (.chart/.mid) of the REPLAY song to register and validate. _Only required when setting `'complete'` as `reqType`_   |
+| songDataFile | `File?`                      | `OPTIONAL` The song data file (.ini/.dta) of the REPLAY song to register and validate. _Only required when setting `'complete'` as `reqType`_ |
+| reqType      | `'replayOnly' \| 'complete'` | The type of the request.                                                                                                                      |
+
+**Responses**:
+
+- `201 Created`
+  - On success.
+- `400 Bad Request`
+  - Invalid file extension for any file extension accepted, invalid form data keys and values, invalid or missing `reqType` value, no YARG REPLAY value in form data,
+- `409 Conflict`
+  - When a user tries to register a YARG REPLAY Score that's already registered.
+- `422 Unprocessable Entity`
+  - Invalid file signature for any uploaded files, wrong chart file for YARG REPLAY file.
+  - _For `replayOnly` request types:_ Song entry of provided YARG REPLAY file not registered in the database.
+- `500 Internal Server Error`
+  - On not implemented errors.

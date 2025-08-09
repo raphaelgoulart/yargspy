@@ -83,7 +83,7 @@ export const codeMap = {
   err_empty_json_body: [400, "Body cannot be empty when content-type is set to 'application/json'"],
   err_invalid_auth_format: [401, 'Invalid authorization string format found on request headers'],
   err_invalid_auth: [401, 'The provided authorization token is not valid. Please logout this session, validate a new login and try again'],
-  err_invalid_input: [401, 'Some request validation method on the server declined your request due to validation errors on fields'],
+  err_invalid_input: [400, 'Some request validation method on the server declined your request due to validation errors on fields'],
   err_syntax_json_body: [400, 'Response body JSON has a syntax error: {{additionalMessage}}'],
   err_unknown: [500, 'An unknown error occurred, please try again later'],
   ok: [200, 'Request completed by the server'],
@@ -124,15 +124,16 @@ export const codeMap = {
 
   // replay/register
   err_replay_no_replay_uploaded: [400, 'No YARG REPLAY file provided on the request form data to register'],
-  err_replay_invalid_replay_magic: [400, 'Provided YARG REPLAY file is invalid'],
-  err_replay_invalid_midi_magic: [400, 'Provided MIDI file is invalid'],
-  err_replay_invalid_chart_magic: [400, 'Provided CHART file is invalid'],
-  err_replay_songdata_required: [406, 'Song not registered in the server database, the MIDI/CHART file and the song metadata file is required to validate YARG Replay file and register new song'],
-  err_replay_invalid_chart: [406, "The provided CHART/MIDI file can't validate the provided YARG REPLAY file"],
-  err_replay_songhash_nomatch: [406, 'The provided CHART/MIDI file is not the same CHART/MIDI file used to play the song from the provided YARG REPLAY file'],
+  err_replay_invalid_replay_file: [422, 'Provided YARG REPLAY file is invalid'],
+  err_replay_invalid_midi_file: [422, 'Provided MIDI file is invalid'],
+  err_replay_invalid_chart_file: [422, 'Provided CHART file is invalid'],
+  err_replay_songdata_required: [422, 'Song not registered in the server database, the MIDI/CHART file and the song metadata file is required to validate YARG Replay file and register new song'],
+  err_replay_invalid_chart: [422, "The provided CHART/MIDI file can't validate the provided YARG REPLAY file"],
+  err_replay_songhash_nomatch: [422, 'The provided CHART/MIDI file is not the same CHART/MIDI file used to play the song from the provided YARG REPLAY file'],
   err_replay_register_no_reqtype: [400, 'No request type provided as value on the REPLAY register Form data'],
   err_replay_duplicated_score: [409, 'The provided YARG REPLAY has already been registered'],
   success_replay_register: [201, 'Your score was registered successfully'],
+  success_replay_and_song_register: [201, 'Your score and song was registered successfully'],
 } as const
 
 export type ReplyCodeNames = keyof typeof codeMap

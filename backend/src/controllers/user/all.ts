@@ -23,8 +23,9 @@ const userAllEntriesHandler: ServerHandler<IUserAllEntries> = async function (re
   if (!isDev() && !user) throw new ServerError('err_invalid_auth')
 
   const { page, limit } = userAllEntriesQuerystringSchema.parse(req.query)
+  const skip = (page - 1) * limit
 
-  const allUsers = await User.find().skip((page - 1) * limit)
+  const allUsers = await User.find().skip(skip).limit(limit)
   const totalEntries = await User.countDocuments()
   const totalPages = Math.ceil(totalEntries / limit)
 
@@ -43,7 +44,7 @@ const userAllEntriesHandler: ServerHandler<IUserAllEntries> = async function (re
     totalPages,
     page,
     limit,
-    allUsers: allUsers.map((user) => user.toJSON()),
+    entries: allUsers.map((user) => user.toJSON()),
   })
 }
 

@@ -31,7 +31,7 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
   try {
     const parts = req.parts({ limits: { parts: 4 } })
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
-    const bodyMap = new Map<string, any>()
+    const bodyMap = new Map<keyof IReplayRegisterBody, any>()
 
     // The file streams must have a handler so the streamed data can reach somewhere,
     // otherwise the request will freeze here and won't send any response
@@ -67,11 +67,9 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
 
     if (!reqType) throw new ServerError('err_replay_register_no_reqtype')
 
-    // CHECK: Must have a file in the request
-    if (fileFields.size === 0) throw new ServerError('err_replay_no_replay_uploaded')
-
-    // CHECK: One of these files must be the replay file
-    if (!fileFields.has('replayFile')) throw new ServerError('err_replay_no_replay_uploaded')
+    // CHECK: Must have a file in the request and one
+    // of these files must be the replay file
+    if (fileFields.size === 0 || !fileFields.has('replayFile')) throw new ServerError('err_replay_no_replay_uploaded')
 
     const isReqReplayOnly = reqType === 'replayOnly'
 
@@ -100,12 +98,16 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
 
     // If there's no entry for the song played on the REPLAY file for REPLAY only requests, throw songdata required error response
     if (isReqReplayOnly && !isSongEntryFound) throw new ServerError('err_replay_songdata_required')
+    else if (isReqReplayOnly && isSongEntryFound && songEntry) {
+      // TODO: Logic for registering score for song that's already registered
+    }
 
     let eighthNoteHopo: boolean | undefined
     let hopoFreq: number | undefined
 
     // Here is when we know all needed files are provided
-    // So we have to do a LOT of checks
+    // and the request will register both song and score,
+    // so we have to do a LOT of checks!
 
     // CHECK: Chart files integrity (magic bytes)
     await checkChartFilesIntegrity(chartTemp, midiTemp)
@@ -129,14 +131,14 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
       eighthNoteHopo = e
       hopoFreq = f
     } else {
-      if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts', line 132" })
+      if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts'" })
       // TODO: test
       // TODO: in prod get file from S3 and put in temp folder if using AWS
       chartFilePath = getChartFilePathFromSongEntry(songEntry) // TODO: if DEV only
     }
 
     // Unreacheable code: Either the song entry is found or filled with the provided chart and song metadata files above
-    if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts', line 139" })
+    if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts'" })
 
     // Validate REPLAY file
     const replayInfo = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, isSongEntryFound, songEntry, eighthNoteHopo, hopoFreq)
@@ -164,16 +166,15 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
       songEntry.availableInstruments = availableInstruments
 
       if (isDev()) {
-        await chartFilePath.rename(getChartFilePathFromSongEntry(songEntry));
+        await chartFilePath.rename(getChartFilePathFromSongEntry(songEntry))
       } else {
         // TODO: on prod, upload to S3 instead of copy
-        await chartFilePath.delete();
       }
-      await songDataPath!.delete();
+      if (songDataPath) await songDataPath.delete()
       await songEntry.save()
     }
 
-    throw new ServerError('ok', { replayInfo, songEntry: songEntry.toJSON(), hopoFreq, eighthNoteHopo }) // TODO: DEBUG REMOVE LATER
+    throw new ServerError('success_replay_register', { replayInfo, songEntry: songEntry.toJSON(), hopoFreq, eighthNoteHopo }) // TODO: DEBUG REMOVE LATER
   } catch (err) {
     await deleteAllTempFiles()
     throw err
