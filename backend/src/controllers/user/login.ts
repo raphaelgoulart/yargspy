@@ -1,20 +1,19 @@
 import { ZodError, type infer as ZodInfer } from 'zod'
 import { type userLoginBodySchema, ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
-import type { ServerHandler, ServerErrorHandler } from '../../lib.exports'
+import type { ServerHandler, ServerErrorHandler, ServerRequest } from '../../lib.exports'
 import type { UserSchemaDocument } from '../../models/User'
 
 export interface IUserLogin {
   body: ZodInfer<typeof userLoginBodySchema>
-  decorators: {
-    user?: UserSchemaDocument
-  }
 }
+
+type RouteRequest = ServerRequest<IUserLogin> & { user: UserSchemaDocument }
 
 // #region Handler
 
 const userLoginHandler: ServerHandler<IUserLogin> = async function (req, reply) {
-  const user = req.user!
+  const user = (req as RouteRequest).user
   const token = await user.generateToken()
   serverReply(reply, 'suceess_user_login', { token })
 }

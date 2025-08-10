@@ -24,7 +24,13 @@ export interface UserSchemaInput {
    * Tells if the user registered has admin privileges
    */
   admin: boolean
+  /**
+   * Tells when the user was originally created.
+   */
   createdAt: Date
+  /**
+   * Tells where the user entry was last updated.
+   */
   updatedAt: Date
 }
 
@@ -141,9 +147,11 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
 userSchema.index({ username: 1 }, { collation: { locale: 'en', strength: 2 } })
 
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next()
-  const salt = await bcrypt.genSalt(12)
-  this.password = await bcrypt.hash(passwordValidator(this.password), salt)
+  if (this.isModified('password')) {
+    const salt = await bcrypt.genSalt(12)
+    this.password = await bcrypt.hash(passwordValidator(this.password), salt)
+  }
+  this.updatedAt = new Date()
   next()
 })
 

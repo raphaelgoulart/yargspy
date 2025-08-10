@@ -3,14 +3,10 @@ import { TokenError } from 'fast-jwt'
 import { ServerError, userAllEntriesQuerystringSchema } from '../../app.exports'
 import { serverReply } from '../../core.exports'
 import type { ServerHandler, ServerErrorHandler } from '../../lib.exports'
-import { User, type UserSchemaDocument } from '../../models/User'
+import { User } from '../../models/User'
 import { isDev } from '../../utils.exports'
-import { setDefaultOptions } from 'set-default-options'
 
 export interface IUserAllEntries {
-  decorators: {
-    user?: UserSchemaDocument
-  }
   query: {
     [key in keyof ZodInfer<typeof userAllEntriesQuerystringSchema>]: string
   }
@@ -19,9 +15,6 @@ export interface IUserAllEntries {
 // #region Handler
 
 const userAllEntriesHandler: ServerHandler<IUserAllEntries> = async function (req, reply) {
-  const user = req.user
-  if (!isDev() && !user) throw new ServerError('err_invalid_auth')
-
   const { page, limit } = userAllEntriesQuerystringSchema.parse(req.query)
   const skip = (page - 1) * limit
 
@@ -30,21 +23,21 @@ const userAllEntriesHandler: ServerHandler<IUserAllEntries> = async function (re
   const totalPages = Math.ceil(totalEntries / limit)
 
   serverReply(reply, 'ok', {
-    user: user
-      ? {
-          _id: user._id,
-          username: user.username,
-          active: user.active,
-          admin: user.admin,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-        }
-      : undefined,
     totalEntries,
     totalPages,
     page,
     limit,
-    entries: allUsers.map((user) => user.toJSON()),
+    entries: allUsers.map((user) =>
+      isDev()
+        ? user.toJSON()
+        : {
+            // Filter for production env
+            username: user.username,
+            profilePhotoURL: user.profilePhotoURL,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+          }
+    ),
   })
 }
 

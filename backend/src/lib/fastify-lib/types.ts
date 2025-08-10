@@ -12,15 +12,13 @@ export type ServerRequest<T extends ServerHandlerFnOpts = {}> = FastifyRequest<{
   Body: T['body']
   Querystring: T['query']
   Reply: T['reply']
-}> &
-  T['decorators']
+}>
 
 export type ServerReply<T extends ServerHandlerFnOpts = {}> = FastifyReply<{
   Body: T['body']
   Querystring: T['query']
   Reply: T['reply']
-}> &
-  T['decorators']
+}>
 
 export interface ServerHandler<T extends ServerHandlerFnOpts = {}> {
   (this: FastifyInstance, req: ServerRequest<T>, reply: ServerReply<T>): any

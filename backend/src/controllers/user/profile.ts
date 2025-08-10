@@ -1,20 +1,17 @@
 import { TokenError } from 'fast-jwt'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
-import type { ServerHandler, ServerErrorHandler } from '../../lib.exports'
+import type { ServerHandler, ServerErrorHandler, ServerRequest } from '../../lib.exports'
 import type { UserSchemaDocument } from '../../models/User'
 
-export interface IUserProfile {
-  decorators: {
-    user?: UserSchemaDocument
-  }
-}
+export interface IUserProfile {}
+
+type RouteRequest = ServerRequest<IUserProfile> & { user: UserSchemaDocument }
 
 // #region Handler
 
 const userProfileHandler: ServerHandler<IUserProfile> = async function (req, reply) {
-  const user = req.user
-  if (!user) throw new ServerError('err_invalid_auth')
+  const user = (req as RouteRequest).user
 
   serverReply(
     reply,
@@ -35,7 +32,7 @@ const userProfileHandler: ServerHandler<IUserProfile> = async function (req, rep
 
 // #region Error Handler
 
-const userProfileErrorHandler: ServerErrorHandler = function (error, req, reply) {
+const userProfileErrorHandler: ServerErrorHandler<IUserProfile> = function (error, req, reply) {
   // Generic ServerError
   if (error instanceof ServerError) return serverReply(reply, error.serverErrorCode, error.data, error.messageValues)
 

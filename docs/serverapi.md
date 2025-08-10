@@ -7,6 +7,7 @@
 - [`POST` user/register](#post-userregister)
 - [`POST` user/login](#post-userlogin)
 - [`POST` user/profile](#post-userprofile)
+- [`PATCH` user/update](#patch-userupdate)
 - [`POST` user/all](#post-userall)
 - [`POST` replay/register](#post-replayregister)
 
@@ -164,6 +165,22 @@ interface UserSchemaDocument {
 
 interface IUserProfileResponse extends GenericServerResponseObject {
   user?: UserSchemaDocument;
+}
+```
+
+## `PATCH` user/update
+
+**Description:**  
+Edits an user entry from the database. Admin users can also update an user entry from any other user.
+
+**Headers:**  
+Authorization required with valid user token.
+
+**Body Schema:**
+
+```ts
+interface IUserLoginBodySchema {
+  profilePhotoURL?: string;
 }
 ```
 

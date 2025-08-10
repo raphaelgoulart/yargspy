@@ -142,13 +142,15 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
     instrument: {
       type: Number,
       enum: Object.values(Instrument),
-      required: true
+      required: true,
     },
-    gamemode: { // can be null for band scores
+    gamemode: {
+      // can be null for band scores
       type: Number,
       enum: Object.values(GameMode),
     },
-    difficulty: { // can be null for band scores
+    difficulty: {
+      // can be null for band scores
       type: Number,
       enum: Object.values(Difficulty),
     },
@@ -174,7 +176,7 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
       // can be fetched from server (upload time) or replay metadata; i'd rather go with server
       type: Date,
       required: true,
-      default: Date.now
+      default: Date.now(),
     },
     profileName: {
       type: String,
@@ -187,11 +189,13 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
       type: Number,
       required: true,
     },
-    notesHit: { // can be null for band scores
+    notesHit: {
+      // can be null for band scores
       // on vocals these are phrases
       type: Number,
     },
-    maxCombo: { // can be null for band scores
+    maxCombo: {
+      // can be null for band scores
       type: Number,
     },
     percent: {
@@ -199,10 +203,12 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
       type: Number,
     },
     // less essential but "fun" score metadata (borrowed from scorespy)
-    starPowerPhrasesHit: { // can be null for band scores
+    starPowerPhrasesHit: {
+      // can be null for band scores
       type: Number,
     },
-    starPowerActivationCount: { // can be null for band scores
+    starPowerActivationCount: {
+      // can be null for band scores
       type: Number,
     },
     overhits: {
@@ -217,13 +223,16 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
       // 5-fret only (hence optional)
       type: Number,
     },
-    averageMultiplier: { // can be null for band scores
+    averageMultiplier: {
+      // can be null for band scores
       type: Number,
     },
-    soloBonuses: { // can be null for band scores
+    soloBonuses: {
+      // can be null for band scores
       type: Number,
     },
-    numPauses: { // can be null for band scores
+    numPauses: {
+      // can be null for band scores
       type: Number,
     },
     ghostNotesHit: {
