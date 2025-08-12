@@ -222,7 +222,7 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
             gamemode: Number(playerProfile.gameMode) as (typeof GameMode)[keyof typeof GameMode],
             difficulty: Number(playerProfile.currentDifficulty) as (typeof Difficulty)[keyof typeof Difficulty],
             engine: engine,
-            modifiers: parseModifiers(playerProfile.currentModifiers),
+            modifiers: playerProfile.currentModifiers == 0 ? undefined : parseModifiers(playerProfile.currentModifiers),
             profileName: playerProfile.name,
             score: playerData.totalScore,
             stars: playerData.stars,
@@ -271,10 +271,12 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
 
 // #region Helper functions MOVE LATER
 
-function parseModifiers(currentModifiers: number): { modifier: (typeof Modifier)[keyof typeof Modifier] }[] {
-    // TODO: currentModifiers is a byte-based number and we're extracting it into an array of modifiers
-    // Example: AllStrums and NoteShuffle would be 00000100001 = 33
-    throw new ServerError('err_unknown', { error: "Function parseModifiers() not implemented on 'src/controllers/replayRegister.ts'" })
+function parseModifiers(currentModifiers: number): (typeof Modifier)[keyof typeof Modifier][] {
+    let arr: (typeof Modifier)[keyof typeof Modifier][] = [];
+    for (const [modifier, index] of Object.entries(Modifier)) {
+        if ((currentModifiers >> index) % 2) arr.push(index)
+    }
+    return arr;
 }
 
 // #region Error Handler
