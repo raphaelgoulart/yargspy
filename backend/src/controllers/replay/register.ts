@@ -100,9 +100,6 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
 
     // If there's no entry for the song played on the REPLAY file for REPLAY only requests, throw songdata required error response
     if (isReqReplayOnly && !isSongEntryFound) throw new ServerError('err_replay_songdata_required')
-    else if (isReqReplayOnly && isSongEntryFound && songEntry) {
-      // TODO: Logic for registering score for song that's already registered
-    }
 
     let eighthNoteHopo: boolean | undefined
     let hopoFreq: number | undefined
