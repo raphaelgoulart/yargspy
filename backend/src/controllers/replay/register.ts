@@ -258,8 +258,14 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
     }
     // Save band score (if valid)
     if (bandScoreValid) await bandScore.save()
-    // TODO: REPLACE WITH ACTUAL SUCCESS REPLY
-    throw new ServerError('success_replay_register', { replayInfo, songEntry: songEntry.toJSON(), hopoFreq, eighthNoteHopo })
+    // Done! Reply with song ID for front-end redirection
+    serverReply(
+      reply,
+      'success_replay_register',
+      {
+        song: songEntry!.id,
+      }
+    )
   } catch (err) {
     await deleteAllTempFiles()
     throw err
