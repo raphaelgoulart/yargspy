@@ -247,7 +247,7 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
         if (playerData.accentsHit !== undefined) playerScore.accentNotesHit = playerData.accentsHit
 
         await playerScore.save();
-        childrenScores.push(playerScore.id);
+        childrenScores.push({ score: playerScore.id });
         validPlayers++;
     }
     if (validPlayers == 0) throw new ServerError('err_replay_no_valid_players') // TODO: NEW ERROR
@@ -260,7 +260,7 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
       replayFilePath.delete(); // delete local file after uploading to S3
     }
     // Save band score
-    bandScore.save()
+    await bandScore.save()
     // TODO: REPLACE WITH ACTUAL SUCCESS REPLY
     throw new ServerError('success_replay_register', { replayInfo, songEntry: songEntry.toJSON(), hopoFreq, eighthNoteHopo })
   } catch (err) {
@@ -271,10 +271,10 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
 
 // #region Helper functions MOVE LATER
 
-function parseModifiers(currentModifiers: number): (typeof Modifier)[keyof typeof Modifier][] {
-    let arr: (typeof Modifier)[keyof typeof Modifier][] = [];
+function parseModifiers(currentModifiers: number): { modifier: (typeof Modifier)[keyof typeof Modifier] }[] {
+    let arr: { modifier: (typeof Modifier)[keyof typeof Modifier] }[] = [];
     for (const [modifier, index] of Object.entries(Modifier)) {
-        if ((currentModifiers >> index) % 2) arr.push(index)
+        if ((currentModifiers >> index) % 2) arr.push({ modifier: index })
     }
     return arr;
 }
