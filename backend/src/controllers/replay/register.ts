@@ -1,13 +1,15 @@
 import { pipeline } from 'node:stream/promises'
 import { TokenError } from 'fast-jwt'
 import type { FilePath } from 'node-lib'
-import type { ServerErrorHandler, ServerHandler, ServerRequestFileFieldObject } from '../../lib.exports'
-import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, isDev, YARGReplayValidatorAPI } from '../../utils.exports'
+import type { ServerErrorHandler, ServerHandler, ServerRequest, ServerRequestFileFieldObject } from '../../lib.exports'
+import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, getServerPublic, isDev, YARGReplayValidatorAPI } from '../../utils.exports'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
-import { Score } from '../../models/Score'
-import { type Difficulty, type Instrument, Song, type SongSchemaDocument } from '../../models/Song'
+import { GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocument } from '../../models/Score'
+import { type Difficulty, Instrument, Song, type SongSchemaDocument } from '../../models/Song'
 import type { UserSchemaDocument } from '../../models/User'
+
+type RouteRequest = ServerRequest<IReplayRegister> & { user: UserSchemaDocument }
 
 export interface IReplayRegister {
   decorators: { user?: UserSchemaDocument }
@@ -132,7 +134,6 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
       hopoFreq = f
     } else {
       if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts'" })
-      // TODO: test
       // TODO: in prod get file from S3 and put in temp folder if using AWS
       chartFilePath = getChartFilePathFromSongEntry(songEntry) // TODO: if DEV only
     }
@@ -142,6 +143,8 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
 
     // Validate REPLAY file
     const replayInfo = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, isSongEntryFound, songEntry, eighthNoteHopo, hopoFreq)
+
+    if (replayInfo.replayInfo.bandScore == 0) throw new ServerError('err_replay_no_notes_hit') // TODO: NEW ERROR
 
     if (!isSongEntryFound) {
       // Add remaining song info to song object (i.e. hopo_threshold, instruments diffs and notes etc.) then save to DB
@@ -169,16 +172,109 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
         await chartFilePath.rename(getChartFilePathFromSongEntry(songEntry))
       } else {
         // TODO: on prod, upload to S3 instead of copy
+        chartFilePath.delete(); // delete local file after uploading to S3
       }
       if (songDataPath) await songDataPath.delete()
       await songEntry.save()
     }
 
-    throw new ServerError('success_replay_register', { replayInfo, songEntry: songEntry.toJSON(), hopoFreq, eighthNoteHopo }) // TODO: DEBUG REMOVE LATER
+    const replayFileName = replayFilePath.name
+    const currentGameVersion = GameVersion.v0_13; // hardcoded: change on each stable update
+    const user = (req as RouteRequest).user
+    // Create band score (don't save yet)
+    const bandScore = new Score({
+        song: songEntry.id,
+        uploader: user.id,
+        filePath: replayFileName,
+        checksum: scoreHash,
+        version: currentGameVersion,
+        songSpeed: replayInfo.replayInfo.songSpeed,
+        instrument: Instrument.Band,
+        score: replayInfo.replayInfo.bandScore,
+        stars: replayInfo.replayInfo.bandStars
+    })
+    let bandScoreValid = true;
+    let validPlayers = 0;
+    // Create player scores for each player (save)
+    const childrenScores: ScoreSchemaDocument['childrenScores'] = []
+    const replayDataKeys = Object.keys(replayInfo.replayData)
+    for (const playerNumber in replayDataKeys) {
+        const playerData = replayInfo.replayData[playerNumber].stats;
+        if (playerData.totalScore == 0) continue; // don't save "non-players"
+        const engine = replayInfo.replayData[playerNumber].engine;
+        if (engine == -1) {
+            // TODO: can we return additional info warning that some players were ignored due to custom engines being unsupported?
+            bandScoreValid = false;
+            continue;
+        }
+        const playerStats = replayInfo.replayInfo.stats[playerNumber];
+        const playerProfile = replayInfo.replayData[playerNumber].profile;
+        
+        const playerInstrument = Number(playerProfile.currentInstrument) as (typeof Instrument)[keyof typeof Instrument]
+        const playerScore = new Score({
+            song: songEntry.id,
+            uploader: user.id,
+            filePath: replayFileName,
+            checksum: scoreHash,
+            version: currentGameVersion,
+            songSpeed: replayInfo.replayInfo.songSpeed,
+            instrument: playerInstrument,
+            gamemode: Number(playerProfile.gameMode) as (typeof GameMode)[keyof typeof GameMode],
+            difficulty: Number(playerProfile.currentDifficulty) as (typeof Difficulty)[keyof typeof Difficulty],
+            engine: engine,
+            modifiers: parseModifiers(playerProfile.currentModifiers),
+            profileName: playerProfile.name,
+            score: playerData.totalScore,
+            stars: playerData.stars,
+            notesHit: playerData.notesHit,
+            maxCombo: playerData.maxCombo,
+            starPowerPhrasesHit: playerData.starPowerPhrasesHit,
+            starPowerActivationCount: playerData.starPowerActivationCount,
+            averageMultiplier: playerStats.averageMultiplier,
+            soloBonuses: playerData.soloBonuses,
+            numPauses: playerStats.numPauses,
+        })
+        // Only store percent if vocals
+        if (playerInstrument in [Instrument.Vocals, Instrument.Harmony]) playerScore.percent = playerData.percent
+        // Overstrum if 5/6-fret, overhit if drums/keys, neither if vocals
+        if (playerData.overstrums !== undefined) playerScore.overhits = playerData.overstrums
+        else if (playerData.overhits !== undefined) playerScore.overhits = playerData.overhits
+        // These two values are 5/6-fret only
+        if (playerData.ghostInputs !== undefined) playerScore.ghostInputs = playerData.ghostInputs
+        if (playerData.sustainScore !== undefined) playerScore.sustainScore = playerData.sustainScore
+        // These values are drums only
+        if (playerData.ghostsHit !== undefined) playerScore.ghostNotesHit = playerData.ghostsHit
+        if (playerData.accentsHit !== undefined) playerScore.accentNotesHit = playerData.accentsHit
+
+        await playerScore.save();
+        childrenScores.push(playerScore.id);
+        validPlayers++;
+    }
+    if (validPlayers == 0) throw new ServerError('err_replay_no_valid_players') // TODO: NEW ERROR
+    bandScore.childrenScores = childrenScores
+    // Move replay file
+    if (isDev()) {
+      await replayFilePath.rename(getServerPublic().gotoFile(`replay/${replayFileName}${replayFilePath.ext}`))
+    } else {
+      // TODO: on prod, upload to S3 instead of copy
+      replayFilePath.delete(); // delete local file after uploading to S3
+    }
+    // Save band score
+    bandScore.save()
+    // TODO: REPLACE WITH ACTUAL SUCCESS REPLY
+    throw new ServerError('success_replay_register', { replayInfo, songEntry: songEntry.toJSON(), hopoFreq, eighthNoteHopo })
   } catch (err) {
     await deleteAllTempFiles()
     throw err
   }
+}
+
+// #region Helper functions MOVE LATER
+
+function parseModifiers(currentModifiers: number): { modifier: (typeof Modifier)[keyof typeof Modifier] }[] {
+    // TODO: currentModifiers is a byte-based number and we're extracting it into an array of modifiers
+    // Example: AllStrums and NoteShuffle would be 00000100001 = 33
+    throw new ServerError('err_unknown', { error: "Function parseModifiers() not implemented on 'src/controllers/replayRegister.ts'" })
 }
 
 // #region Error Handler

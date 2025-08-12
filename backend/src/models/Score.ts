@@ -46,7 +46,7 @@ export const GameMode = {
 } as const
 
 export const GameVersion = {
-  v0_12_6_nightly: 0,
+  v0_13: 0,
 }
 
 //#region Types
@@ -61,8 +61,8 @@ export interface ScoreSchemaInput {
   hidden: boolean
   instrument: (typeof Instrument)[keyof typeof Instrument]
   gamemode?: (typeof GameMode)[keyof typeof GameMode]
-  difficulty?: number
-  engine?: number
+  difficulty?: (typeof Difficulty)[keyof typeof Difficulty]
+  engine?: (typeof Engine)[keyof typeof Engine]
   modifiers: { modifier: (typeof Modifier)[keyof typeof Modifier] }[]
   songSpeed: number
   datetime: Date

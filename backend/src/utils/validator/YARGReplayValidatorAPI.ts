@@ -28,12 +28,13 @@ export interface YARGReplayValidatorResults {
     replayLength: number
     date: string
     songChecksum: ReplayChecksumObject
-    stats: {
-      '0': {
+    stats: [
+      {
         totalNotes: number
         numNotesHit: number
         percentageHit: number
         overstrums: number
+        overhits: number
         ghostInputs: number
         soloBonuses: number
         playerName: string
@@ -45,10 +46,10 @@ export interface YARGReplayValidatorResults {
         averageMultiplier: number
         numPauses: number
       }
-    }
+    ]
   }
-  replayData: {
-    '0': {
+  replayData: [
+    {
       profile: {
         id: string
         name: string
@@ -75,6 +76,7 @@ export interface YARGReplayValidatorResults {
       }
       stats: {
         overstrums: number
+        overhits: number
         hoposStrummed: number
         ghostInputs: number
         committedScore: number
@@ -106,10 +108,12 @@ export interface YARGReplayValidatorResults {
         notesMissed: number
         percent: number
         starPowerPhrasesMissed: number
+        ghostsHit: number
+        accentsHit: number
       }
       engine: number
     }
-  }
+  ]
   chartData: {
     noteCount: ReplayCountObject
     starPowerCount: ReplayCountObject
