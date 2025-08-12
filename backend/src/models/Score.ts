@@ -119,6 +119,7 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
     childrenScores: [
       // for band scores
       {
+        _id: false,
         score: {
           type: Schema.Types.ObjectId,
           ref: 'Score',
@@ -161,6 +162,7 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
     },
     modifiers: [
       {
+        _id: false,
         modifier: {
           type: Number,
           required: true,
@@ -247,7 +249,7 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
   {
     statics: {
       async findByHash(hash: string) {
-        return await this.findOne({ hash })
+        return await this.findOne({ checksum: hash })
       },
     },
   }

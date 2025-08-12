@@ -259,8 +259,8 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
       // TODO: on prod, upload to S3 instead of copy
       replayFilePath.delete(); // delete local file after uploading to S3
     }
-    // Save band score
-    await bandScore.save()
+    // Save band score (if valid)
+    if (bandScoreValid) await bandScore.save()
     // TODO: REPLACE WITH ACTUAL SUCCESS REPLY
     throw new ServerError('success_replay_register', { replayInfo, songEntry: songEntry.toJSON(), hopoFreq, eighthNoteHopo })
   } catch (err) {

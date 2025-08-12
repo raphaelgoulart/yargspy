@@ -108,6 +108,7 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
     // should probably fetch these using YARG.Core for consistency with the actual game
     availableInstruments: [
       {
+        _id: false,
         instrument: {
           type: Number,
           required: true,
@@ -132,7 +133,7 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
   {
     statics: {
       async findByHash(hash: string) {
-        return await this.findOne({ hash })
+        return await this.findOne({ hash: hash })
       },
     },
   }
