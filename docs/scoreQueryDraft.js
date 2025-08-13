@@ -5,14 +5,14 @@
 // Each leaderboard pertains to a song
 const songId = 'objectID of song'
 
-// Each non-custom engine has its own leaderboard
-const engine = 0;
-
 // Each instrument ("Band" counts as an instrument) has its own leaderboard
 const instrument = 255;
 
 // Each difficulty has its own leaderboard, EXCEPT FOR BAND - this value should be unused in the query if instrument is 255
 const difficulty = 4;
+
+// Each non-custom engine has its own leaderboard , EXCEPT FOR BAND - this value should be unused in the query if instrument is 255
+const engine = 0;
 
 // Modifiers can be filtered in or out by the user; by default we only allow the ones that make the song as difficult or harder
 const allowedModifiers = [0, 4, 5, 8, 9, 10];
@@ -27,7 +27,6 @@ const sortByNotesHit = false;
 // Query
 let mongoQuery = {
   song: songId,
-  engine: engine,
   instrument: instrument,
   // Ensure no "modifier" exists outside of the allowed set
   modifiers: {
@@ -37,7 +36,10 @@ let mongoQuery = {
   },
   hidden: false
 }
-if (instrument != 255) query['difficulty'] = difficulty // Only use difficulty if it's not a band (255) score
+if (instrument != 255) {// Only use these values if it's not a band (255) score
+    query['difficulty'] = difficulty
+    query['engine'] = engine
+}
 if (!allowSlowdowns) query['songSpeed'] = { $gte: 1 }
 
 // Sorting method
