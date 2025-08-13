@@ -194,6 +194,7 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
     let validPlayers = 0;
     // Create player scores for each player (save)
     const childrenScores: ScoreSchemaDocument['childrenScores'] = []
+    const bandModifiers: ScoreSchemaDocument['modifiers'] = []
     const replayDataKeys = Object.keys(replayInfo.replayData)
     for (const playerNumber in replayDataKeys) {
         const playerData = replayInfo.replayData[playerNumber].stats;
@@ -247,12 +248,21 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
 
         await playerScore.save();
         childrenScores.push({ score: playerScore.id });
-        // TODO: add modifiers to band score if there are any?
+        // Add modifiers to band score if there are any
         // (making sure there are no repeats if multiple players used the same modifier)
+        // TODO: test with multiple players
+        if (bandScoreValid && playerModifiers) {
+            for (const modifierIndex in playerModifiers) {
+                if (!bandModifiers.find(bandModifier => bandModifier.modifier === playerModifiers[modifierIndex].modifier))
+                    bandModifiers.push(playerModifiers[modifierIndex])
+            }
+        }
+
         validPlayers++;
     }
     if (validPlayers == 0) throw new ServerError('err_replay_no_valid_players') // TODO: NEW ERROR
     bandScore.childrenScores = childrenScores
+    if (bandModifiers) bandScore.modifiers = bandModifiers
     // Move replay file
     if (isDev()) {
       await replayFilePath.rename(getServerPublic().gotoFile(`replay/${replayFileName}${replayFilePath.ext}`))
