@@ -5,7 +5,7 @@ import type { ServerErrorHandler, ServerHandler, ServerRequest, ServerRequestFil
 import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, getServerPublic, isDev, YARGReplayValidatorAPI } from '../../utils.exports'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
-import { GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocument } from '../../models/Score'
+import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocument } from '../../models/Score'
 import { type Difficulty, Instrument, Song, type SongSchemaDocument } from '../../models/Song'
 import type { UserSchemaDocument } from '../../models/User'
 
@@ -198,7 +198,7 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
     for (const playerNumber in replayDataKeys) {
         const playerData = replayInfo.replayData[playerNumber].stats;
         if (playerData.totalScore == 0) continue; // don't save "non-players"
-        const engine = replayInfo.replayData[playerNumber].engine;
+        const engine = Number(replayInfo.replayData[playerNumber].engine);
         if (engine == -1) {
             // TODO: can we return additional info warning that some players were ignored due to custom engines being unsupported?
             bandScoreValid = false;
@@ -218,7 +218,7 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
             instrument: playerInstrument,
             gamemode: Number(playerProfile.gameMode) as (typeof GameMode)[keyof typeof GameMode],
             difficulty: Number(playerProfile.currentDifficulty) as (typeof Difficulty)[keyof typeof Difficulty],
-            engine: engine,
+            engine: engine as (typeof Engine)[keyof typeof Engine],
             modifiers: playerProfile.currentModifiers == 0 ? undefined : parseModifiers(playerProfile.currentModifiers),
             profileName: playerProfile.name,
             score: playerData.totalScore,
@@ -232,7 +232,7 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
             numPauses: playerStats.numPauses,
         })
         // Only store percent if vocals
-        if (playerInstrument in [Instrument.Vocals, Instrument.Harmony]) playerScore.percent = playerData.percent
+        if (playerInstrument == Instrument.Vocals || playerInstrument == Instrument.Harmony) playerScore.percent = playerData.percent
         // Overstrum if 5/6-fret, overhit if drums/keys, neither if vocals
         if (playerData.overstrums !== undefined) playerScore.overhits = playerData.overstrums
         else if (playerData.overhits !== undefined) playerScore.overhits = playerData.overhits
