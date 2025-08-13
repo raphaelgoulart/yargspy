@@ -208,6 +208,8 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
         const playerProfile = replayInfo.replayData[playerNumber].profile;
         
         const playerInstrument = Number(playerProfile.currentInstrument) as (typeof Instrument)[keyof typeof Instrument]
+        const playerModifiers = playerProfile.currentModifiers == 0 ? undefined : parseModifiers(playerProfile.currentModifiers);
+
         const playerScore = new Score({
             song: songEntry.id,
             uploader: user.id,
@@ -219,7 +221,7 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
             gamemode: Number(playerProfile.gameMode) as (typeof GameMode)[keyof typeof GameMode],
             difficulty: Number(playerProfile.currentDifficulty) as (typeof Difficulty)[keyof typeof Difficulty],
             engine: engine as (typeof Engine)[keyof typeof Engine],
-            modifiers: playerProfile.currentModifiers == 0 ? undefined : parseModifiers(playerProfile.currentModifiers),
+            modifiers: playerModifiers,
             profileName: playerProfile.name,
             score: playerData.totalScore,
             stars: playerData.stars,
@@ -245,6 +247,8 @@ const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (re
 
         await playerScore.save();
         childrenScores.push({ score: playerScore.id });
+        // TODO: add modifiers to band score if there are any?
+        // (making sure there are no repeats if multiple players used the same modifier)
         validPlayers++;
     }
     if (validPlayers == 0) throw new ServerError('err_replay_no_valid_players') // TODO: NEW ERROR
