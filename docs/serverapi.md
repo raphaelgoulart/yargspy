@@ -1,17 +1,20 @@
 <h1>Server API</h1>
 
 - [Interfaces](#interfaces)
-  - [Server Responses](#server-responses)
-  - [User Tokens](#user-tokens)
-- [`GET` server](#get-server)
-- [`POST` user/register](#post-userregister)
-- [`POST` user/login](#post-userlogin)
-- [`POST` user/profile](#post-userprofile)
-- [`PATCH` user/update](#patch-userupdate)
-- [`POST` user/all](#post-userall)
-- [`POST` replay/register](#post-replayregister)
+    - [Server Responses](#server-responses)
+    - [User Tokens](#user-tokens)
+- [Server status](#server-status)
+  - [`GET` server](#get-server)
+  - [`POST` user/register](#post-userregister)
+- [User routes](#user-routes)
+  - [`POST` user/login](#post-userlogin)
+  - [`POST` user/profile](#post-userprofile)
+  - [`PATCH` user/update](#patch-userupdate)
+  - [`POST` user/all](#post-userall)
+- [REPLAY file routes](#replay-file-routes)
+  - [`POST` replay/register](#post-replayregister)
 
-## Interfaces
+# Interfaces
 
 ### Server Responses
 
@@ -63,7 +66,7 @@ export interface GenericServerUserTokenObject {
 }
 ```
 
----
+# Server status
 
 ## `GET` server
 
@@ -100,6 +103,8 @@ interface IUserRegisterBodySchema {
   - When a user tries to register a username that's already registered.
 - `500 Internal Server Error`
   - On not implemented errors.
+
+# User routes
 
 ## `POST` user/login
 
@@ -231,6 +236,8 @@ interface IUserProfileResponse extends GenericServerResponseObject {
   entries: UserSchemaDocument[];
 }
 ```
+
+# REPLAY file routes
 
 ## `POST` replay/register
 

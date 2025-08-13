@@ -5,9 +5,10 @@ import type { ServerErrorHandler, ServerHandler, ServerRequest, ServerRequestFil
 import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, getServerPublic, isDev, YARGReplayValidatorAPI } from '../../utils.exports'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
-import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocument } from '../../models/Score'
+import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocument, type ScoreSchemaInput } from '../../models/Score'
 import { type Difficulty, Instrument, Song, type SongSchemaDocument } from '../../models/Song'
 import type { UserSchemaDocument } from '../../models/User'
+import type { Schema } from 'mongoose'
 
 type RouteRequest = ServerRequest & { user: UserSchemaDocument }
 
@@ -165,117 +166,130 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
         await chartFilePath.rename(getChartFilePathFromSongEntry(songEntry))
       } else {
         // TODO: on prod, upload to S3 instead of copy
-        chartFilePath.delete(); // delete local file after uploading to S3
+        chartFilePath.delete() // delete local file after uploading to S3
       }
       if (songDataPath) await songDataPath.delete()
       await songEntry.save()
     }
 
     const replayFileName = replayFilePath.name
-    const currentGameVersion = GameVersion.v0_13; // hardcoded: change on each stable update
+    const currentGameVersion = GameVersion.v0_13 // hardcoded: change on each stable update
     const user = (req as RouteRequest).user
+
     // Create band score (don't save yet)
     const bandScore = new Score({
-        song: songEntry.id,
-        uploader: user.id,
+      song: songEntry._id,
+      uploader: user._id,
+      filePath: replayFileName,
+      checksum: scoreHash,
+      version: currentGameVersion,
+      songSpeed: replayInfo.replayInfo.songSpeed,
+      instrument: Instrument.Band,
+      score: replayInfo.replayInfo.bandScore,
+      stars: replayInfo.replayInfo.bandStars,
+    })
+
+    let bandScoreValid = true
+    let validPlayers = 0
+
+    // Create player scores for each player (save)
+    const childrenScores: ScoreSchemaDocument['childrenScores'] = []
+    const bandModifiers: ScoreSchemaDocument['modifiers'] = []
+
+    for (let i = 0; i < replayInfo.replayData.length; i++) {
+      const playerObj = replayInfo.replayData[i]
+
+      const playerData = playerObj.stats
+
+      if (playerData.totalScore === 0) continue // don't save "non-players"
+
+      const engine = Number(playerObj.engine)
+
+      if (engine === -1) {
+        // TODO: can we return additional info warning that some players were ignored due to custom engines being unsupported?
+        bandScoreValid = false
+        continue
+      }
+
+      const playerStats = replayInfo.replayInfo.stats[i]
+      const playerProfile = playerObj.profile
+
+      const playerInstrument = Number(playerProfile.currentInstrument) as (typeof Instrument)[keyof typeof Instrument]
+      const playerModifiers = playerProfile.currentModifiers === 0 ? undefined : parseModifiers(playerProfile.currentModifiers)
+
+      const playerScore = new Score({
+        song: songEntry._id,
+        uploader: user._id,
         filePath: replayFileName,
         checksum: scoreHash,
         version: currentGameVersion,
         songSpeed: replayInfo.replayInfo.songSpeed,
-        instrument: Instrument.Band,
-        score: replayInfo.replayInfo.bandScore,
-        stars: replayInfo.replayInfo.bandStars
-    })
-    let bandScoreValid = true;
-    let validPlayers = 0;
-    // Create player scores for each player (save)
-    const childrenScores: ScoreSchemaDocument['childrenScores'] = []
-    const bandModifiers: ScoreSchemaDocument['modifiers'] = []
-    const replayDataKeys = Object.keys(replayInfo.replayData)
-    for (const playerNumber in replayDataKeys) {
-        const playerData = replayInfo.replayData[playerNumber].stats;
-        if (playerData.totalScore == 0) continue; // don't save "non-players"
-        const engine = Number(replayInfo.replayData[playerNumber].engine);
-        if (engine == -1) {
-            // TODO: can we return additional info warning that some players were ignored due to custom engines being unsupported?
-            bandScoreValid = false;
-            continue;
+        instrument: playerInstrument,
+        gamemode: Number(playerProfile.gameMode) as (typeof GameMode)[keyof typeof GameMode],
+        difficulty: Number(playerProfile.currentDifficulty) as (typeof Difficulty)[keyof typeof Difficulty],
+        engine: engine as (typeof Engine)[keyof typeof Engine],
+        modifiers: playerModifiers,
+        profileName: playerProfile.name,
+        score: playerData.totalScore,
+        stars: playerData.stars,
+        notesHit: playerData.notesHit,
+        maxCombo: playerData.maxCombo,
+        starPowerPhrasesHit: playerData.starPowerPhrasesHit,
+        starPowerActivationCount: playerData.starPowerActivationCount,
+        averageMultiplier: playerStats.averageMultiplier,
+        soloBonuses: playerData.soloBonuses,
+        numPauses: playerStats.numPauses,
+      })
+
+      // Only store percent if vocals
+      if (playerInstrument === Instrument.Vocals || playerInstrument === Instrument.Harmony) playerScore.percent = playerData.percent
+
+      // Overstrum if 5/6-fret, overhit if drums/keys, neither if vocals
+      if (playerData.overstrums !== undefined) playerScore.overhits = playerData.overstrums
+      else if (playerData.overhits !== undefined) playerScore.overhits = playerData.overhits
+
+      // These two values are 5/6-fret only
+      if (playerData.ghostInputs !== undefined) playerScore.ghostInputs = playerData.ghostInputs
+      if (playerData.sustainScore !== undefined) playerScore.sustainScore = playerData.sustainScore
+
+      // These values are drums only
+      if (playerData.ghostsHit !== undefined) playerScore.ghostNotesHit = playerData.ghostsHit
+      if (playerData.accentsHit !== undefined) playerScore.accentNotesHit = playerData.accentsHit
+
+      await playerScore.save()
+
+      childrenScores.push({ score: playerScore._id as Schema.Types.ObjectId })
+      // Add modifiers to band score if there are any
+      // (making sure there are no repeats if multiple players used the same modifier)
+      // TODO: test with multiple players
+      if (bandScoreValid && playerModifiers) {
+        for (const modifierIndex in playerModifiers) {
+          if (!bandModifiers.find((bandModifier) => bandModifier.modifier === playerModifiers[modifierIndex].modifier)) bandModifiers.push(playerModifiers[modifierIndex])
         }
-        const playerStats = replayInfo.replayInfo.stats[playerNumber];
-        const playerProfile = replayInfo.replayData[playerNumber].profile;
-        
-        const playerInstrument = Number(playerProfile.currentInstrument) as (typeof Instrument)[keyof typeof Instrument]
-        const playerModifiers = playerProfile.currentModifiers == 0 ? undefined : parseModifiers(playerProfile.currentModifiers);
+      }
 
-        const playerScore = new Score({
-            song: songEntry.id,
-            uploader: user.id,
-            filePath: replayFileName,
-            checksum: scoreHash,
-            version: currentGameVersion,
-            songSpeed: replayInfo.replayInfo.songSpeed,
-            instrument: playerInstrument,
-            gamemode: Number(playerProfile.gameMode) as (typeof GameMode)[keyof typeof GameMode],
-            difficulty: Number(playerProfile.currentDifficulty) as (typeof Difficulty)[keyof typeof Difficulty],
-            engine: engine as (typeof Engine)[keyof typeof Engine],
-            modifiers: playerModifiers,
-            profileName: playerProfile.name,
-            score: playerData.totalScore,
-            stars: playerData.stars,
-            notesHit: playerData.notesHit,
-            maxCombo: playerData.maxCombo,
-            starPowerPhrasesHit: playerData.starPowerPhrasesHit,
-            starPowerActivationCount: playerData.starPowerActivationCount,
-            averageMultiplier: playerStats.averageMultiplier,
-            soloBonuses: playerData.soloBonuses,
-            numPauses: playerStats.numPauses,
-        })
-        // Only store percent if vocals
-        if (playerInstrument == Instrument.Vocals || playerInstrument == Instrument.Harmony) playerScore.percent = playerData.percent
-        // Overstrum if 5/6-fret, overhit if drums/keys, neither if vocals
-        if (playerData.overstrums !== undefined) playerScore.overhits = playerData.overstrums
-        else if (playerData.overhits !== undefined) playerScore.overhits = playerData.overhits
-        // These two values are 5/6-fret only
-        if (playerData.ghostInputs !== undefined) playerScore.ghostInputs = playerData.ghostInputs
-        if (playerData.sustainScore !== undefined) playerScore.sustainScore = playerData.sustainScore
-        // These values are drums only
-        if (playerData.ghostsHit !== undefined) playerScore.ghostNotesHit = playerData.ghostsHit
-        if (playerData.accentsHit !== undefined) playerScore.accentNotesHit = playerData.accentsHit
-
-        await playerScore.save();
-        childrenScores.push({ score: playerScore.id });
-        // Add modifiers to band score if there are any
-        // (making sure there are no repeats if multiple players used the same modifier)
-        // TODO: test with multiple players
-        if (bandScoreValid && playerModifiers) {
-            for (const modifierIndex in playerModifiers) {
-                if (!bandModifiers.find(bandModifier => bandModifier.modifier === playerModifiers[modifierIndex].modifier))
-                    bandModifiers.push(playerModifiers[modifierIndex])
-            }
-        }
-
-        validPlayers++;
+      validPlayers++
     }
-    if (validPlayers == 0) throw new ServerError('err_replay_no_valid_players') // TODO: NEW ERROR
+
+    if (validPlayers === 0) throw new ServerError('err_replay_no_valid_players') // TODO: NEW ERROR
+
     bandScore.childrenScores = childrenScores
+
     if (bandModifiers) bandScore.modifiers = bandModifiers
+
     // Move replay file
     if (isDev()) {
       await replayFilePath.rename(getServerPublic().gotoFile(`replay/${replayFileName}${replayFilePath.ext}`))
     } else {
       // TODO: on prod, upload to S3 instead of copy
-      replayFilePath.delete(); // delete local file after uploading to S3
+      replayFilePath.delete() // delete local file after uploading to S3
     }
+
     // Save band score (if valid)
     if (bandScoreValid) await bandScore.save()
+
     // Done! Reply with song ID for front-end redirection
-    serverReply(
-      reply,
-      'success_replay_register',
-      {
-        song: songEntry!.id,
-      }
-    )
+    serverReply(reply, 'success_replay_register', { song: songEntry.id })
   } catch (err) {
     await deleteAllTempFiles()
     throw err
@@ -285,11 +299,11 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 // #region Helper functions MOVE LATER
 
 function parseModifiers(currentModifiers: number): { modifier: (typeof Modifier)[keyof typeof Modifier] }[] {
-    let arr: { modifier: (typeof Modifier)[keyof typeof Modifier] }[] = [];
-    for (const [modifier, index] of Object.entries(Modifier)) {
-        if ((currentModifiers >> index) % 2) arr.push({ modifier: index })
-    }
-    return arr;
+  let arr: { modifier: (typeof Modifier)[keyof typeof Modifier] }[] = []
+  for (const [modifier, index] of Object.entries(Modifier)) {
+    if ((currentModifiers >> index) % 2) arr.push({ modifier: index })
+  }
+  return arr
 }
 
 // #region Error Handler

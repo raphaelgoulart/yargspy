@@ -93,18 +93,18 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
     },
     createdAt: {
       type: Schema.Types.Date,
-      default: Date.now(),
+      default: Date.now,
     },
     updatedAt: {
       type: Schema.Types.Date,
-      default: Date.now(),
+      default: Date.now,
     },
   },
   {
     timestamps: true,
     methods: {
       async generateToken() {
-        const token = jwtSign({ _id: this._id.toString(), admin: this.admin })
+        const token = jwtSign({ _id: this.id, admin: this.admin })
         return token
       },
       async checkUsernameCaseInsensitive() {

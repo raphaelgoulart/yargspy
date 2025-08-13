@@ -133,7 +133,7 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
   {
     statics: {
       async findByHash(hash: string) {
-        return await this.findOne({ hash: hash })
+        return await this.findOne({ hash })
       },
     },
   }

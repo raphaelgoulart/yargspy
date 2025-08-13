@@ -178,7 +178,7 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
       // can be fetched from server (upload time) or replay metadata; i'd rather go with server
       type: Date,
       required: true,
-      default: Date.now(),
+      default: Date.now,
     },
     profileName: {
       type: String,
