@@ -28,92 +28,88 @@ export interface YARGReplayValidatorResults {
     replayLength: number
     date: string
     songChecksum: ReplayChecksumObject
-    stats: [
-      {
-        totalNotes: number
-        numNotesHit: number
-        percentageHit: number
-        overstrums: number
-        overhits: number
-        ghostInputs: number
-        soloBonuses: number
-        playerName: string
-        score: number
-        stars: number
-        totalOverdrivePhrases: number
-        numOverdrivePhrasesHit: number
-        numOverdriveActivations: number
-        averageMultiplier: number
-        numPauses: number
-      }
-    ]
+    stats: {
+      totalNotes: number
+      numNotesHit: number
+      percentageHit: number
+      overstrums: number
+      overhits: number
+      ghostInputs: number
+      soloBonuses: number
+      playerName: string
+      score: number
+      stars: number
+      totalOverdrivePhrases: number
+      numOverdrivePhrasesHit: number
+      numOverdriveActivations: number
+      averageMultiplier: number
+      numPauses: number
+    }[]
   }
-  replayData: [
-    {
-      profile: {
-        id: string
-        name: string
-        isBot: boolean
-        gameMode: number
-        noteSpeed: number
-        highwayLength: number
-        leftyFlip: boolean
-        rangeEnabled: boolean
-        autoConnectOrder: null
-        inputCalibrationMilliseconds: number
-        enginePreset: string
-        themePreset: string
-        colorProfile: string
-        cameraPreset: string
-        highwayPreset: string
-        currentInstrument: number
-        currentDifficulty: number
-        difficultyFallback: number
-        harmonyIndex: number
-        inputCalibrationSeconds: number
-        hasValidInstrument: boolean
-        currentModifiers: number
-      }
-      stats: {
-        overstrums: number
-        overhits: number
-        hoposStrummed: number
-        ghostInputs: number
-        committedScore: number
-        pendingScore: number
-        noteScore: number
-        sustainScore: number
-        multiplierScore: number
-        combo: number
-        maxCombo: number
-        scoreMultiplier: number
-        notesHit: number
-        totalNotes: number
-        starPowerTickAmount: number
-        totalStarPowerTicks: number
-        totalStarPowerBarsFilled: number
-        starPowerActivationCount: number
-        timeInStarPower: number
-        starPowerWhammyTicks: number
-        isStarPowerActive: boolean
-        starPowerPhrasesHit: number
-        totalStarPowerPhrases: number
-        soloBonuses: number
-        starPowerScore: number
-        stars: number
-        totalScore: number
-        starScore: number
-        comboInBandUnits: number
-        bandComboUnits: number
-        notesMissed: number
-        percent: number
-        starPowerPhrasesMissed: number
-        ghostsHit: number
-        accentsHit: number
-      }
-      engine: number
+  replayData: {
+    profile: {
+      id: string
+      name: string
+      isBot: boolean
+      gameMode: number
+      noteSpeed: number
+      highwayLength: number
+      leftyFlip: boolean
+      rangeEnabled: boolean
+      autoConnectOrder: null
+      inputCalibrationMilliseconds: number
+      enginePreset: string
+      themePreset: string
+      colorProfile: string
+      cameraPreset: string
+      highwayPreset: string
+      currentInstrument: number
+      currentDifficulty: number
+      difficultyFallback: number
+      harmonyIndex: number
+      inputCalibrationSeconds: number
+      hasValidInstrument: boolean
+      currentModifiers: number
     }
-  ]
+    stats: {
+      overstrums: number
+      overhits: number
+      hoposStrummed: number
+      ghostInputs: number
+      committedScore: number
+      pendingScore: number
+      noteScore: number
+      sustainScore: number
+      multiplierScore: number
+      combo: number
+      maxCombo: number
+      scoreMultiplier: number
+      notesHit: number
+      totalNotes: number
+      starPowerTickAmount: number
+      totalStarPowerTicks: number
+      totalStarPowerBarsFilled: number
+      starPowerActivationCount: number
+      timeInStarPower: number
+      starPowerWhammyTicks: number
+      isStarPowerActive: boolean
+      starPowerPhrasesHit: number
+      totalStarPowerPhrases: number
+      soloBonuses: number
+      starPowerScore: number
+      stars: number
+      totalScore: number
+      starScore: number
+      comboInBandUnits: number
+      bandComboUnits: number
+      notesMissed: number
+      percent: number
+      starPowerPhrasesMissed: number
+      ghostsHit: number
+      accentsHit: number
+    }
+    engine: number
+  }[]
   chartData: {
     noteCount: ReplayCountObject
     starPowerCount: ReplayCountObject

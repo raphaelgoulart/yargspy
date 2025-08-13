@@ -9,11 +9,7 @@ import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocumen
 import { type Difficulty, Instrument, Song, type SongSchemaDocument } from '../../models/Song'
 import type { UserSchemaDocument } from '../../models/User'
 
-type RouteRequest = ServerRequest<IReplayRegister> & { user: UserSchemaDocument }
-
-export interface IReplayRegister {
-  decorators: { user?: UserSchemaDocument }
-}
+type RouteRequest = ServerRequest & { user: UserSchemaDocument }
 
 export interface IReplayRegisterBody {
   reqType?: 'replayOnly' | 'complete'
@@ -27,7 +23,7 @@ export interface IReplayRegisterFileFieldsObject {
 
 // #region Handler
 
-const replayRegisterHandler: ServerHandler<IReplayRegister> = async function (req, reply) {
+const replayRegisterHandler: ServerHandler = async function (req, reply) {
   const { chartTemp, dtaTemp, iniTemp, midiTemp, replayTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
 
   try {
@@ -298,7 +294,7 @@ function parseModifiers(currentModifiers: number): { modifier: (typeof Modifier)
 
 // #region Error Handler
 
-const replayRegisterErrorHandler: ServerErrorHandler<IReplayRegister> = function (error, req, reply) {
+const replayRegisterErrorHandler: ServerErrorHandler = function (error, req, reply) {
   req.log.error(error)
   // Generic ServerError
   if (error instanceof ServerError) return serverReply(reply, error.serverErrorCode, error.data, error.messageValues)

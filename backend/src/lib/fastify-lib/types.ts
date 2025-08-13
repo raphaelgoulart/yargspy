@@ -3,7 +3,6 @@ import type { FilePath } from 'node-lib'
 
 export interface ServerHandlerFnOpts {
   body?: Record<string, any>
-  decorators?: Record<string, any>
   query?: Record<string, any>
   reply?: Record<string, any>
 }
