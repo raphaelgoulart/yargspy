@@ -10,6 +10,7 @@ export * from './utils/checkers/processEnv'
 export * from './utils/checkers/serverTemp'
 
 export * from './utils/models/createSongEntryInput'
+export * from './utils/models/parsePlayerModifiersForScoreEntry'
 
 export * from './utils/path/buildUniqueFilename'
 export * from './utils/path/getChartFilePathFromSongEntry'

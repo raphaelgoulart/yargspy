@@ -134,6 +134,7 @@ export const codeMap = {
   err_replay_duplicated_score: [409, 'The provided YARG REPLAY has already been registered'],
   success_replay_register: [201, 'Your score was registered successfully'],
   success_replay_and_song_register: [201, 'Your score and song was registered successfully'],
+  err_replay_no_valid_players: [400, 'Provided YARG REPLAY file only contains players that played using custom engines unsupported by the server, score registering has been aborted']
 } as const
 
 export type ReplyCodeNames = keyof typeof codeMap

@@ -2,7 +2,7 @@ import { pipeline } from 'node:stream/promises'
 import { TokenError } from 'fast-jwt'
 import type { FilePath } from 'node-lib'
 import type { ServerErrorHandler, ServerHandler, ServerRequest, ServerRequestFileFieldObject } from '../../lib.exports'
-import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, getServerPublic, isDev, YARGReplayValidatorAPI } from '../../utils.exports'
+import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, getServerPublic, isDev, parsePlayerModifiersForScoreEntry, YARGReplayValidatorAPI } from '../../utils.exports'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
 import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocument, type ScoreSchemaInput } from '../../models/Score'
@@ -66,8 +66,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
     if (!reqType) throw new ServerError('err_replay_register_no_reqtype')
 
-    // CHECK: Must have a file in the request and one
-    // of these files must be the replay file
+    // Must have a file in the request and one of these files must be the replay file
     if (fileFields.size === 0 || !fileFields.has('replayFile')) throw new ServerError('err_replay_no_replay_uploaded')
 
     const isReqReplayOnly = reqType === 'replayOnly'
@@ -83,11 +82,10 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     if (completeFieldsObj.chartFile) chartFilePath = completeFieldsObj.chartFile.filePath
     if (completeFieldsObj.songDataFile) songDataPath = completeFieldsObj.songDataFile.filePath
 
-    // CHECK: Provided YARG REPLAY file must not have been uploaded already
+    // Provided YARG REPLAY file must not have been uploaded already
     const scoreHash = await replayFilePath.generateHash()
     if (await Score.findByHash(scoreHash)) throw new ServerError('err_replay_duplicated_score')
 
-    // CHECK: Replay file integrity (magic bytes)
     // TODO: Better REPLAY file check (maybe entire header?)
     await checkReplayFileIntegrity(replayTemp)
 
@@ -107,10 +105,8 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
     // CHECK: Chart files integrity (magic bytes)
     await checkChartFilesIntegrity(chartTemp, midiTemp)
-    // TODO: Since text is very hard to check integrity, maybe trying to parse
-    //       both INI and DTA and reassure these files even
-    //       exists would be a good idea to avoid any malicious file
-    //       being injected in the server
+    // TODO: Since text is very hard to check integrity, maybe trying to parse both INI and DTA and reassure these files even
+    //       exists would be a good idea to avoid any malicious file being injected in the server
 
     if (!isSongEntryFound) {
       // If song isn't in database already...
@@ -119,6 +115,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       if (!songDataPath) throw new ServerError('err_replay_songdata_required')
 
       // Checks if the REPLAY file song hash matches the provided chart file hash
+      // TODO: Algorithm conscistency test
       const chartFileHash = await chartFilePath.generateHash('sha1')
       if (songHash !== chartFileHash) throw new ServerError('err_replay_songhash_nomatch')
 
@@ -172,17 +169,15 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       await songEntry.save()
     }
 
-    const replayFileName = replayFilePath.name
-    const currentGameVersion = GameVersion.v0_13 // hardcoded: change on each stable update
     const user = (req as RouteRequest).user
 
     // Create band score (don't save yet)
     const bandScore = new Score({
       song: songEntry._id,
       uploader: user._id,
-      filePath: replayFileName,
+      filePath: replayFilePath.name,
       checksum: scoreHash,
-      version: currentGameVersion,
+      version: GameVersion.v0_13, // hardcoded: change on each stable update
       songSpeed: replayInfo.replayInfo.songSpeed,
       instrument: Instrument.Band,
       score: replayInfo.replayInfo.bandScore,
@@ -200,11 +195,9 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       const playerObj = replayInfo.replayData[i]
 
       const playerData = playerObj.stats
-
       if (playerData.totalScore === 0) continue // don't save "non-players"
 
-      const engine = Number(playerObj.engine)
-
+      const engine: (typeof Engine)[keyof typeof Engine] | -1 = Number(playerObj.engine) as (typeof Engine)[keyof typeof Engine] | -1
       if (engine === -1) {
         // TODO: can we return additional info warning that some players were ignored due to custom engines being unsupported?
         bandScoreValid = false
@@ -215,19 +208,19 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       const playerProfile = playerObj.profile
 
       const playerInstrument = Number(playerProfile.currentInstrument) as (typeof Instrument)[keyof typeof Instrument]
-      const playerModifiers = playerProfile.currentModifiers === 0 ? undefined : parseModifiers(playerProfile.currentModifiers)
+      const playerModifiers = playerProfile.currentModifiers === 0 ? undefined : parsePlayerModifiersForScoreEntry(playerProfile.currentModifiers)
 
       const playerScore = new Score({
         song: songEntry._id,
         uploader: user._id,
-        filePath: replayFileName,
+        filePath: replayFilePath.name,
         checksum: scoreHash,
-        version: currentGameVersion,
+        version: GameVersion.v0_13,
         songSpeed: replayInfo.replayInfo.songSpeed,
         instrument: playerInstrument,
         gamemode: Number(playerProfile.gameMode) as (typeof GameMode)[keyof typeof GameMode],
         difficulty: Number(playerProfile.currentDifficulty) as (typeof Difficulty)[keyof typeof Difficulty],
-        engine: engine as (typeof Engine)[keyof typeof Engine],
+        engine,
         modifiers: playerModifiers,
         profileName: playerProfile.name,
         score: playerData.totalScore,
@@ -271,7 +264,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       validPlayers++
     }
 
-    if (validPlayers === 0) throw new ServerError('err_replay_no_valid_players') // TODO: NEW ERROR
+    if (validPlayers === 0) throw new ServerError('err_replay_no_valid_players')
 
     bandScore.childrenScores = childrenScores
 
@@ -279,7 +272,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
     // Move replay file
     if (isDev()) {
-      await replayFilePath.rename(getServerPublic().gotoFile(`replay/${replayFileName}${replayFilePath.ext}`))
+      await replayFilePath.rename(getServerPublic().gotoFile(`replay/${replayFilePath.fullname}`))
     } else {
       // TODO: on prod, upload to S3 instead of copy
       replayFilePath.delete() // delete local file after uploading to S3
@@ -289,21 +282,11 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     if (bandScoreValid) await bandScore.save()
 
     // Done! Reply with song ID for front-end redirection
-    serverReply(reply, 'success_replay_register', { song: songEntry.id })
+    serverReply(reply, 'success_replay_register', { song: songEntry.toJSON() })
   } catch (err) {
     await deleteAllTempFiles()
     throw err
   }
-}
-
-// #region Helper functions MOVE LATER
-
-function parseModifiers(currentModifiers: number): { modifier: (typeof Modifier)[keyof typeof Modifier] }[] {
-  let arr: { modifier: (typeof Modifier)[keyof typeof Modifier] }[] = []
-  for (const [modifier, index] of Object.entries(Modifier)) {
-    if ((currentModifiers >> index) % 2) arr.push({ modifier: index })
-  }
-  return arr
 }
 
 // #region Error Handler

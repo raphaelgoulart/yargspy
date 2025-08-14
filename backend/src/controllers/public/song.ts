@@ -6,7 +6,6 @@ import { getServerPublic } from '../../utils.exports'
 import type { UserSchemaDocument } from '../../models/User'
 
 export interface IPublicSong {
-  decorators: { user?: UserSchemaDocument }
   query: {
     type?: 'replay' | 'chart'
     id?: string
@@ -20,7 +19,7 @@ const publicSongHandler: ServerHandler<IPublicSong> = async function (req, reply
   const missingQuery: string[] = []
   if (!req.query.id) missingQuery.push('id')
   if (!req.query.type) missingQuery.push('type')
-  if (!req.query.id || !req.query.type) throw new ServerError('err_song_invalid_query', null, { params: missingQuery.join(', ') })
+  if (missingQuery.length > 0) throw new ServerError('err_song_invalid_query', null, { params: missingQuery.join(', ') })
 
   const { type, id } = req.query
   if (type === 'replay') {
