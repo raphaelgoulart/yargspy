@@ -191,7 +191,8 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     const childrenScores: ScoreSchemaDocument['childrenScores'] = []
     const bandModifiers: ScoreSchemaDocument['modifiers'] = []
 
-    for (let i = 0; i < replayInfo.replayData.length; i++) {
+    const replayDataKeys = Object.keys(replayInfo.replayData)
+    for (const i in replayDataKeys) {
       const playerObj = replayInfo.replayData[i]
 
       const playerData = playerObj.stats
