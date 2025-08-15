@@ -1,7 +1,7 @@
 import { execAsync, pathLikeToFilePath, type BufferEncodingOrNull, type FilePathLikeTypes } from 'node-lib'
 import { ServerError } from '../../app.exports'
 import type { Difficulty, Instrument, SongSchemaDocument } from '../../models/Song'
-import { booleanToString, getValidatorPath } from '../../utils.exports'
+import { booleanToString, getValidatorPath, isDev } from '../../utils.exports'
 
 export type ReplayCountObject = {
   [key in (typeof Instrument)[keyof typeof Instrument] as string]: {
@@ -151,6 +151,10 @@ export class YARGReplayValidatorAPI {
     return Object.fromEntries(output.entries()) as T
   }
 
+  static formatErrorStringFromValidator(error: string) {
+    return error.split('\n').map((e) => e.trim())[4]
+  }
+
   /**
    * Reads a YARG REPLAY file and extracts the song's chart hash used to play this song.
    *
@@ -164,6 +168,7 @@ export class YARGReplayValidatorAPI {
     const replayFile = pathLikeToFilePath(replayFilePath)
 
     const command = `"./${validatorPath.fullname}" "${replayFile.path}" -m ${this.readMode.returnSongHash}`
+    console.debug(`Executing command: ${command}`)
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
     if (stderr) throw new ServerError('err_unknown', { error: stderr, errorOrigin: 'YARGReplayValidatorAPI.returnSongHash()' })
 
@@ -186,12 +191,12 @@ export class YARGReplayValidatorAPI {
     return Buffer.from(checksumRaw, 'base64').toString(encoding ?? 'hex')
   }
 
-  static async returnReplayInfo(replayFilePath: FilePathLikeTypes, chartFilePath: FilePathLikeTypes, isSongEntryFound: boolean, song: SongSchemaDocument, eighthNoteHopo?: boolean, hopoFreq?: number): Promise<YARGReplayValidatorResults> {
+  static async returnReplayInfo(replayFilePath: FilePathLikeTypes, chartFilePath: FilePathLikeTypes, song: SongSchemaDocument, eighthNoteHopo?: boolean, hopoFreq?: number): Promise<YARGReplayValidatorResults> {
     const validatorPath = getValidatorPath()
     const replayFile = pathLikeToFilePath(replayFilePath)
     const chartFile = pathLikeToFilePath(chartFilePath)
 
-    const readMode = isSongEntryFound ? this.readMode.replayOnly : this.readMode.replayAndMidi
+    const readMode = song ? this.readMode.replayOnly : this.readMode.replayAndMidi
 
     let command = `"./${validatorPath.fullname}" "${replayFile.path}" "${chartFile.path}" -m ${readMode}`
 
@@ -206,8 +211,10 @@ export class YARGReplayValidatorAPI {
     if (eighthNoteHopo !== undefined) command += ` -e ${booleanToString(eighthNoteHopo)}`
     if (hopoFreq !== undefined) command += ` -f ${hopoFreq.toString()}`
 
+    console.debug(`Executing command: ${command}`)
+
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
-    if (stderr) throw new ServerError('err_unknown', { error: stderr, errorOrigin: 'YARGReplayValidatorAPI.returnReplayInfo()' })
+    if (stderr) throw new ServerError('err_unknown', isDev() ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnReplayInfo()' } : {})
 
     return this.camelCaseKeyTransform<YARGReplayValidatorResults>(JSON.parse(stdout))
   }

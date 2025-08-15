@@ -46,7 +46,7 @@ export default function DebugUploadReplayFile() {
 
             const startTime = Date.now()
             try {
-              const { data } = await axios.post<GenericServerResponseObject>(`${import.meta.env.VITE_SERVER_URI}/replay/register`, form, { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('userToken')}` }, timeout: 10 * 1000 })
+              const { data } = await axios.post<GenericServerResponseObject>(`${import.meta.env.VITE_SERVER_URI}/replay/register`, form, { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('userToken')}` }, timeout: 25 * 1000 })
               setDebugGlobalState({
                 hasUserToken: true,
                 lastRequest: {
