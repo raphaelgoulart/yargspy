@@ -45,6 +45,20 @@ if (!allowSlowdowns) query['songSpeed'] = { $gte: 1 }
 // Sorting method
 const sortingMethod = sortByNotesHit ? [['notesHit', -1], ['maxCombo', -1], ['datetime', 1]] : [['score', -1], ['datetime', 1]]
 
-const results = await Score.find(mongoQuery).sort(sortingMethod);
+// Aggregate so only the top score of each user is returned, instead of _all_ scores
+const pipeline = [
+  { $match: mongoQuery }, // apply filters
+  { $sort: Object.fromEntries(sortingMethod) }, // apply sort order
+  {
+    $group: {
+      _id: "$uploader",               // group by uploader
+      topScore: { $first: "$$ROOT" }, // take the first (thanks to sort order)
+    }
+  },
+  { $replaceRoot: { newRoot: "$topScore" } } // flatten back
+];
+
+const results = await Score.aggregate(pipeline); // Note: returns lean JSON instead of Mongoose model object. Not a problem, though
 
 // TODO: Ideally some pagination will be added as well, but I don't know the most performatic way to do it in Mongoose/MongoDB.
+// Could be done by adding `$skip` / `$limit` after the `$replaceRoot` in the pipeline.

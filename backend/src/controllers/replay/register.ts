@@ -277,6 +277,9 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     // Save band score (if valid)
     if (bandScoreValid) await bandScore.save()
 
+    // Delete temp files if the player needlessly uploaded chart/metadata files despite the song already existing
+    if (isSongEntryFound && !isReqReplayOnly) await deleteAllTempFiles() 
+    
     // Done! Reply with song ID for front-end redirection
     serverReply(reply, 'success_replay_register', { song: songEntry.toJSON() })
   } catch (err) {
