@@ -12,13 +12,18 @@ export type ReplayCountObject = {
 export interface ReplayChecksumObject {
   hashBytes: string
 }
+
+export interface YARGReplayValidatorHashResults {
+  songChecksum: { hashBytes: string }
+}
+
 export interface YARGReplayValidatorResults {
   replayInfo: {
     filePath: string
     replayName: string
     replayVersion: number
     engineVersion: number
-    replayChecksum: ReplayChecksumObject
+    replayChecksum: YARGReplayValidatorHashResults['songChecksum']
     songName: string
     artistName: string
     charterName: string
@@ -27,98 +32,102 @@ export interface YARGReplayValidatorResults {
     bandStars: number
     replayLength: number
     date: string
-    songChecksum: ReplayChecksumObject
+    songChecksum: YARGReplayValidatorHashResults['songChecksum']
     stats: {
-      totalNotes: number
-      numNotesHit: number
-      percentageHit: number
-      overstrums: number
-      overhits: number
-      ghostInputs: number
-      soloBonuses: number
-      playerName: string
-      score: number
-      stars: number
-      totalOverdrivePhrases: number
-      numOverdrivePhrasesHit: number
-      numOverdriveActivations: number
-      averageMultiplier: number
-      numPauses: number
-    }[]
+      [key: `${number}`]: {
+        totalNotes: number
+        numNotesHit: number
+        percentageHit: number
+        overstrums: number
+        ghostInputs: number
+        soloBonuses: number
+        playerName: string
+        score: number
+        stars: number
+        totalOverdrivePhrases: number
+        numOverdrivePhrasesHit: number
+        numOverdriveActivations: number
+        averageMultiplier: number
+        numPauses: number
+      }
+    }
   }
   replayData: {
-    profile: {
-      id: string
-      name: string
-      isBot: boolean
-      gameMode: number
-      noteSpeed: number
-      highwayLength: number
-      leftyFlip: boolean
-      rangeEnabled: boolean
-      autoConnectOrder: null
-      inputCalibrationMilliseconds: number
-      enginePreset: string
-      themePreset: string
-      colorProfile: string
-      cameraPreset: string
-      highwayPreset: string
-      currentInstrument: number
-      currentDifficulty: number
-      difficultyFallback: number
-      harmonyIndex: number
-      inputCalibrationSeconds: number
-      hasValidInstrument: boolean
-      currentModifiers: number
+    [key: `${number}`]: {
+      profile: {
+        id: string
+        name: string
+        isBot: boolean
+        gameMode: number
+        noteSpeed: number
+        highwayLength: number
+        leftyFlip: boolean
+        rangeEnabled: boolean
+        useCymbalModels: boolean
+        splitProTomsAndCymbals: boolean
+        swapSnareAndHiHat: boolean
+        swapCrashAndRide: boolean
+        autoConnectOrder: any
+        inputCalibrationMilliseconds: number
+        enginePreset: string
+        themePreset: string
+        colorProfile: string
+        cameraPreset: string
+        highwayPreset: string
+        currentInstrument: number
+        currentDifficulty: number
+        difficultyFallback: number
+        harmonyIndex: number
+        inputCalibrationSeconds: number
+        hasValidInstrument: boolean
+        currentModifiers: number
+      }
+      stats: {
+        overstrums: number
+        hoposStrummed: number
+        ghostInputs?: number
+        committedScore: number
+        pendingScore: number
+        noteScore: number
+        sustainScore?: number
+        multiplierScore: number
+        combo: number
+        maxCombo: number
+        scoreMultiplier: number
+        notesHit: number
+        totalNotes: number
+        starPowerTickAmount: number
+        totalStarPowerTicks: number
+        totalStarPowerBarsFilled: number
+        starPowerActivationCount: number
+        timeInStarPower: number
+        starPowerWhammyTicks: number
+        isStarPowerActive: boolean
+        starPowerPhrasesHit: number
+        totalStarPowerPhrases: number
+        soloBonuses: number
+        starPowerScore: number
+        stars: number
+        totalScore: number
+        starScore: number
+        comboInBandUnits: number
+        bandComboUnits: number
+        notesMissed: number
+        percent: number
+        starPowerPhrasesMissed: number
+
+        overhits?: number
+        ghostsHit?: number
+        accentsHit?: number
+      }
+      engine: number
     }
-    stats: {
-      overstrums: number
-      overhits: number
-      hoposStrummed: number
-      ghostInputs: number
-      committedScore: number
-      pendingScore: number
-      noteScore: number
-      sustainScore: number
-      multiplierScore: number
-      combo: number
-      maxCombo: number
-      scoreMultiplier: number
-      notesHit: number
-      totalNotes: number
-      starPowerTickAmount: number
-      totalStarPowerTicks: number
-      totalStarPowerBarsFilled: number
-      starPowerActivationCount: number
-      timeInStarPower: number
-      starPowerWhammyTicks: number
-      isStarPowerActive: boolean
-      starPowerPhrasesHit: number
-      totalStarPowerPhrases: number
-      soloBonuses: number
-      starPowerScore: number
-      stars: number
-      totalScore: number
-      starScore: number
-      comboInBandUnits: number
-      bandComboUnits: number
-      notesMissed: number
-      percent: number
-      starPowerPhrasesMissed: number
-      ghostsHit: number
-      accentsHit: number
-    }
-    engine: number
-  }[]
+  }
   chartData: {
     noteCount: ReplayCountObject
     starPowerCount: ReplayCountObject
   }
   hopoFrequency: number
-}
-
-export interface YARGReplayValidatorHashResults {
-  songChecksum: { hashBytes: string }
 }
 
 export class YARGReplayValidatorAPI {
@@ -191,12 +200,12 @@ export class YARGReplayValidatorAPI {
     return Buffer.from(checksumRaw, 'base64').toString(encoding ?? 'hex')
   }
 
-  static async returnReplayInfo(replayFilePath: FilePathLikeTypes, chartFilePath: FilePathLikeTypes, song: SongSchemaDocument, eighthNoteHopo?: boolean, hopoFreq?: number): Promise<YARGReplayValidatorResults> {
+  static async returnReplayInfo(replayFilePath: FilePathLikeTypes, chartFilePath: FilePathLikeTypes, isSongEntryFound: boolean, song: SongSchemaDocument, eighthNoteHopo?: boolean, hopoFreq?: number): Promise<YARGReplayValidatorResults> {
     const validatorPath = getValidatorPath()
     const replayFile = pathLikeToFilePath(replayFilePath)
     const chartFile = pathLikeToFilePath(chartFilePath)
 
-    const readMode = song ? this.readMode.replayOnly : this.readMode.replayAndMidi
+    const readMode = isSongEntryFound ? this.readMode.replayOnly : this.readMode.replayAndMidi
 
     let command = `"./${validatorPath.fullname}" "${replayFile.path}" "${chartFile.path}" -m ${readMode}`
 
