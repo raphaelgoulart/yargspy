@@ -9,16 +9,16 @@ import { initServerRoutes } from './core/initServerRoutes'
 import 'dotenv/config'
 
 const serverStart = async () => {
-  console.log('YARGLB Server v0.0.1\n')
+  console.log('YARG Leaderboard Server v0.0.1\nBy raphaelgoulart and Ruggy\n__________________________________________________________________')
   // Init fastify
   const app = fastify({ logger: fastifyLoggerOptions, disableRequestLogging: true })
 
-  app.log.info('Initializing Server...')
+  app.log.info(isDev() ? 'Initializing Server in development mode...\n' : 'Initializing Server...\n')
 
   // Check environment variables
-  const { port, mongoDBURI } = checkProcessEnv()
+  const { port, mongoDBURI } = checkProcessEnv(app)
 
-  if (isDev()) app.log.warn('Server running in development mode!')
+  // TODO: Public folder creator checker
 
   // Connect to MongoDB and add plugins
   await app.register(mongoDBConnectPlugin, { mongoDBURI })
@@ -33,7 +33,7 @@ const serverStart = async () => {
     await app.listen({
       port,
       listenTextResolver(address) {
-        return address
+        return `Listening: ${address}...`
       },
     })
   } catch (err) {

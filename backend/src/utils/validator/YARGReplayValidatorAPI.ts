@@ -83,13 +83,17 @@ export interface YARGReplayValidatorResults {
         currentModifiers: number
       }
       stats: {
+        overhits?: number
+        sustainScore?: number
+        ghostsHit?: number
+        accentsHit?: number
+        ghostInputs?: number
+
         overstrums: number
         hoposStrummed: number
-        ghostInputs?: number
         committedScore: number
         pendingScore: number
         noteScore: number
-        sustainScore?: number
         multiplierScore: number
         combo: number
         maxCombo: number
@@ -115,10 +119,6 @@ export interface YARGReplayValidatorResults {
         notesMissed: number
         percent: number
         starPowerPhrasesMissed: number
-
-        overhits?: number
-        ghostsHit?: number
-        accentsHit?: number
       }
       engine: number
     }
@@ -177,7 +177,6 @@ export class YARGReplayValidatorAPI {
     const replayFile = pathLikeToFilePath(replayFilePath)
 
     const command = `"./${validatorPath.fullname}" "${replayFile.path}" -m ${this.readMode.returnSongHash}`
-    console.debug(`Executing command: ${command}`)
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
     if (stderr) throw new ServerError('err_unknown', { error: stderr, errorOrigin: 'YARGReplayValidatorAPI.returnSongHash()' })
 
@@ -219,8 +218,6 @@ export class YARGReplayValidatorAPI {
     // Other input params
     if (eighthNoteHopo !== undefined) command += ` -e ${booleanToString(eighthNoteHopo)}`
     if (hopoFreq !== undefined) command += ` -f ${hopoFreq.toString()}`
-
-    console.debug(`Executing command: ${command}`)
 
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
     if (stderr) throw new ServerError('err_unknown', isDev() ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnReplayInfo()' } : {})

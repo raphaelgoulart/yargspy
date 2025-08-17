@@ -1,3 +1,5 @@
+import type { FastifyInstance } from 'fastify'
+
 export interface EnvironmentCheckerReturnObject {
   port: number
   mongoDBURI: string
@@ -10,7 +12,8 @@ export interface EnvironmentCheckerReturnObject {
  * - - - -
  * @returns {EnvironmentCheckerReturnObject}
  */
-export const checkProcessEnv = (): EnvironmentCheckerReturnObject => {
+export const checkProcessEnv = (app: FastifyInstance): EnvironmentCheckerReturnObject => {
+  app.log.info('Checking environment file...')
   const port = Number(process.env.PORT || '5000')
   if (isNaN(port)) throw new TypeError(`Invalid server port number provided as environmente variable.`)
 
@@ -22,6 +25,8 @@ export const checkProcessEnv = (): EnvironmentCheckerReturnObject => {
 
   const publicChartFileAccessKey = process.env.PUBLIC_CHART_FILE_ACCESS_KEY as string | undefined
   if (!publicChartFileAccessKey) throw new Error('No public chart file access key provided as environmente variable.')
+
+  app.log.info(`Using the following environment variables:\n\tPORT: ${port}\n\tMONGODB URI: ${mongoDBURI}\n\tJWT SECRET: ${jwtSecret}\n\tPUBLIC CHART FILE ACCESS KEY: ${publicChartFileAccessKey}\n`)
 
   return { port, mongoDBURI, jwtSecret, publicChartFileAccessKey }
 }

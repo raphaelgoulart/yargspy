@@ -26,6 +26,9 @@ export interface IReplayRegisterFileFieldsObject {
 
 const replayRegisterHandler: ServerHandler = async function (req, reply) {
   const { chartTemp, dtaTemp, iniTemp, midiTemp, replayTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
+  // For debug only: Object mapper to send on the response
+  const debugObj = new Map()
+  const playerScores: ScoreSchemaDocument[] = []
 
   try {
     const parts = req.parts({ limits: { parts: 4 } })
@@ -129,6 +132,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
     // Validate REPLAY file
     const replayInfo = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, isSongEntryFound, songEntry, eighthNoteHopo, hopoFreq)
+    debugObj.set('replayInfo', replayInfo)
 
     if (replayInfo.replayInfo.bandScore == 0) throw new ServerError('err_replay_no_notes_hit') // TODO: NEW ERROR
 
@@ -155,12 +159,13 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       songEntry.availableInstruments = availableInstruments
 
       if (isDev()) {
-        await chartFilePath.rename(getChartFilePathFromSongEntry(songEntry))
+        chartFilePath = await chartFilePath.rename(getChartFilePathFromSongEntry(songEntry))
       } else {
         // TODO: on prod, upload to S3 instead of copy
         chartFilePath.delete() // delete local file after uploading to S3
       }
       if (songDataPath) await songDataPath.delete()
+      debugObj.set('songEntry', songEntry.toJSON())
       await songEntry.save()
     }
 
@@ -245,6 +250,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       if (playerData.ghostsHit !== undefined) playerScore.ghostNotesHit = playerData.ghostsHit
       if (playerData.accentsHit !== undefined) playerScore.accentNotesHit = playerData.accentsHit
 
+      playerScores.push(playerScore.toJSON())
       await playerScore.save()
 
       childrenScores.push({ score: playerScore._id as Schema.Types.ObjectId })
@@ -275,10 +281,13 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     }
 
     // Save band score (if valid)
-    if (bandScoreValid) await bandScore.save()
+    if (bandScoreValid) {
+      debugObj.set('bandScore', bandScore.toJSON())
+      await bandScore.save()
+    }
 
     // Done! Reply with song ID for front-end redirection
-    serverReply(reply, 'success_replay_register', { song: songEntry.toJSON() })
+    serverReply(reply, 'success_replay_register', isDev() ? { ...(Object.fromEntries(debugObj.entries()), playerScores) } : {})
   } catch (err) {
     await deleteAllTempFiles()
     throw err
