@@ -38,10 +38,6 @@ export interface ServerErrorLogObject {
    * Tells if the error is an instance of `ZodError` (imported from `zod`).
    */
   isZodError: boolean
-  /**
-   * The error object itself.
-   */
-  error: FastifyError
 }
 
 /**
@@ -102,7 +98,6 @@ export class ServerError extends Error {
       isMongoError,
       isTokenError,
       isZodError,
-      error,
     }
     if (req) req.log.error(output, 'An error occurred')
     return output

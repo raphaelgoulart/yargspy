@@ -5,7 +5,7 @@ import type { ServerErrorHandler, ServerHandler, ServerRequest, ServerRequestFil
 import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, getServerPublic, isDev, parsePlayerModifiersForScoreEntry, YARGReplayValidatorAPI } from '../../utils.exports'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
-import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocument, type ScoreSchemaInput } from '../../models/Score'
+import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocument } from '../../models/Score'
 import { type Difficulty, Instrument, Song, type SongSchemaDocument } from '../../models/Song'
 import type { UserSchemaDocument } from '../../models/User'
 import type { Schema } from 'mongoose'
@@ -175,8 +175,8 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     const bandScore = new Score({
       song: songEntry._id,
       uploader: user._id,
-      filePath: replayFilePath.name,
-      checksum: scoreHash,
+      replayPath: replayFilePath.name,
+      replayFileHash: scoreHash,
       version: GameVersion.v0_13, // hardcoded: change on each stable update
       songSpeed: replayInfo.replayInfo.songSpeed,
       instrument: Instrument.Band,
@@ -186,15 +186,13 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
     let bandScoreValid = true
     let validPlayers = 0
+    let i = 0
 
     // Create player scores for each player (save)
-    const childrenScores: ScoreSchemaDocument['childrenScores'] = []
-    const bandModifiers: ScoreSchemaDocument['modifiers'] = []
+    const childrenScores: Schema.Types.ObjectId[] = []
+    const bandModifiers: (typeof Modifier)[keyof typeof Modifier][] = []
 
-    const replayDataKeys = Object.keys(replayInfo.replayData)
-    for (const i in replayDataKeys) {
-      const playerObj = replayInfo.replayData[i as `${number}`]
-
+    for (const playerObj of replayInfo.replayData) {
       const playerData = playerObj.stats
       if (playerData.totalScore === 0) continue // don't save "non-players"
 
@@ -205,7 +203,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
         continue
       }
 
-      const playerStats = replayInfo.replayInfo.stats[i as `${number}`]
+      const playerStats = replayInfo.replayInfo.stats[i]
       const playerProfile = playerObj.profile
 
       const playerInstrument = Number(playerProfile.currentInstrument) as (typeof Instrument)[keyof typeof Instrument]
@@ -214,8 +212,8 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       const playerScore = new Score({
         song: songEntry._id,
         uploader: user._id,
-        filePath: replayFilePath.name,
-        checksum: scoreHash,
+        replayPath: replayFilePath.name,
+        replayFileHash: scoreHash,
         version: GameVersion.v0_13,
         songSpeed: replayInfo.replayInfo.songSpeed,
         instrument: playerInstrument,
@@ -253,24 +251,25 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       playerScores.push(playerScore.toJSON())
       await playerScore.save()
 
-      childrenScores.push({ score: playerScore._id as Schema.Types.ObjectId })
+      childrenScores.push(playerScore._id as Schema.Types.ObjectId)
+
       // Add modifiers to band score if there are any
       // (making sure there are no repeats if multiple players used the same modifier)
       // TODO: test with multiple players
-      if (bandScoreValid && playerModifiers) {
-        for (const modifierIndex in playerModifiers) {
-          if (!bandModifiers.find((bandModifier) => bandModifier.modifier === playerModifiers[modifierIndex].modifier)) bandModifiers.push(playerModifiers[modifierIndex])
+      if (bandScoreValid && playerModifiers && playerModifiers.length > 0) {
+        for (const playerModifier of playerModifiers) {
+          if (!bandModifiers.find((mod) => mod === playerModifier)) bandModifiers.push(playerModifier)
         }
       }
 
       validPlayers++
+      i++
     }
 
     if (validPlayers === 0) throw new ServerError('err_replay_no_valid_players')
 
     bandScore.childrenScores = childrenScores
-
-    if (bandModifiers) bandScore.modifiers = bandModifiers
+    bandScore.modifiers = bandModifiers
 
     // Move replay file
     if (isDev()) {

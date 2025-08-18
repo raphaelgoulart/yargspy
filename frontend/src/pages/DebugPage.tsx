@@ -23,6 +23,9 @@ export default function DebugPage() {
       lastRequest: null,
       hasUserToken: Boolean(localStorage.getItem('userToken')),
       replayFileSelected: null,
+      chartFileSelected: null,
+      hasSongDataOnReq: false,
+      songDataFileSelected: null,
     })
 
     if (debugTabSelected === 2 && hasUserToken) {

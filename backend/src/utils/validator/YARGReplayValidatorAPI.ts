@@ -130,6 +130,115 @@ export interface YARGReplayValidatorResults {
   hopoFrequency: number
 }
 
+export interface FormattedYARGReplayResults {
+  replayInfo: {
+    filePath: string
+    replayName: string
+    replayVersion: number
+    engineVersion: number
+    replayChecksum: string
+    songName: string
+    artistName: string
+    charterName: string
+    songSpeed: number
+    bandScore: number
+    bandStars: number
+    replayLength: number
+    date: string
+    songChecksum: string
+    stats: {
+      totalNotes: number
+      numNotesHit: number
+      percentageHit: number
+      overstrums: number
+      ghostInputs: number
+      soloBonuses: number
+      playerName: string
+      score: number
+      stars: number
+      totalOverdrivePhrases: number
+      numOverdrivePhrasesHit: number
+      numOverdriveActivations: number
+      averageMultiplier: number
+      numPauses: number
+    }[]
+  }
+  replayData: {
+    profile: {
+      id: string
+      name: string
+      isBot: boolean
+      gameMode: number
+      noteSpeed: number
+      highwayLength: number
+      leftyFlip: boolean
+      rangeEnabled: boolean
+      useCymbalModels: boolean
+      splitProTomsAndCymbals: boolean
+      swapSnareAndHiHat: boolean
+      swapCrashAndRide: boolean
+      autoConnectOrder: any
+      inputCalibrationMilliseconds: number
+      enginePreset: string
+      themePreset: string
+      colorProfile: string
+      cameraPreset: string
+      highwayPreset: string
+      currentInstrument: number
+      currentDifficulty: number
+      difficultyFallback: number
+      harmonyIndex: number
+      inputCalibrationSeconds: number
+      hasValidInstrument: boolean
+      currentModifiers: number
+    }
+    stats: {
+      overhits?: number
+      sustainScore?: number
+      ghostsHit?: number
+      accentsHit?: number
+      ghostInputs?: number
+
+      overstrums: number
+      hoposStrummed: number
+      committedScore: number
+      pendingScore: number
+      noteScore: number
+      multiplierScore: number
+      combo: number
+      maxCombo: number
+      scoreMultiplier: number
+      notesHit: number
+      totalNotes: number
+      starPowerTickAmount: number
+      totalStarPowerTicks: number
+      totalStarPowerBarsFilled: number
+      starPowerActivationCount: number
+      timeInStarPower: number
+      starPowerWhammyTicks: number
+      isStarPowerActive: boolean
+      starPowerPhrasesHit: number
+      totalStarPowerPhrases: number
+      soloBonuses: number
+      starPowerScore: number
+      stars: number
+      totalScore: number
+      starScore: number
+      comboInBandUnits: number
+      bandComboUnits: number
+      notesMissed: number
+      percent: number
+      starPowerPhrasesMissed: number
+    }
+    engine: number
+  }[]
+  chartData: {
+    noteCount: ReplayCountObject
+    starPowerCount: ReplayCountObject
+  }
+  hopoFrequency: number
+}
+
 export class YARGReplayValidatorAPI {
   /**
    * Enum for read-mode `-m` parameter.
@@ -140,6 +249,29 @@ export class YARGReplayValidatorAPI {
     midiOnly: 2,
     returnSongHash: 3,
   } as const
+
+  private static unmountIndexObject(obj: Record<string, any>): any[] {
+    const result: any[] = []
+
+    for (const i in obj) {
+      result.push(obj[i])
+    }
+
+    return result
+  }
+
+  static formatReplayInfoResults(results: YARGReplayValidatorResults): FormattedYARGReplayResults {
+    const copy: Record<string, any> = { ...results }
+
+    if (copy.replayInfo.replayChecksum.hashBytes) copy.replayInfo.replayChecksum = Buffer.from(copy.replayInfo.replayChecksum.hashBytes as string, 'base64').toString('hex')
+    if (copy.replayInfo.songChecksum.hashBytes) copy.replayInfo.songChecksum = Buffer.from(copy.replayInfo.songChecksum.hashBytes as string, 'base64').toString('hex')
+
+    if (copy.replayInfo.stats && Object.keys(copy.replayInfo.stats).length > 0) copy.replayInfo.stats = this.unmountIndexObject(copy.replayInfo.stats)
+
+    if (copy.replayData && Object.keys(copy.replayData).length > 0) copy.replayData = this.unmountIndexObject(copy.replayData)
+
+    return copy as FormattedYARGReplayResults
+  }
 
   /**
    * Transforms the keys strings of a C#-key-style JSON object to camel case, used in JS environments.
@@ -199,7 +331,7 @@ export class YARGReplayValidatorAPI {
     return Buffer.from(checksumRaw, 'base64').toString(encoding ?? 'hex')
   }
 
-  static async returnReplayInfo(replayFilePath: FilePathLikeTypes, chartFilePath: FilePathLikeTypes, isSongEntryFound: boolean, song: SongSchemaDocument, eighthNoteHopo?: boolean, hopoFreq?: number): Promise<YARGReplayValidatorResults> {
+  static async returnReplayInfo(replayFilePath: FilePathLikeTypes, chartFilePath: FilePathLikeTypes, isSongEntryFound: boolean, song: SongSchemaDocument, eighthNoteHopo?: boolean, hopoFreq?: number): Promise<FormattedYARGReplayResults> {
     const validatorPath = getValidatorPath()
     const replayFile = pathLikeToFilePath(replayFilePath)
     const chartFile = pathLikeToFilePath(chartFilePath)
@@ -222,6 +354,6 @@ export class YARGReplayValidatorAPI {
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
     if (stderr) throw new ServerError('err_unknown', isDev() ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnReplayInfo()' } : {})
 
-    return this.camelCaseKeyTransform<YARGReplayValidatorResults>(JSON.parse(stdout))
+    return this.formatReplayInfoResults(this.camelCaseKeyTransform<YARGReplayValidatorResults>(JSON.parse(stdout)))
   }
 }

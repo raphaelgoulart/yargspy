@@ -54,18 +54,18 @@ export const GameVersion = {
 export interface ScoreSchemaInput {
   song: Schema.Types.ObjectId
   uploader: Schema.Types.ObjectId
-  filePath: string
-  checksum: string
-  childrenScores: { score: Schema.Types.ObjectId }[]
+  replayPath: string
+  replayFileHash: string
+  childrenScores: Schema.Types.ObjectId[]
   version: (typeof GameVersion)[keyof typeof GameVersion]
   hidden: boolean
   instrument: (typeof Instrument)[keyof typeof Instrument]
   gamemode?: (typeof GameMode)[keyof typeof GameMode]
   difficulty?: (typeof Difficulty)[keyof typeof Difficulty]
   engine?: (typeof Engine)[keyof typeof Engine]
-  modifiers: { modifier: (typeof Modifier)[keyof typeof Modifier] }[]
+  modifiers: (typeof Modifier)[keyof typeof Modifier][]
   songSpeed: number
-  datetime: Date
+  createdAt: Date
   profileName?: string
   score: number
   stars: number
@@ -107,11 +107,11 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
       ref: 'User',
       required: true,
     },
-    filePath: {
+    replayPath: {
       type: String,
       required: true,
     },
-    checksum: {
+    replayFileHash: {
       // SHA-1 - while one replay upload can create multiple scores (i.e. band scores), this should be checked on score upload to ensure a replay file is uploaded a single time only
       type: String,
       required: true,
@@ -119,12 +119,9 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
     childrenScores: [
       // for band scores
       {
-        _id: false,
-        score: {
-          type: Schema.Types.ObjectId,
-          ref: 'Score',
-          required: true,
-        },
+        type: Schema.Types.ObjectId,
+        ref: 'Score',
+        required: true,
       },
     ],
     version: {
@@ -162,19 +159,16 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
     },
     modifiers: [
       {
-        _id: false,
-        modifier: {
-          type: Number,
-          required: true,
-          enum: Object.values(Modifier),
-        },
+        type: Number,
+        required: true,
+        enum: Object.values(Modifier),
       },
     ],
     songSpeed: {
       type: Number,
       required: true,
     },
-    datetime: {
+    createdAt: {
       // can be fetched from server (upload time) or replay metadata; i'd rather go with server
       type: Date,
       required: true,

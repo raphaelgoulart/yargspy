@@ -39,7 +39,7 @@ export const createSongEntryInput = async (chartFilePath: FilePath, chartFileHas
   const isChart = chartFilePath.ext === '.chart'
   const isRb3con = !isChart && songDataPath.ext === '.dta'
 
-  newSongEntryMap.set('hash', chartFileHash)
+  newSongEntryMap.set('chartFileHash', chartFileHash)
   newSongEntryMap.set('isChart', isChart)
   newSongEntryMap.set('isRb3con', isRb3con)
 

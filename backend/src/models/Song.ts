@@ -57,7 +57,7 @@ export interface SongSchemaInput {
   sustainCutoffThreshold?: number
   hopoFrequency?: number
   multiplierNote?: number
-  hash: string
+  chartFileHash: string
   isChart: boolean
   isRb3con: boolean
   availableInstruments: {
@@ -102,7 +102,7 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
     },
     // system metadata (hash etc)
     // SHA-1
-    hash: { type: String, required: true, unique: true },
+    chartFileHash: { type: String, required: true, unique: true },
     isChart: { type: Boolean, required: true },
     isRb3con: { type: Boolean, default: false, required: true }, // info needed for replay validation
     // should probably fetch these using YARG.Core for consistency with the actual game
@@ -133,7 +133,7 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
   {
     statics: {
       async findByHash(hash: string) {
-        return await this.findOne({ hash })
+        return await this.findOne({ chartFileHash: hash })
       },
     },
   }
