@@ -142,3 +142,11 @@ backend/temp/
 
 # Test folder junk
 backend/tests/
+
+# Python env files
+.venv/
+__pycache__/
+YARGReplayWatcher/config.ini
+
+# For now, gonna hide the watcher
+YARGReplayWatcher/

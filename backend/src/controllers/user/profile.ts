@@ -1,17 +1,15 @@
 import { TokenError } from 'fast-jwt'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
-import type { ServerHandler, ServerErrorHandler, ServerRequest } from '../../lib.exports'
+import type { ServerHandler, ServerErrorHandler, RouteRequest } from '../../lib.exports'
 import type { UserSchemaDocument } from '../../models/User'
 
 export interface IUserProfile {}
 
-type RouteRequest = ServerRequest<IUserProfile> & { user: UserSchemaDocument }
-
 // #region Handler
 
 const userProfileHandler: ServerHandler<IUserProfile> = async function (req, reply) {
-  const user = (req as RouteRequest).user
+  const user = (req as RouteRequest<{ user: UserSchemaDocument }>).user
 
   serverReply(
     reply,

@@ -1,5 +1,5 @@
 import type { FastifyError, FastifyRequest } from 'fastify'
-import type { DirectMessage, ReplyCodeNames } from '../core.exports'
+import { codeMap, type DirectMessage, type ReplyCodeNames } from '../core.exports'
 import type { LiteralUnion } from 'type-fest'
 import { ZodError } from 'zod'
 import { MongoError } from 'mongodb'
@@ -71,6 +71,17 @@ export class ServerError extends Error {
     this.serverErrorCode = codeOrMessage
     this.data = data
     this.messageValues = messageValues
+    this.message = 'An unknown error occurred, please try again later'
+
+    if (Array.isArray(codeOrMessage)) this.message = codeOrMessage[1]
+    else if (codeMap[codeOrMessage as ReplyCodeNames]) this.message = codeMap[codeOrMessage as ReplyCodeNames][1]
+
+    if (messageValues) {
+      const allKeys = Object.keys(messageValues)
+      for (const key of allKeys) {
+        this.message = this.message.replaceAll(`\{\{${key}\}\}`, messageValues[key])
+      }
+    }
   }
 
   /**

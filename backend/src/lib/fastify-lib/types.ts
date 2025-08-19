@@ -38,3 +38,5 @@ export interface ServerRequestFileFieldObject {
   encoding: string
   mimeType: string
 }
+
+export type RouteRequest<T> = ServerRequest & T

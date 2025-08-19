@@ -2,19 +2,17 @@ import { TokenError } from 'fast-jwt'
 import type { infer as ZodInfer } from 'zod'
 import { ServerError, userUpdateBodySchema } from '../../app.exports'
 import { serverReply } from '../../core.exports'
-import type { ServerHandler, ServerErrorHandler, ServerRequest } from '../../lib.exports'
-import { User, type UserSchemaDocument } from '../../models/User'
+import type { ServerHandler, ServerErrorHandler, RouteRequest } from '../../lib.exports'
+import type { UserSchemaDocument } from '../../models/User'
 
 export interface IUserUpdate {
   body: ZodInfer<typeof userUpdateBodySchema>
 }
 
-type RouteRequest = ServerRequest<IUserUpdate> & { user: UserSchemaDocument }
-
 // #region Handler
 
 const userUpdateHandler: ServerHandler<IUserUpdate> = async function (req, reply) {
-  const user = (req as RouteRequest).user
+  const user = (req as RouteRequest<{ user: UserSchemaDocument }>).user
   const isAdmin = user.admin
   if (isAdmin) {
     // TODO: Admin editing other user entries or itself

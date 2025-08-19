@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyRequest } from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import { userAllEntriesController, userLoginController, userProfileController, userRegisterController } from '../controllers.exports'
 import { verifyUserJWT, verifyUserLoginBody } from '../core.exports'
 
