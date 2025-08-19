@@ -1,7 +1,7 @@
 import { pipeline } from 'node:stream/promises'
 import { TokenError } from 'fast-jwt'
 import type { FilePath } from 'node-lib'
-import type { ServerErrorHandler, ServerHandler, ServerRequest, ServerRequestFileFieldObject } from '../../lib.exports'
+import type { RouteRequest, ServerErrorHandler, ServerHandler, ServerRequest, ServerRequestFileFieldObject } from '../../lib.exports'
 import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, getServerPublic, isDev, parsePlayerModifiersForScoreEntry, YARGReplayValidatorAPI } from '../../utils.exports'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
@@ -9,8 +9,6 @@ import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocumen
 import { type Difficulty, Instrument, Song, type SongSchemaDocument } from '../../models/Song'
 import type { UserSchemaDocument } from '../../models/User'
 import type { Schema } from 'mongoose'
-
-type RouteRequest = ServerRequest & { user: UserSchemaDocument }
 
 export interface IReplayRegisterBody {
   reqType?: 'replayOnly' | 'complete'
@@ -26,8 +24,6 @@ export interface IReplayRegisterFileFieldsObject {
 
 const replayRegisterHandler: ServerHandler = async function (req, reply) {
   const { chartTemp, dtaTemp, iniTemp, midiTemp, replayTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
-  // For debug only: Object mapper to send on the response
-  const debugObj = new Map()
   const playerScores: ScoreSchemaDocument[] = []
 
   try {
@@ -132,7 +128,6 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
     // Validate REPLAY file
     const replayInfo = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, isSongEntryFound, songEntry, eighthNoteHopo, hopoFreq)
-    debugObj.set('replayInfo', replayInfo)
 
     if (replayInfo.replayInfo.bandScore == 0) throw new ServerError('err_replay_no_notes_hit') // TODO: NEW ERROR
 
@@ -165,11 +160,10 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
         chartFilePath.delete() // delete local file after uploading to S3
       }
       if (songDataPath) await songDataPath.delete()
-      debugObj.set('songEntry', songEntry.toJSON())
       await songEntry.save()
     }
 
-    const user = (req as RouteRequest).user
+    const user = (req as RouteRequest<{ user: UserSchemaDocument }>).user
 
     // Create band score (don't save yet)
     const bandScore = new Score({
@@ -280,16 +274,13 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     }
 
     // Save band score (if valid)
-    if (bandScoreValid) {
-      debugObj.set('bandScore', bandScore.toJSON())
-      await bandScore.save()
-    }
+    if (bandScoreValid) await bandScore.save()
 
     // Delete temp files if the player needlessly uploaded chart/metadata files despite the song already existing
     if (isSongEntryFound && !isReqReplayOnly) await deleteAllTempFiles()
 
     // Done! Reply with song ID for front-end redirection
-    serverReply(reply, 'success_replay_register', isDev() ? { ...Object.fromEntries(debugObj.entries()), playerScores } : {})
+    serverReply(reply, 'success_replay_register', { playerScoreIDs: playerScores.map((score) => score.id), bandScoreID: bandScore.id })
   } catch (err) {
     await deleteAllTempFiles()
     throw err
