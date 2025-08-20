@@ -227,17 +227,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
         numPauses: playerStats.numPauses,
       })
 
-      if (playerInstrument === Instrument.Vocals || playerInstrument === Instrument.Harmony) playerScore.percent = playerData.percent
-      else {
-        const instrumentData = songEntry.availableInstruments.find((instr) => instr.difficulty === playerScore.difficulty && instr.instrument === playerScore.instrument)
-        if (!instrumentData || instrumentData.notes === 0) {
-          // Unreachable code
-          throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts'" })
-        }
-
-        const percent = (playerData.notesHit / instrumentData.notes) * 100
-        playerScore.percent = percent
-      }
+      playerScore.percent = playerData.percent
 
       // Overstrum if 5/6-fret, overhit if drums/keys, neither if vocals
       if (playerData.overstrums !== undefined) playerScore.overhits = playerData.overstrums
