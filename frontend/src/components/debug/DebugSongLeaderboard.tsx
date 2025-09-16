@@ -7,6 +7,7 @@ import CheckBox from '../CheckBox'
 import { VscLoading } from '../../assets/icons'
 import BlockOfCode from '../BlockOfCode'
 import axios, { AxiosError } from 'axios'
+import { useState } from 'react'
 
 function stringToNumberArray(str: string): number[] {
     const result = []
@@ -30,6 +31,7 @@ export default function DebugSongLeaderboard() {
     const allowedModifiers = DebugGlobalState((x) => x.allowedModifiers)
     const allowSlowdowns = DebugGlobalState((x) => x.allowSlowdowns)
     const sortByNotesHit = DebugGlobalState((x) => x.sortByNotesHit)
+    const [allowedModifiersCheckbox, setAllowedModifiersCheckbox] = useState(true);
     //
     const setDebugGlobalState = DebugGlobalState((x) => x.setDebugGlobalState)
     const isActivated = debugTabSelected === 3
@@ -51,7 +53,7 @@ export default function DebugSongLeaderboard() {
               instrument: instrument,
               difficulty: difficulty,
               engine: engine,
-              allowedModifiers: allowedModifiers,
+              allowedModifiers: allowedModifiersCheckbox ? allowedModifiers : [],
               allowSlowdowns: allowSlowdowns,
               sortByNotesHit: sortByNotesHit
             } as const
@@ -63,7 +65,6 @@ export default function DebugSongLeaderboard() {
                 }
               >(`${import.meta.env.VITE_SERVER_URI}/song/leaderboard`, body, { responseType: 'json' })
                 setDebugGlobalState({
-                    hasUserToken: true,
                     lastRequest: {
                     ...data,
                     requestTime: Date.now() - startTime,
@@ -97,7 +98,17 @@ export default function DebugSongLeaderboard() {
         <h2 className="mb-1 text-xs font-bold uppercase">{t('engine')}</h2>
         <input name="engine" type="number" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={engine} onChange={(ev) => setDebugGlobalState({ engine: Number(ev.target.value) })} />
         <h2 className="mb-1 text-xs font-bold uppercase">{t('allowedModifiers')}</h2>
-        <input name="allowedModifiers" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={allowedModifiers.join(",")} onChange={(ev) => setDebugGlobalState({ allowedModifiers: stringToNumberArray(ev.target.value) })} />
+        <div className="mb-2 w-full !flex-row items-center">
+        <CheckBox
+        condition={allowedModifiersCheckbox}
+        type="button"
+        className="mr-2 disabled:!cursor-default disabled:text-neutral-800"
+        onClick={() => {
+            setAllowedModifiersCheckbox(!allowedModifiersCheckbox)
+        }}
+        />
+        <input name="allowedModifiers" disabled={!allowedModifiersCheckbox!} readOnly={!allowedModifiersCheckbox!} className="mb-2 w-full rounded-xs bg-white/10 px-2 py-1" value={allowedModifiers.join(",")} onChange={(ev) => setDebugGlobalState({ allowedModifiers: stringToNumberArray(ev.target.value) })} />
+        </div>
         <div className="mb-2 w-full !flex-row items-center">
         <CheckBox
         condition={allowSlowdowns}
@@ -106,7 +117,6 @@ export default function DebugSongLeaderboard() {
         onClick={() => {
             setDebugGlobalState({ allowSlowdowns: !allowSlowdowns })
         }}
-        disabled={!hasUserToken}
         />
         <h2 className="mb-1 text-xs font-bold uppercase">{t('allowSlowdowns')}</h2>
         </div>
@@ -118,7 +128,6 @@ export default function DebugSongLeaderboard() {
         onClick={() => {
             setDebugGlobalState({ sortByNotesHit: !sortByNotesHit })
         }}
-        disabled={!hasUserToken}
         />
         <h2 className="mb-1 text-xs font-bold uppercase">{t('sortByNotesHit')}</h2>
         </div>
@@ -151,7 +160,23 @@ export default function DebugSongLeaderboard() {
                 <p className="mb-2">{`${import.meta.env.VITE_SERVER_URI}/song/leaderboard`}</p>
                 <h3 className="text-xs font-bold uppercase">{t('content_type')}</h3>
                 <p className="mb-2">{t('json')}</p>
-                <h3 className="text-xs font-bold uppercase">{t('header_auth_message')}</h3>
+                <div className="h-3 w-full bg-transparent"></div>
+                <BlockOfCode
+                    code={JSON.stringify(
+                    {
+                        id: songId,
+                        instrument: instrument,
+                        difficulty: difficulty,
+                        engine: engine,
+                        allowedModifiers: allowedModifiersCheckbox ? allowedModifiers : [],
+                        allowSlowdowns: allowSlowdowns,
+                        sortByNotesHit: sortByNotesHit
+                    },
+                    null,
+                    4
+                    )}
+                    className="text-xs"
+                />
                 </div>
                 <div className="mb-2 rounded-sm bg-neutral-800 p-3">
                 <h2 className="mr-auto mb-3 text-sm font-bold uppercase">{t('res_json')}</h2>
