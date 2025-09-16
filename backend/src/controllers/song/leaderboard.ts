@@ -49,8 +49,8 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
     const allowSlowdowns = req.body.allowSlowdowns ?? false;
     // Sorting can be done in two ways: Score-based (default) or Notes hit
     const sortByNotesHit = req.body.sortByNotesHit ?? false;
-    //#region Actual querying using the variables above
-    // Query (TODO: move to Song obj?)
+
+    // Query
     let mongoQuery = { // Using native mongo query instead of mongoose for perf gains with aggregate
         song: new ObjectId(songId),
         instrument: instrument,
