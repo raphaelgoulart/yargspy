@@ -8,8 +8,9 @@ import DebugUserProfile from '../components/debug/DebugUserProfile'
 import axios, { AxiosError } from 'axios'
 import type { GenericServerResponseObject } from '../app/types'
 import DebugUploadReplayFile from '../components/debug/DebugUploadReplayFile'
+import DebugSongLeaderboard from '../components/debug/DebugSongLeaderboard'
 
-const debugTabs = ['user_login', 'user_register', 'user_profile', 'upload_replay_file'] as const
+const debugTabs = ['user_login', 'user_register', 'user_profile', 'song_leaderboard', 'upload_replay_file'] as const
 
 export default function DebugPage() {
   const debugTabSelected = DebugGlobalState((x) => x.debugTabSelected)
@@ -88,6 +89,7 @@ export default function DebugPage() {
             <DebugUserLogin />
             <DebugUserRegister />
             <DebugUserProfile />
+            <DebugSongLeaderboard />
             <DebugUploadReplayFile />
           </div>
         </div>

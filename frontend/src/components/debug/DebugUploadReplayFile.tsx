@@ -19,7 +19,7 @@ export default function DebugUploadReplayFile() {
   const songDataFileSelected = DebugGlobalState((x) => x.songDataFileSelected)
   const hasSongDataOnReq = DebugGlobalState((x) => x.hasSongDataOnReq)
   const setDebugGlobalState = DebugGlobalState((x) => x.setDebugGlobalState)
-  const isActivated = debugTabSelected === 3
+  const isActivated = debugTabSelected === 4
 
   const replayInputRef = useRef<HTMLInputElement>(null)
   const chartInputRef = useRef<HTMLInputElement>(null)

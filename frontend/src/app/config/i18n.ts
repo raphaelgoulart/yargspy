@@ -30,6 +30,7 @@ i18n
           register: 'Register',
           req_details: 'Request Details',
           res_json: 'Response JSON',
+          song_leaderboard: 'Song Leaderboard',
           status: 'Status',
           token_copy: 'Copy Token',
           token_delete: 'Delete Token',
@@ -41,6 +42,14 @@ i18n
           user_register: 'User Register',
           username_short: 'Username',
           username: 'User name',
+          // song leaderboard
+          songId: "Song ID",
+          instrument: "Instrument",
+          difficulty: "Difficulty",
+          engine: "Engine",
+          allowedModifiers: "Allowed Modifiers",
+          allowSlowdowns: "Allow Slowdowns",
+          sortByNotesHit: "Sort by Notes Hit"
         },
       },
     },

@@ -7,7 +7,7 @@ import { Difficulty, Instrument } from '../../models/Song'
 import { ObjectId } from 'mongodb'
 
 export interface ISongLeaderboard {
-  query: {
+  body: {
     id?: string,
     instrument?: (typeof Instrument)[keyof typeof Instrument],
     difficulty?: (typeof Difficulty)[keyof typeof Difficulty],
@@ -34,21 +34,21 @@ export interface ISongLeaderboardQuery {
 }
 
 const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (req, reply) {
-    if (!req.query.id) throw new ServerError('err_song_invalid_query', null, { params: "id" })
+    if (!req.body.id) throw new ServerError('err_song_invalid_query', null, { params: "id" })
     // Each leaderboard pertains to a song
-    const songId = req.query.id
+    const songId = req.body.id
     // Each instrument ("Band" counts as an instrument) has its own leaderboard
-    const instrument = req.query.instrument ?? Instrument.Band;
+    const instrument = req.body.instrument ?? Instrument.Band;
     // Each difficulty has its own leaderboard, EXCEPT FOR BAND - this value should be unused in the query if instrument is 255
-    const difficulty = req.query.difficulty ?? Difficulty.Expert;
+    const difficulty = req.body.difficulty ?? Difficulty.Expert;
     // Each non-custom engine has its own leaderboard , EXCEPT FOR BAND - this value should be unused in the query if instrument is 255
-    const engine = req.query.engine ?? Engine.Default;
+    const engine = req.body.engine ?? Engine.Default;
     // Modifiers can be filtered in or out by the user; by default we only allow the ones that make the song as difficult or harder
-    const allowedModifiers = req.query.allowedModifiers ?? [Modifier.AllStrums, Modifier.TapsToHopos, Modifier.NoteShuffle, Modifier.NoDynamics, Modifier.NoVocalPercussion, Modifier.RangeCompress];
+    const allowedModifiers = req.body.allowedModifiers ?? [Modifier.AllStrums, Modifier.TapsToHopos, Modifier.NoteShuffle, Modifier.NoDynamics, Modifier.NoVocalPercussion, Modifier.RangeCompress];
     // Songs below 100% speed are hidden by default
-    const allowSlowdowns = req.query.allowSlowdowns ?? false;
+    const allowSlowdowns = req.body.allowSlowdowns ?? false;
     // Sorting can be done in two ways: Score-based (default) or Notes hit
-    const sortByNotesHit = req.query.sortByNotesHit ?? false;
+    const sortByNotesHit = req.body.sortByNotesHit ?? false;
     //#region Actual querying using the variables above
     // Query (TODO: move to Song obj?)
     let mongoQuery = { // Using native mongo query instead of mongoose for perf gains with aggregate

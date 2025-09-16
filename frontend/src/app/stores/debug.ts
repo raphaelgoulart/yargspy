@@ -13,6 +13,14 @@ export interface DebugGlobalStateProps {
   chartFileSelected: File | null
   songDataFileSelected: File | null
   hasSongDataOnReq: boolean
+  // song leaderboard
+  songId: string,
+  instrument: number,
+  difficulty: number,
+  engine: number,
+  allowedModifiers: Array<number>,
+  allowSlowdowns: boolean,
+  sortByNotesHit: boolean,
 }
 
 export interface DebugGlobalStateActions {
@@ -35,6 +43,14 @@ const DebugGlobalStateDefaultState: DebugGlobalStateProps = {
   chartFileSelected: null,
   songDataFileSelected: null,
   hasSongDataOnReq: false,
+  // song leaderboard
+  songId: '',
+  instrument: 255,
+  difficulty: 4,
+  engine: 0,
+  allowedModifiers: [0, 4, 5, 8, 9, 10],
+  allowSlowdowns: false,
+  sortByNotesHit: false,
 }
 
 export const DebugGlobalState = create<DebugGlobalStateHook>()((set, get) => ({

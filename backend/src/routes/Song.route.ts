@@ -3,7 +3,7 @@ import { songLeaderboardController } from '../controllers.exports'
 
 export default function SongRoute(app: FastifyInstance) {
   app.route({
-    method: ['GET', 'HEAD'],
+    method: ['POST', 'HEAD'],
     url: '/song/leaderboard',
     logLevel: 'warn',
     ...songLeaderboardController,
