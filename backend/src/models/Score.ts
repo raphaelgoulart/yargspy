@@ -77,9 +77,9 @@ export interface ScoreSchemaInput {
   overhits?: number
   ghostInputs?: number
   sustainScore?: number
-  averageMultiplier?: number
+  //averageMultiplier?: number
   soloBonuses?: number
-  numPauses?: number
+  //numPauses?: number
   ghostNotesHit?: number
   accentNotesHit?: number
 }
@@ -219,18 +219,18 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
       // 5-fret only (hence optional)
       type: Number,
     },
-    averageMultiplier: {
+    /*averageMultiplier: {
       // can be null for band scores
       type: Number,
-    },
+    },*/
     soloBonuses: {
       // can be null for band scores
       type: Number,
     },
-    numPauses: {
+    /*numPauses: {
       // can be null for band scores
       type: Number,
-    },
+    },*/
     ghostNotesHit: {
       // drums only
       type: Number,

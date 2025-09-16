@@ -222,9 +222,9 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
         maxCombo: playerData.maxCombo,
         starPowerPhrasesHit: playerData.starPowerPhrasesHit,
         starPowerActivationCount: playerData.starPowerActivationCount,
-        averageMultiplier: playerStats.averageMultiplier,
+        //averageMultiplier: playerStats.averageMultiplier,
         soloBonuses: playerData.soloBonuses,
-        numPauses: playerStats.numPauses,
+        //numPauses: playerStats.numPauses,
       })
 
       playerScore.percent = playerData.percent
