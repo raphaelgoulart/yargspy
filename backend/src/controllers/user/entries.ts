@@ -37,8 +37,7 @@ const userEntriesHandler: ServerHandler<IUserEntries> = async function (req, rep
             // Filter for production env
             username: user.username,
             profilePhotoURL: user.profilePhotoURL,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
+            // TODO: country flag?
           }
     ),
   })
