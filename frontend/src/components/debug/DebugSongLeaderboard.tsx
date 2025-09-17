@@ -32,6 +32,9 @@ export default function DebugSongLeaderboard() {
     const allowSlowdowns = DebugGlobalState((x) => x.allowSlowdowns)
     const sortByNotesHit = DebugGlobalState((x) => x.sortByNotesHit)
     const [allowedModifiersCheckbox, setAllowedModifiersCheckbox] = useState(true);
+    // pagination
+    const page = DebugGlobalState((x) => x.page)
+    const pageSize = DebugGlobalState((x) => x.pageSize)
     //
     const setDebugGlobalState = DebugGlobalState((x) => x.setDebugGlobalState)
     const isActivated = debugTabSelected === 3
@@ -55,7 +58,9 @@ export default function DebugSongLeaderboard() {
               engine: engine,
               allowedModifiers: allowedModifiersCheckbox ? allowedModifiers : [],
               allowSlowdowns: allowSlowdowns,
-              sortByNotesHit: sortByNotesHit
+              sortByNotesHit: sortByNotesHit,
+              page: page,
+              pageSize: pageSize
             } as const
             const startTime = Date.now()
             try {
@@ -89,7 +94,7 @@ export default function DebugSongLeaderboard() {
               setDebugGlobalState({ isRequesting: false })
         }}}
         >
-        <h2 className="mb-1 text-xs font-bold uppercase">{t('songId')}</h2>
+        <h2 className="mb-1 text-xs font-bold uppercase">{t('song_id')}</h2>
         <input name="songId" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={songId} onChange={(ev) => setDebugGlobalState({ songId: ev.target.value })} />
         <h2 className="mb-1 text-xs font-bold uppercase">{t('instrument')}</h2>
         <input name="instrument" type="number" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={instrument} onChange={(ev) => setDebugGlobalState({ instrument: Number(ev.target.value) })} />
@@ -97,7 +102,7 @@ export default function DebugSongLeaderboard() {
         <input name="difficulty" type="number" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={difficulty} onChange={(ev) => setDebugGlobalState({ difficulty: Number(ev.target.value) })} />
         <h2 className="mb-1 text-xs font-bold uppercase">{t('engine')}</h2>
         <input name="engine" type="number" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={engine} onChange={(ev) => setDebugGlobalState({ engine: Number(ev.target.value) })} />
-        <h2 className="mb-1 text-xs font-bold uppercase">{t('allowedModifiers')}</h2>
+        <h2 className="mb-1 text-xs font-bold uppercase">{t('allowed_modifiers')}</h2>
         <div className="mb-2 w-full !flex-row items-center">
         <CheckBox
         condition={allowedModifiersCheckbox}
@@ -118,7 +123,7 @@ export default function DebugSongLeaderboard() {
             setDebugGlobalState({ allowSlowdowns: !allowSlowdowns })
         }}
         />
-        <h2 className="mb-1 text-xs font-bold uppercase">{t('allowSlowdowns')}</h2>
+        <h2 className="mb-1 text-xs font-bold uppercase">{t('allow_slowdowns')}</h2>
         </div>
         <div className="mb-2 w-full !flex-row items-center">
         <CheckBox
@@ -129,8 +134,13 @@ export default function DebugSongLeaderboard() {
             setDebugGlobalState({ sortByNotesHit: !sortByNotesHit })
         }}
         />
-        <h2 className="mb-1 text-xs font-bold uppercase">{t('sortByNotesHit')}</h2>
+        <h2 className="mb-1 text-xs font-bold uppercase">{t('sort_by_notes_hit')}</h2>
         </div>
+        <h2 className="mb-1 text-xs font-bold uppercase">{t('page_number')}</h2>
+        <input name="engine" type="number" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={page} onChange={(ev) => setDebugGlobalState({ page: Number(ev.target.value) })} />
+        <h2 className="mb-1 text-xs font-bold uppercase">{t('page_size')}</h2>
+        <input name="engine" type="number" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={pageSize} onChange={(ev) => setDebugGlobalState({ pageSize: Number(ev.target.value) })} />
+        
         <button disabled={isRequesting} className="rounded-sm bg-cyan-700 py-2 uppercase hover:bg-cyan-600 disabled:bg-neutral-800 disabled:text-neutral-700">
         Upload
         </button>
@@ -170,7 +180,9 @@ export default function DebugSongLeaderboard() {
                         engine: engine,
                         allowedModifiers: allowedModifiersCheckbox ? allowedModifiers : [],
                         allowSlowdowns: allowSlowdowns,
-                        sortByNotesHit: sortByNotesHit
+                        sortByNotesHit: sortByNotesHit,
+                        page: page,
+                        pageSize: pageSize
                     },
                     null,
                     4
@@ -214,7 +226,7 @@ export default function DebugSongLeaderboard() {
             </>
         ) : (
             <>
-            <p>{`${t('not_logged').toUpperCase()}: ${t('debug_not_logged_message')}`}</p>
+            <p>{`${t('not_logged').toUpperCase()}`}</p>
             </>
         )}
         {hasUserToken &&

@@ -42,14 +42,17 @@ i18n
           user_register: 'User Register',
           username_short: 'Username',
           username: 'User name',
+          // pagination
+          page_number: 'Page Number',
+          page_size: 'Page Size',
           // song leaderboard
-          songId: "Song ID",
+          song_id: "Song ID",
           instrument: "Instrument",
           difficulty: "Difficulty",
           engine: "Engine",
-          allowedModifiers: "Allowed Modifiers",
-          allowSlowdowns: "Allow Slowdowns",
-          sortByNotesHit: "Sort by Notes Hit"
+          allowed_modifiers: "Allowed Modifiers",
+          allow_slowdowns: "Allow Slowdowns",
+          sort_by_notes_hit: "Sort by Notes Hit"
         },
       },
     },

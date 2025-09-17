@@ -15,6 +15,8 @@ export interface ISongLeaderboard {
     allowedModifiers?: Array<(typeof Modifier)[keyof typeof Modifier]>,
     allowSlowdowns?: boolean,
     sortByNotesHit?: boolean,
+    page?: number,
+    pageSize?: number
   }
 }
 
@@ -49,6 +51,9 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
     const allowSlowdowns = req.body.allowSlowdowns ?? false;
     // Sorting can be done in two ways: Score-based (default) or Notes hit
     const sortByNotesHit = req.body.sortByNotesHit ?? false;
+    // Pagination data
+    const page = req.body.page ?? 0;
+    const pageSize = req.body.pageSize ?? 25;
 
     // Query
     let mongoQuery = { // Using native mongo query instead of mongoose for perf gains with aggregate
@@ -81,15 +86,25 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
         topScore: { $first: "$$ROOT" }, // take the first (thanks to sort order)
         }
     },
-    { $replaceRoot: { newRoot: "$topScore" } } // flatten back
+    {
+        $facet: {
+            paginatedResults: [
+                { $replaceRoot: { newRoot: "$topScore" } }, // flatten back
+                { $skip: page * pageSize },
+                { $limit: pageSize }
+            ],
+            totalCount: [
+                { $count: "count" }
+            ]
+        }
+    }
     ];
 
-    const results = await Score.aggregate(pipeline); // Note: returns lean JSON instead of Mongoose model object. Not a problem, though
+    const result = await Score.aggregate(pipeline); // Note: returns lean JSON instead of Mongoose model object. Not a problem, though
+    const scores = result[0].paginatedResults;
+    const totalCount = result[0].totalCount[0]?.count ?? 0;
     
-    // TODO: Ideally some pagination will be added as well, but I don't know the most performatic way to do it in Mongoose/MongoDB.
-    // Could be done by adding `$skip` / `$limit` after the `$replaceRoot` in the pipeline.
-    
-    serverReply(reply, 'ok', { results })
+    serverReply(reply, 'ok', { 'count': totalCount, 'scores': scores })
 }
 
 const songLeaderboardErrorHandler: ServerErrorHandler = function (error, req, reply) {
