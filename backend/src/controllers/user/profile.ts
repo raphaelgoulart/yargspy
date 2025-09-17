@@ -2,14 +2,22 @@ import { TokenError } from 'fast-jwt'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
 import type { ServerHandler, ServerErrorHandler, RouteRequest } from '../../lib.exports'
-import type { UserSchemaDocument } from '../../models/User'
+import { User, type UserSchemaDocument } from '../../models/User'
 
-export interface IUserProfile {}
+export interface IUserProfile {
+  query: {
+    username?: string
+  }
+}
 
 // #region Handler
 
 const userProfileHandler: ServerHandler<IUserProfile> = async function (req, reply) {
-  const user = (req as RouteRequest<{ user: UserSchemaDocument }>).user
+  const user = req.query.username ? await User.findOne({username: req.query.username}) : await User.findByToken(req.headers.authorization)
+  if (!user) {
+    if (req.query.username) throw new ServerError([404, `User ${req.query.username} not found`])
+    else throw new ServerError('err_auth_required')
+  }
 
   serverReply(
     reply,
@@ -18,6 +26,7 @@ const userProfileHandler: ServerHandler<IUserProfile> = async function (req, rep
       user: {
         _id: user._id,
         username: user.username,
+        profilePhotoURL: user.profilePhotoURL,
         active: user.active,
         admin: user.admin,
         createdAt: user.createdAt,

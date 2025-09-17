@@ -5,8 +5,10 @@ export * from './controllers/public/song'
 export * from './controllers/replay/register'
 
 export * from './controllers/song/leaderboard'
+export * from './controllers/song/entries'
+export * from './controllers/song/song'
 
-export * from './controllers/user/all'
+export * from './controllers/user/entries'
 export * from './controllers/user/login'
 export * from './controllers/user/profile'
 export * from './controllers/user/register'

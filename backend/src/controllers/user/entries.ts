@@ -1,25 +1,28 @@
 import type { infer as ZodInfer } from 'zod'
 import { TokenError } from 'fast-jwt'
-import { ServerError, userAllEntriesQuerystringSchema } from '../../app.exports'
+import { ServerError, userEntriesQuerystringSchema } from '../../app.exports'
 import { serverReply } from '../../core.exports'
 import type { ServerHandler, ServerErrorHandler } from '../../lib.exports'
 import { User } from '../../models/User'
 import { isDev } from '../../utils.exports'
 
-export interface IUserAllEntries {
+export interface IUserEntries {
   query: {
-    [key in keyof ZodInfer<typeof userAllEntriesQuerystringSchema>]: string
+    [key in keyof ZodInfer<typeof userEntriesQuerystringSchema>]: string
   }
 }
 
 // #region Handler
 
-const userAllEntriesHandler: ServerHandler<IUserAllEntries> = async function (req, reply) {
-  const { page, limit } = userAllEntriesQuerystringSchema.parse(req.query)
+const userEntriesHandler: ServerHandler<IUserEntries> = async function (req, reply) {
+  const { page, limit, username } = userEntriesQuerystringSchema.parse(req.query)
   const skip = (page - 1) * limit
+  const filter = username ? { username: { $regex: username, $options: 'i' } } : {}
 
-  const allUsers = await User.find().skip(skip).limit(limit)
-  const totalEntries = await User.countDocuments()
+  const [allUsers, totalEntries] = await Promise.all([
+    User.find(filter).skip(skip).limit(limit),
+    User.countDocuments(filter)
+  ]);
   const totalPages = Math.ceil(totalEntries / limit)
 
   serverReply(reply, 'ok', {
@@ -43,7 +46,7 @@ const userAllEntriesHandler: ServerHandler<IUserAllEntries> = async function (re
 
 // #region Error Handler
 
-const userAllEntriesErrorHandler: ServerErrorHandler = function (error, req, reply) {
+const userEntriesErrorHandler: ServerErrorHandler = function (error, req, reply) {
   // Generic ServerError
   if (error instanceof ServerError) return serverReply(reply, error.serverErrorCode, error.data, error.messageValues)
 
@@ -55,7 +58,7 @@ const userAllEntriesErrorHandler: ServerErrorHandler = function (error, req, rep
 
 // #region Controller
 
-export const userAllEntriesController = {
-  errorHandler: userAllEntriesErrorHandler,
-  handler: userAllEntriesHandler,
+export const userEntriesController = {
+  errorHandler: userEntriesErrorHandler,
+  handler: userEntriesHandler,
 } as const

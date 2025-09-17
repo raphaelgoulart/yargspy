@@ -1,7 +1,7 @@
 import zod from 'zod'
 import { ServerError } from './error'
 
-export const userAllEntriesQuerystringSchema = zod.object({
+export const userEntriesQuerystringSchema = zod.object({
   page: zod
     .string()
     .optional()
@@ -20,4 +20,50 @@ export const userAllEntriesQuerystringSchema = zod.object({
       if (isNaN(num)) throw new ServerError('err_invalid_input')
       return num
     }),
+  username: zod
+    .string()
+    .min(3).max(32)
+    .optional()
+})
+
+export const songEntriesQuerystringSchema = zod.object({
+  page: zod
+    .string()
+    .optional()
+    .default('1')
+    .transform((arg) => {
+      const num = Number(arg)
+      if (isNaN(num)) throw new ServerError('err_invalid_input')
+      return num
+    }),
+  limit: zod
+    .string()
+    .optional()
+    .default('15')
+    .transform((arg) => {
+      const num = Number(arg)
+      if (isNaN(num)) throw new ServerError('err_invalid_input')
+      return num
+    }),
+  name: zod
+    .string()
+    .optional(),
+  artist: zod
+    .string()
+    .optional(),
+  charter: zod
+    .string()
+    .optional(),
+  sort: zod
+    .string()
+    .optional()
+    .default('0')
+    .transform((arg) => {
+      const num = Number(arg)
+      if (isNaN(num)) throw new ServerError('err_invalid_input')
+      return num
+    }),
+  descending: zod
+    .string()
+    .optional()
 })

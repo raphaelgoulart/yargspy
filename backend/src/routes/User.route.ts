@@ -1,14 +1,13 @@
 import type { FastifyInstance } from 'fastify'
-import { userAllEntriesController, userLoginController, userProfileController, userRegisterController } from '../controllers.exports'
+import { userEntriesController, userLoginController, userProfileController, userRegisterController } from '../controllers.exports'
 import { verifyUserJWT, verifyUserLoginBody } from '../core.exports'
 
 export default function UserRoute(app: FastifyInstance) {
   app.route({
     method: ['GET', 'HEAD'],
-    url: '/user/all',
+    url: '/user/entries',
     logLevel: 'warn',
-    preHandler: app.auth([verifyUserJWT]),
-    ...userAllEntriesController,
+    ...userEntriesController,
   })
   app.route({
     method: ['POST', 'HEAD'],
@@ -29,7 +28,6 @@ export default function UserRoute(app: FastifyInstance) {
     method: ['GET', 'HEAD'],
     url: '/user/profile',
     logLevel: 'warn',
-    preHandler: app.auth([verifyUserJWT]),
     ...userProfileController,
   })
 }
