@@ -34,7 +34,7 @@ export default function DebugSongLeaderboard() {
     const [allowedModifiersCheckbox, setAllowedModifiersCheckbox] = useState(true);
     // pagination
     const page = DebugGlobalState((x) => x.page)
-    const pageSize = DebugGlobalState((x) => x.pageSize)
+    const limit = DebugGlobalState((x) => x.limit)
     //
     const setDebugGlobalState = DebugGlobalState((x) => x.setDebugGlobalState)
     const isActivated = debugTabSelected === 3
@@ -60,7 +60,7 @@ export default function DebugSongLeaderboard() {
               allowSlowdowns: allowSlowdowns,
               sortByNotesHit: sortByNotesHit,
               page: page,
-              pageSize: pageSize
+              limit: limit
             } as const
             const startTime = Date.now()
             try {
@@ -139,7 +139,7 @@ export default function DebugSongLeaderboard() {
         <h2 className="mb-1 text-xs font-bold uppercase">{t('page_number')}</h2>
         <input name="engine" type="number" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={page} onChange={(ev) => setDebugGlobalState({ page: Number(ev.target.value) })} />
         <h2 className="mb-1 text-xs font-bold uppercase">{t('page_size')}</h2>
-        <input name="engine" type="number" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={pageSize} onChange={(ev) => setDebugGlobalState({ pageSize: Number(ev.target.value) })} />
+        <input name="engine" type="number" className="mb-2 rounded-xs bg-white/10 px-2 py-1" value={limit} onChange={(ev) => setDebugGlobalState({ limit: Number(ev.target.value) })} />
         
         <button disabled={isRequesting} className="rounded-sm bg-cyan-700 py-2 uppercase hover:bg-cyan-600 disabled:bg-neutral-800 disabled:text-neutral-700">
         Upload
@@ -182,7 +182,7 @@ export default function DebugSongLeaderboard() {
                         allowSlowdowns: allowSlowdowns,
                         sortByNotesHit: sortByNotesHit,
                         page: page,
-                        pageSize: pageSize
+                        limit: limit
                     },
                     null,
                     4

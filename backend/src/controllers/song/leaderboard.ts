@@ -16,7 +16,7 @@ export interface ISongLeaderboard {
     allowSlowdowns?: boolean,
     sortByNotesHit?: boolean,
     page?: number,
-    pageSize?: number
+    limit?: number
   }
 }
 
@@ -53,7 +53,7 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
     const sortByNotesHit = req.body.sortByNotesHit ?? false;
     // Pagination data
     const page = req.body.page ?? 0;
-    const pageSize = req.body.pageSize ?? 25;
+    const limit = req.body.limit ?? 25;
 
     // Query
     let mongoQuery = { // Using native mongo query instead of mongoose for perf gains with aggregate
@@ -90,8 +90,8 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
         $facet: {
             paginatedResults: [
                 { $replaceRoot: { newRoot: "$topScore" } }, // flatten back
-                { $skip: page * pageSize },
-                { $limit: pageSize }
+                { $skip: (page - 1) * limit },
+                { $limit: limit }
             ],
             totalCount: [
                 { $count: "count" }

@@ -23,7 +23,7 @@ export interface DebugGlobalStateProps {
   sortByNotesHit: boolean,
   // pagination
   page: number,
-  pageSize: number
+  limit: number
 }
 
 export interface DebugGlobalStateActions {
@@ -55,8 +55,8 @@ const DebugGlobalStateDefaultState: DebugGlobalStateProps = {
   allowSlowdowns: false,
   sortByNotesHit: false,
   // pagination
-  page: 0,
-  pageSize: 25
+  page: 1,
+  limit: 25
 }
 
 export const DebugGlobalState = create<DebugGlobalStateHook>()((set, get) => ({
