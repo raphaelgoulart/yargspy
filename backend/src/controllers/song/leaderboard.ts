@@ -7,17 +7,17 @@ import { Difficulty, Instrument } from '../../models/Song'
 import { ObjectId } from 'mongodb'
 
 export interface ISongLeaderboard {
-  body: {
-    id?: string,
-    instrument?: (typeof Instrument)[keyof typeof Instrument],
-    difficulty?: (typeof Difficulty)[keyof typeof Difficulty],
-    engine?: (typeof Engine)[keyof typeof Engine],
-    allowedModifiers?: Array<(typeof Modifier)[keyof typeof Modifier]>,
-    allowSlowdowns?: boolean,
-    sortByNotesHit?: boolean,
-    page?: number,
-    limit?: number
-  }
+    body: {
+        id?: string,
+        instrument?: (typeof Instrument)[keyof typeof Instrument],
+        difficulty?: (typeof Difficulty)[keyof typeof Difficulty],
+        engine?: (typeof Engine)[keyof typeof Engine],
+        allowedModifiers?: Array<(typeof Modifier)[keyof typeof Modifier]>,
+        allowSlowdowns?: boolean,
+        sortByNotesHit?: boolean,
+        page?: number,
+        limit?: number
+    }
 }
 
 export interface ISongLeaderboardQuery {
@@ -62,7 +62,7 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
         // Ensure no "modifier" exists outside of the allowed set
         modifiers: {
             $not: {
-            $elemMatch: { modifier: { $nin: allowedModifiers } }
+                $elemMatch: { modifier: { $nin: allowedModifiers } }
             }
         },
         hidden: false
@@ -78,48 +78,102 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
 
     // Aggregate so only the top score of each user is returned, instead of _all_ scores
     const pipeline = [
-    { $match: mongoQuery }, // apply filters
-    { $sort: Object.fromEntries(sortingMethod) }, // apply sort order
-    {
-        $group: {
-        _id: "$uploader",               // group by uploader
-        topScore: { $first: "$$ROOT" }, // take the first (thanks to sort order)
+        { $match: mongoQuery }, // apply filters
+        { $sort: Object.fromEntries(sortingMethod) }, // apply sort order
+        {
+            $group: {
+                _id: "$uploader",               // group by uploader
+                topScore: { $first: "$$ROOT" }, // take the first (thanks to sort order)
+            }
+        },
+        { $replaceRoot: { newRoot: "$topScore" } }, // flatten back
+        // Facet to get both paginated results and total count in one pass
+        {
+            $facet: {
+                paginatedResults: [
+                    { $skip: (page - 1) * limit },
+                    { $limit: limit },
+                    // JOIN uploader data
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "uploader",
+                            foreignField: "_id",
+                            as: "uploaderInfo"
+                        }
+                    },
+                    { $unwind: "$uploaderInfo" },
+                    {
+                        $addFields: {
+                            uploader: {
+                                username: "$uploaderInfo.username",
+                                // TODO: more info? country flag?
+                            }
+                        }
+                    },
+                    { $project: { uploaderInfo: 0 } },
+                    // JOIN children scores
+                    // (TODO: do we want this right now? or do we separate it into a replay-specific endpoint, so it's only called if the user clicks to see the children scores of a band score?)
+                    {
+                        $lookup: {
+                            from: "scores",
+                            localField: "childrenScores.score",
+                            foreignField: "_id",
+                            as: "childrenScores.score",
+                            // As of right now, one user uploads a band score and all children scores are associated with this same user.
+                            // Which means we don't need to fetch uploader info for children scores since they're the same as the band score.
+                            // However, this might change in the future with i.e. online play. So, just uncomment the pipeline below to fetch uploader data for children scores.
+                            /*pipeline: [
+                                // Populate uploader for each child score
+                                {
+                                    $lookup: {
+                                        from: "users",
+                                        localField: "uploader",
+                                        foreignField: "_id",
+                                        as: "uploaderInfo"
+                                    }
+                                },
+                                { $unwind: "$uploaderInfo" },
+                                {
+                                    $addFields: {
+                                        uploader: {
+                                            username: "$uploaderInfo.username",
+                                            profilePhotoURL: "$uploaderInfo.profilePhotoURL"
+                                        }
+                                    }
+                                },
+                                { $project: { uploaderInfo: 0 } }
+                            ]*/
+                        }
+                    }
+                ],
+                totalCount: [
+                    { $count: "count" }
+                ]
+            }
         }
-    },
-    {
-        $facet: {
-            paginatedResults: [
-                { $replaceRoot: { newRoot: "$topScore" } }, // flatten back
-                { $skip: (page - 1) * limit },
-                { $limit: limit }
-            ],
-            totalCount: [
-                { $count: "count" }
-            ]
-        }
-    }
     ];
-
+    
     const result = await Score.aggregate(pipeline); // Note: returns lean JSON instead of Mongoose model object. Not a problem, though
     const scores = result[0].paginatedResults;
     const totalCount = result[0].totalCount[0]?.count ?? 0;
-    
+
     serverReply(reply, 'ok', { 'count': totalCount, 'scores': scores })
 }
 
 const songLeaderboardErrorHandler: ServerErrorHandler = function (error, req, reply) {
     req.log.error(error)
-      // Generic ServerError
-      if (error instanceof ServerError) return serverReply(reply, error.serverErrorCode, error.data, error.messageValues)
-    
-      // Incomplete Authorization string on headers (Only sent "Bearer " or "Bearer null", for example).
-      if (error instanceof TokenError && error.code === 'FAST_JWT_MALFORMED') return serverReply(reply, 'err_invalid_auth_format', { token: req.headers.authorization })
-    
-      // Unknown error
-      return serverReply(reply, 'err_unknown', { error, debug: ServerError.logErrors(error) })
+    // Generic ServerError
+    if (error instanceof ServerError) return serverReply(reply, error.serverErrorCode, error.data, error.messageValues)
+
+    // Incomplete Authorization string on headers (Only sent "Bearer " or "Bearer null", for example).
+    if (error instanceof TokenError && error.code === 'FAST_JWT_MALFORMED') return serverReply(reply, 'err_invalid_auth_format', { token: req.headers.authorization })
+
+    // Unknown error
+    return serverReply(reply, 'err_unknown', { error, debug: ServerError.logErrors(error) })
 }
 
 export const songLeaderboardController = {
-  handler: songLeaderboardHandler,
-  errorHandler: songLeaderboardErrorHandler,
+    handler: songLeaderboardHandler,
+    errorHandler: songLeaderboardErrorHandler,
 } as const
