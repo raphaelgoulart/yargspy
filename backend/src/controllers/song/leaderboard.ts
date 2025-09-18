@@ -74,7 +74,7 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
     if (!allowSlowdowns) mongoQuery.songSpeed = { $gte: 1 }
 
     // Sorting method
-    const sortingMethod = sortByNotesHit ? [['notesHit', -1], ['maxCombo', -1], ['datetime', 1]] : [['score', -1], ['datetime', 1]]
+    const sortingMethod = sortByNotesHit ? [['notesHit', -1], ['maxCombo', -1], ['createdAt', 1]] : [['score', -1], ['createdAt', 1]]
 
     // Aggregate so only the top score of each user is returned, instead of _all_ scores
     const pipeline = [
@@ -138,7 +138,7 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
                                     $addFields: {
                                         uploader: {
                                             username: "$uploaderInfo.username",
-                                            profilePhotoURL: "$uploaderInfo.profilePhotoURL"
+                                            // TODO: more info? country flag?
                                         }
                                     }
                                 },

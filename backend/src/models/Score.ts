@@ -170,8 +170,7 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
     },
     createdAt: {
       // can be fetched from server (upload time) or replay metadata; i'd rather go with server
-      type: Date,
-      required: true,
+      type: Schema.Types.Date,
       default: Date.now,
     },
     profileName: {
@@ -241,9 +240,10 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
     },
   },
   {
+    timestamps: true,
     statics: {
       async findByHash(hash: string) {
-        return await this.findOne({ checksum: hash })
+        return await this.findOne({ replayFileHash: hash })
       },
     },
   }

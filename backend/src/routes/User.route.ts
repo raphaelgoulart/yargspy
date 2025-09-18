@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { userEntriesController, userLoginController, userProfileController, userRegisterController } from '../controllers.exports'
+import { userEntriesController, userLoginController, userProfileController, userRegisterController, userScoresController } from '../controllers.exports'
 import { verifyUserJWT, verifyUserLoginBody } from '../core.exports'
 
 export default function UserRoute(app: FastifyInstance) {
@@ -29,5 +29,12 @@ export default function UserRoute(app: FastifyInstance) {
     url: '/user/profile',
     logLevel: 'warn',
     ...userProfileController,
+  })
+
+  app.route({
+    method: ['GET', 'HEAD'],
+    url: '/user/scores',
+    logLevel: 'warn',
+    ...userScoresController,
   })
 }
