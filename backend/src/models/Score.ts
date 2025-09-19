@@ -240,7 +240,6 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
     },
   },
   {
-    timestamps: true,
     statics: {
       async findByHash(hash: string) {
         return await this.findOne({ replayFileHash: hash })
