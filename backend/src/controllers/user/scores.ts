@@ -17,10 +17,10 @@ const userScoresHandler: ServerHandler<IUserScores> = async function (req, reply
   const { page, limit, id } = userScoresQuerystringSchema.parse(req.query)
 
   const skip = (page - 1) * limit
-  const filter = { uploader: id }
+  const filter = { uploader: id, hidden: false }
 
   const [allScores, totalEntries] = await Promise.all([
-    Score.find(filter).sort('-createdAt').skip(skip).limit(limit),
+    Score.find(filter).sort('-createdAt').skip(skip).limit(limit).populate('song', '_id name artist charter').lean(),
     Score.countDocuments(filter)
   ]);
   const totalPages = Math.ceil(totalEntries / limit)

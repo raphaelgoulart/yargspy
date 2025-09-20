@@ -17,7 +17,7 @@ export interface IUserEntries {
 const userEntriesHandler: ServerHandler<IUserEntries> = async function (req, reply) {
   const { page, limit, username } = userEntriesQuerystringSchema.parse(req.query)
   const skip = (page - 1) * limit
-  const filter = username ? { username: { $regex: username, $options: 'i' } } : {}
+  const filter = username ? { username: { $regex: username, $options: 'i' }, active: true } : { active: true }
 
   const [allUsers, totalEntries] = await Promise.all([
     User.find(filter).skip(skip).limit(limit),
