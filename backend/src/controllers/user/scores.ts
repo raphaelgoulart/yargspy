@@ -4,6 +4,7 @@ import { ServerError, userScoresQuerystringSchema } from '../../app.exports'
 import { serverReply } from '../../core.exports'
 import type { ServerHandler, ServerErrorHandler } from '../../lib.exports'
 import { Score } from '../../models/Score'
+import { Instrument } from '../../models/Song'
 
 export interface IUserScores {
   query: {
@@ -17,7 +18,7 @@ const userScoresHandler: ServerHandler<IUserScores> = async function (req, reply
   const { page, limit, id } = userScoresQuerystringSchema.parse(req.query)
 
   const skip = (page - 1) * limit
-  const filter = { uploader: id, hidden: false }
+  const filter = { uploader: id, hidden: false, instrument: { $ne: Instrument.Band } }
 
   const [allScores, totalEntries] = await Promise.all([
     Score.find(filter).sort('-createdAt').skip(skip).limit(limit).populate('song', '_id name artist charter').lean(),
