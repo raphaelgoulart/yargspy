@@ -24,8 +24,8 @@ const SongEntriesHandler: ServerHandler<ISongEntries> = async function (req, rep
   const skip = (page - 1) * limit
   const filter = {} as Record<string, Object>
   if (name) filter['name'] = { $regex: name, $options: 'i' }
-  if (artist) filter['artist'] = { $regex: name, $options: 'i' }
-  if (charter) filter['charter'] = { $regex: name, $options: 'i' }
+  if (artist) filter['artist'] = { $regex: artist, $options: 'i' }
+  if (charter) filter['charter'] = { $regex: charter, $options: 'i' }
   let sortingString: string | undefined
   if (sort) {
     switch (sort){
