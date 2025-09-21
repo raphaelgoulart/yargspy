@@ -2,7 +2,7 @@ import { TokenError } from 'fast-jwt'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
 import type { ServerErrorHandler, ServerHandler } from '../../lib.exports'
-import { getServerPublic } from '../../utils.exports'
+import { getServerPublic, isDev } from '../../utils.exports'
 import type { UserSchemaDocument } from '../../models/User'
 
 export interface IPublicSong {
@@ -25,7 +25,10 @@ const publicSongHandler: ServerHandler<IPublicSong> = async function (req, reply
   if (type === 'replay') {
     const replayPath = `replay/${id}.replay`
     const replay = getServerPublic().gotoFile(replayPath)
-    if (replay.exists) reply.sendFile(replayPath)
+    if (replay.exists) {
+      if (isDev()) reply.header('Content-Disposition', `attachment; filename="${replay.fullname}"`)
+      return reply.sendFile(replayPath)
+    }
     else throw new ServerError([404, `YARG REPLAY file with ID ${id} not found`])
   } else {
     // CHART/MIDI files requires a special key value to validate the request, the key is assigned in the server .env file
