@@ -1,6 +1,6 @@
 import 'dotenv/config'
 
-export * from './controllers/public/song'
+export * from './controllers/public/replay'
 
 export * from './controllers/replay/register'
 

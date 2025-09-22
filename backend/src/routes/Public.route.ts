@@ -1,11 +1,11 @@
 import type { FastifyInstance } from 'fastify'
-import { publicSongController } from '../controllers.exports'
+import { publicReplayController } from '../controllers.exports'
 
 export default function PublicRoute(app: FastifyInstance) {
   app.route({
     method: ['GET', 'HEAD'],
-    url: '/public/song',
+    url: '/public/replay',
     logLevel: 'warn',
-    ...publicSongController,
+    ...publicReplayController,
   })
 }
