@@ -52,7 +52,7 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
     // Sorting can be done in two ways: Score-based (default) or Notes hit
     const sortByNotesHit = req.body.sortByNotesHit ?? false;
     // Pagination data
-    const page = req.body.page ?? 0;
+    const page = req.body.page ?? 1;
     const limit = req.body.limit ?? 25;
 
     // Query
@@ -74,7 +74,7 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
     if (!allowSlowdowns) mongoQuery.songSpeed = { $gte: 1 }
 
     // Sorting method
-    const sortingMethod = sortByNotesHit ? [['notesHit', -1], ['maxCombo', -1], ['createdAt', 1]] : [['score', -1], ['createdAt', 1]]
+    const sortingMethod = instrument != Instrument.Band && sortByNotesHit ? [['notesHit', -1], ['maxCombo', -1], ['createdAt', 1]] : [['score', -1], ['createdAt', 1]]
 
     // Aggregate so only the top score of each user is returned, instead of _all_ scores
     const pipeline = [
