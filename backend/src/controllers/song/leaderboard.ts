@@ -26,7 +26,7 @@ export interface ISongLeaderboardQuery {
     // Ensure no "modifier" exists outside of the allowed set
     modifiers: {
         $not: {
-            $elemMatch: { modifier: { $nin: Array<(typeof Modifier)[keyof typeof Modifier]> } }
+            $elemMatch: { $nin: Array<(typeof Modifier)[keyof typeof Modifier]> }
         }
     },
     hidden: boolean,
@@ -62,7 +62,7 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
         // Ensure no "modifier" exists outside of the allowed set
         modifiers: {
             $not: {
-                $elemMatch: { modifier: { $nin: allowedModifiers } }
+                $elemMatch: { $nin: allowedModifiers }
             }
         },
         hidden: false
