@@ -36,7 +36,7 @@ export interface ISongLeaderboardQuery {
 }
 
 const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (req, reply) {
-    if (!req.body.id) throw new ServerError('err_song_invalid_query', null, { params: "id" })
+    if (!req.body.id) throw new ServerError('err_invalid_query', null, { params: "id" })
     // Each leaderboard pertains to a song
     const songId = req.body.id
     // Each instrument ("Band" counts as an instrument) has its own leaderboard

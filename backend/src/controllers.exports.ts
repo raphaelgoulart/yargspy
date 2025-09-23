@@ -1,7 +1,5 @@
 import 'dotenv/config'
 
-export * from './controllers/public/replay'
-
 export * from './controllers/replay/register'
 
 export * from './controllers/song/leaderboard'

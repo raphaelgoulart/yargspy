@@ -2,7 +2,7 @@ import { pipeline } from 'node:stream/promises'
 import { TokenError } from 'fast-jwt'
 import type { FilePath } from 'node-lib'
 import type { RouteRequest, ServerErrorHandler, ServerHandler, ServerRequest, ServerRequestFileFieldObject } from '../../lib.exports'
-import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, getServerPublic, isDev, parsePlayerModifiersForScoreEntry, YARGReplayValidatorAPI } from '../../utils.exports'
+import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, getServerFile, isDev, parsePlayerModifiersForScoreEntry, YARGReplayValidatorAPI } from '../../utils.exports'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
 import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocument } from '../../models/Score'
@@ -266,7 +266,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
     // Move replay file
     if (isDev()) {
-      await replayFilePath.rename(getServerPublic().gotoFile(`replay/${replayFilePath.fullname}`))
+      await replayFilePath.rename(getServerFile().gotoFile(`replay/${replayFilePath.fullname}`))
     } else {
       // TODO: on prod, upload to S3 instead of copy
       replayFilePath.delete() // delete local file after uploading to S3

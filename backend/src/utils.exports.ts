@@ -4,7 +4,7 @@ export * from './utils/auth/bearerTokenVerifier'
 export * from './utils/auth/jwtSign'
 export * from './utils/auth/passwordValidator'
 
-export * from './utils/checkers/checkTempAndPublicFolders'
+export * from './utils/checkers/checkTempAndFileFolders'
 export * from './utils/checkers/fileIntegrity'
 export * from './utils/checkers/isDev'
 export * from './utils/checkers/processEnv'

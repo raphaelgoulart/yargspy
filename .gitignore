@@ -138,6 +138,7 @@ pnpm-lock.yaml
 
 # Public folder and temp on backend
 backend/public/
+backend/files/
 backend/temp/
 
 # Test folder junk

@@ -3,7 +3,7 @@ import fastifyAuth from '@fastify/auth'
 import fastifyCors from '@fastify/cors'
 import fastifyMultipart from '@fastify/multipart'
 import fastifyStatic from '@fastify/static'
-import { checkProcessEnv, checkTempAndPublicFolders, getServerRoot, isDev } from './utils.exports'
+import { checkProcessEnv, checkTempAndFileFolders, getServerRoot, isDev } from './utils.exports'
 import { fastifyLoggerOptions, mongoDBConnectPlugin } from './app.exports'
 import { initServerRoutes } from './core/initServerRoutes'
 import 'dotenv/config'
@@ -18,14 +18,14 @@ const serverStart = async () => {
   // Check environment variables
   const { port, mongoDBURI } = checkProcessEnv(app)
 
-  await checkTempAndPublicFolders()
+  await checkTempAndFileFolders()
 
   // Connect to MongoDB and add plugins
   await app.register(mongoDBConnectPlugin, { mongoDBURI })
   await app.register(fastifyCors)
   await app.register(fastifyAuth)
   await app.register(fastifyMultipart)
-  await app.register(fastifyStatic, { root: getServerRoot().gotoDir('public').path, prefix: '/public/' })
+  await app.register(fastifyStatic, { root: getServerRoot().gotoDir('files/replay').path, prefix: '/file/replay' })
 
   initServerRoutes(app)
 

@@ -1,5 +1,5 @@
 import { buildUniqueFilename } from './buildUniqueFilename'
-import { getServerPublic, getServerTemp } from './getServerPaths'
+import { getServerFile, getServerTemp } from './getServerPaths'
 
 export const createReplayRegisterTempPaths = () => {
   const temp = getServerTemp()
@@ -21,6 +21,6 @@ export const createReplayRegisterTempPaths = () => {
 }
 
 export const createReplayRegisterPaths = () => {
-  const publicFolder = getServerPublic()
+  const fileFolder = getServerFile()
   const uid = buildUniqueFilename()
 }

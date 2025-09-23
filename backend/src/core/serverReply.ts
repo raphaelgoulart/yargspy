@@ -85,11 +85,9 @@ export const codeMap = {
   err_invalid_auth: [401, 'The provided authorization token is not valid. Please logout this session, validate a new login and try again'],
   err_invalid_input: [400, 'Some request validation method on the server declined your request due to validation errors on fields'],
   err_syntax_json_body: [400, 'Response body JSON has a syntax error: {{additionalMessage}}'],
+  err_invalid_query: [400, 'Missing parameters on query: {{params}}'],
   err_unknown: [500, 'An unknown error occurred, please try again later'],
   ok: [200, 'Request completed by the server'],
-
-  // public/song
-  err_song_invalid_query: [400, 'Missing parameters on query: {{params}}'],
 
   // user/register
   err_user_register_duplicated_username_typo: [409, 'Provided username {{username}} is a typo of another registered user'],

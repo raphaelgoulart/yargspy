@@ -4,7 +4,6 @@ export interface EnvironmentCheckerReturnObject {
   port: number
   mongoDBURI: string
   jwtSecret: string
-  publicChartFileAccessKey: string
 }
 
 /**
@@ -23,10 +22,7 @@ export const checkProcessEnv = (app: FastifyInstance): EnvironmentCheckerReturnO
   const jwtSecret = process.env.JWT_SECRET as string | undefined
   if (!jwtSecret) throw new Error('No JWT secret provided as environmente variable.')
 
-  const publicChartFileAccessKey = process.env.PUBLIC_CHART_FILE_ACCESS_KEY as string | undefined
-  if (!publicChartFileAccessKey) throw new Error('No public chart file access key provided as environmente variable.')
+  app.log.info(`Using the following environment variables:\n\tPORT: ${port}\n\tMONGODB URI: ${mongoDBURI}\n\tJWT SECRET: ${jwtSecret}\n`)
 
-  app.log.info(`Using the following environment variables:\n\tPORT: ${port}\n\tMONGODB URI: ${mongoDBURI}\n\tJWT SECRET: ${jwtSecret}\n\tPUBLIC CHART FILE ACCESS KEY: ${publicChartFileAccessKey}\n`)
-
-  return { port, mongoDBURI, jwtSecret, publicChartFileAccessKey }
+  return { port, mongoDBURI, jwtSecret }
 }
