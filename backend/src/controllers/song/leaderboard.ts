@@ -117,9 +117,9 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
                     {
                         $lookup: {
                             from: "scores",
-                            localField: "childrenScores.score",
+                            localField: "childrenScores",
                             foreignField: "_id",
-                            as: "childrenScores.score",
+                            as: "childrenScores",
                             // As of right now, one user uploads a band score and all children scores are associated with this same user.
                             // Which means we don't need to fetch uploader info for children scores since they're the same as the band score.
                             // However, this might change in the future with i.e. online play. So, just uncomment the pipeline below to fetch uploader data for children scores.
