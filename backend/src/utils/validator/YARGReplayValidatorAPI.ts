@@ -308,7 +308,8 @@ export class YARGReplayValidatorAPI {
     const validatorPath = getValidatorPath()
     const replayFile = pathLikeToFilePath(replayFilePath)
 
-    const command = `"./${validatorPath.fullname}" "${replayFile.path}" -m ${this.readMode.returnSongHash}`
+    const prefix = process.platform === "win32" ? "" : "dotnet ";
+    const command = `${prefix}"${validatorPath.fullname}" "${replayFile.path}" -m ${this.readMode.returnSongHash}`
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
     if (stderr) throw new ServerError('err_unknown', { error: stderr, errorOrigin: 'YARGReplayValidatorAPI.returnSongHash()' })
 
@@ -338,7 +339,8 @@ export class YARGReplayValidatorAPI {
 
     const readMode = isSongEntryFound ? this.readMode.replayOnly : this.readMode.replayAndMidi
 
-    let command = `"./${validatorPath.fullname}" "${replayFile.path}" "${chartFile.path}" -m ${readMode}`
+    const prefix = process.platform === "win32" ? "" : "dotnet ";
+    let command = `${prefix}"./${validatorPath.fullname}" "${replayFile.path}" "${chartFile.path}" -m ${readMode}`
 
     // Input parameters from Song model
     if (song.isRb3con) command += ' -c true'

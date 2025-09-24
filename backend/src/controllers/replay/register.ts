@@ -279,7 +279,8 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     if (isSongEntryFound && !isReqReplayOnly) await deleteAllTempFiles()
 
     // Done! Reply with song ID for front-end redirection
-    serverReply(reply, 'success_replay_register', { playerScoreIDs: playerScores.map((score) => score.id), bandScoreID: bandScore.id })
+    //serverReply(reply, 'success_replay_register', { playerScoreIDs: playerScores.map((score) => score._id), bandScoreID: bandScore._id })
+    serverReply(reply, 'success_replay_register', { song: songEntry._id })
   } catch (err) {
     await deleteAllTempFiles()
     throw err
