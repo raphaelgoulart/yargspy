@@ -74,12 +74,12 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
     if (!allowSlowdowns) mongoQuery.songSpeed = { $gte: 1 }
 
     // Sorting method
-    const sortingMethod = instrument != Instrument.Band && sortByNotesHit ? [['notesHit', -1], ['maxCombo', -1], ['createdAt', 1]] : [['score', -1], ['createdAt', 1]]
+    const sortingMethod = instrument != Instrument.Band && sortByNotesHit ? {'notesHit': -1, 'maxCombo': -1, 'createdAt': 1} : {'score': -1, 'createdAt': 1}
 
     // Aggregate so only the top score of each user is returned, instead of _all_ scores
     const pipeline = [
         { $match: mongoQuery }, // apply filters
-        { $sort: Object.fromEntries(sortingMethod) }, // apply sort order
+        { $sort: sortingMethod }, // apply sort order to fetch highest score
         {
             $group: {
                 _id: "$uploader",               // group by uploader
@@ -87,6 +87,7 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
             }
         },
         { $replaceRoot: { newRoot: "$topScore" } }, // flatten back
+        { $sort: sortingMethod }, // re-sort since $group loses the order
         // Facet to get both paginated results and total count in one pass
         {
             $facet: {
