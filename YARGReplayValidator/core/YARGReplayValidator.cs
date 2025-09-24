@@ -320,6 +320,9 @@ namespace YARGReplayValidator.Core
       defaultEngine.SongSpeed = replayInfo.SongSpeed;
       casualEngine.SongSpeed = replayInfo.SongSpeed;
       precisionEngine.SongSpeed = replayInfo.SongSpeed;
+      defaultEngine.HitWindow.Scale = replayInfo.SongSpeed;
+      casualEngine.HitWindow.Scale = replayInfo.SongSpeed;
+      precisionEngine.HitWindow.Scale = replayInfo.SongSpeed;
       if (EngineEqualityCheck(frame.EngineParameters, defaultEngine))
       {
         return EngineValue.Default;
