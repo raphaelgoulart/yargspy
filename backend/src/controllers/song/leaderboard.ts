@@ -147,7 +147,7 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
                         }
                     }
                 ],
-                totalCount: [
+                totalEntries: [
                     { $count: "count" }
                 ]
             }
@@ -156,9 +156,15 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
     
     const result = await Score.aggregate(pipeline); // Note: returns lean JSON instead of Mongoose model object. Not a problem, though
     const scores = result[0].paginatedResults;
-    const totalCount = result[0].totalCount[0]?.count ?? 0;
-
-    serverReply(reply, 'ok', { 'count': totalCount, 'scores': scores })
+    const totalEntries = result[0].totalEntries[0]?.count ?? 0;
+    
+    serverReply(reply, 'ok', {
+        totalEntries,
+        totalPages: Math.ceil(totalEntries / limit),
+        page,
+        limit,
+        entries: scores
+    })
 }
 
 const songLeaderboardErrorHandler: ServerErrorHandler = function (error, req, reply) {
