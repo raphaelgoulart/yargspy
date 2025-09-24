@@ -209,7 +209,7 @@ namespace YARGReplayValidator.Core
           foreach (Difficulty diff in Enum.GetValues<Difficulty>())
           {
             if (!track.TryGetDifficulty(diff, out var instrumentDifficulty)) continue;
-            var noteCount = instrumentDifficulty.Notes.Count;
+            var noteCount = instrumentDifficulty.GetTotalNoteCount(); // chords are separate notes
             if (noteCount == 0) continue;
             if (diff == Difficulty.ExpertPlus && noteCount == diffNoteStorage[(byte)Difficulty.Expert]) continue; // do not add X+ unless needed
             var diffByte = (byte)diff;

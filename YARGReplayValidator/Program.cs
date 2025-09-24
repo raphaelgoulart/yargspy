@@ -11,8 +11,8 @@ static void InitYARGReplayValidator(ArgParseOptions options)
 {
   try
   {
-    if (!Path.Exists(options.ReplayFilePath)) throw new FileNotFoundException($"Provided REPLAY file \"{options.ReplayFilePath}\" does not exists.");
-    if (options.ChartFilePath != null && !Path.Exists(options.ChartFilePath)) throw new FileNotFoundException($"Provided CHART/MIDI file \"{options.ChartFilePath}\" does not exists.");
+    if (!Path.Exists(options.ReplayFilePath) && options.ReadMode != ReadMode.MidiOnly) throw new FileNotFoundException($"Provided REPLAY file \"{options.ReplayFilePath}\" does not exist.");
+    if (options.ChartFilePath != null && !Path.Exists(options.ChartFilePath)) throw new FileNotFoundException($"Provided CHART/MIDI file \"{options.ChartFilePath}\" does not exist.");
 
     var readMode = options.ReadMode;
     bool isRB3CON = options.IsRB3CON;
