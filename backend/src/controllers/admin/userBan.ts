@@ -1,5 +1,6 @@
 import { TokenError } from "fast-jwt"
-import { ServerError } from "../../app.exports"
+import { type infer as ZodInfer } from 'zod'
+import { adminUserBanBodySchema, ServerError } from "../../app.exports"
 import { serverReply } from "../../core.exports"
 import type { RouteRequest, ServerErrorHandler, ServerHandler } from "../../lib.exports"
 import { User, type UserSchemaDocument } from "../../models/User"
@@ -7,28 +8,25 @@ import { Score } from "../../models/Score"
 import { AdminAction, AdminLog } from "../../models/AdminLog"
 
 export interface IAdminUserBan {
-  body: {
-    id: string,
-    active: boolean,
-    reason: string
-  }
-} // TODO: validate as Zod object
+  body: ZodInfer<typeof adminUserBanBodySchema>
+}
 
 // #region Handler
 
 const adminUserBanHandler: ServerHandler<IAdminUserBan> = async function (req, reply) {
-  const user = await User.findById(req.body.id)
-  if (!user) throw new ServerError([404, `User ${req.body.id} not found`])
-  if (user.active == req.body.active) throw new ServerError([400, `User already in requested active state`])
-  Score.updateMany({ uploader: user }, { $set: { hidden: !req.body.active } }).then() // toggle user score visibility; this can be async
-  user.active = req.body.active
+  const body = adminUserBanBodySchema.parse(req.body)
+  const user = await User.findById(body.id)
+  if (!user) throw new ServerError([404, `User ${body.id} not found`])
+  if (user.active == body.active) throw new ServerError([400, `User already in requested active state`])
+  Score.updateMany({ uploader: user }, { $set: { hidden: !body.active } }).then() // toggle user score visibility; this can be async
+  user.active = body.active
   await user.save()
   // log admin action (this can be async)
   new AdminLog({
     admin: (req as RouteRequest<{ user: UserSchemaDocument }>).user,
-    action: req.body.active ? AdminAction.UserUnban : AdminAction.UserBan,
+    action: body.active ? AdminAction.UserUnban : AdminAction.UserBan,
     item: user,
-    reason: req.body.reason,
+    reason: body.reason,
   }).save()
   serverReply(
     reply,

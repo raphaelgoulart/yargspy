@@ -83,3 +83,9 @@ export const userUpdateBodySchema = zod.object({
   //       default: Date.now(),
   //     },
 })
+
+export const adminUserBanBodySchema = zod.object({
+    id: zod.string().nonoptional(),
+    active: zod.boolean().nonoptional(),
+    reason: zod.string().nonempty()
+})

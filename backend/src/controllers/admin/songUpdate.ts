@@ -21,7 +21,7 @@ export interface IAdminSongUpdate {
     multiplierNote?: number
     reason?: string
   }
-} // TODO: validate as Zod object
+}
 
 // #region Handler
 
