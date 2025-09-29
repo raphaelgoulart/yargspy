@@ -6,7 +6,7 @@ import { Song } from '../../models/Song'
 import { AdminAction, AdminLog } from '../../models/AdminLog'
 import type { UserSchemaDocument } from '../../models/User'
 
-export interface ISongUpdate {
+export interface IAdminSongUpdate {
   body: {
     id: string
     name?: string
@@ -21,15 +21,15 @@ export interface ISongUpdate {
     multiplierNote?: number
     reason?: string
   }
-}
+} // TODO: validate as Zod object
 
 // #region Handler
 
-const songUpdateHandler: ServerHandler<ISongUpdate> = async function (req, reply) {
+const adminSongUpdateHandler: ServerHandler<IAdminSongUpdate> = async function (req, reply) {
   const song = await Song.findById(req.body.id)
   if (!song) {
     if (req.body.id) throw new ServerError([404, `Song ${req.body.id} not found`])
-    else throw new ServerError([401, `id parameter missing from body`])
+    else throw new ServerError([400, `id parameter missing from request body`])
   }
 
   if (req.body.name !== undefined) song.name = req.body.name
@@ -62,7 +62,7 @@ const songUpdateHandler: ServerHandler<ISongUpdate> = async function (req, reply
 
 // #region Error Handler
 
-const songUpdateErrorHandler: ServerErrorHandler = function (error, req, reply) {
+const adminSongUpdateErrorHandler: ServerErrorHandler = function (error, req, reply) {
   // Generic ServerError
   if (error instanceof ServerError) return serverReply(reply, error.serverErrorCode, error.data, error.messageValues)
 
@@ -74,7 +74,7 @@ const songUpdateErrorHandler: ServerErrorHandler = function (error, req, reply) 
 
 // #region Controller
 
-export const songUpdateController = {
-  errorHandler: songUpdateErrorHandler,
-  handler: songUpdateHandler,
+export const adminSongUpdateController = {
+  errorHandler: adminSongUpdateErrorHandler,
+  handler: adminSongUpdateHandler,
 } as const

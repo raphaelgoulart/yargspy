@@ -14,3 +14,4 @@ export * from './controllers/user/scores'
 export * from './controllers/user/update'
 
 export * from './controllers/admin/songUpdate'
+export * from './controllers/admin/userBan'
