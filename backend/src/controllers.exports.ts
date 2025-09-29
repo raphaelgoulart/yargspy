@@ -12,3 +12,5 @@ export * from './controllers/user/profile'
 export * from './controllers/user/register'
 export * from './controllers/user/scores'
 export * from './controllers/user/update'
+
+export * from './controllers/admin/songUpdate'

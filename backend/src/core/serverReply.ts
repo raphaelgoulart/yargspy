@@ -83,6 +83,7 @@ export const codeMap = {
   err_empty_json_body: [400, "Body cannot be empty when content-type is set to 'application/json'"],
   err_invalid_auth_format: [401, 'Invalid authorization string format found on request headers'],
   err_invalid_auth: [401, 'The provided authorization token is not valid. Please logout this session, validate a new login and try again'],
+  err_invalid_auth_admin: [401, 'The current endpoint is restricted for admin users only'],
   err_invalid_input: [400, 'Some request validation method on the server declined your request due to validation errors on fields'],
   err_syntax_json_body: [400, 'Response body JSON has a syntax error: {{additionalMessage}}'],
   err_invalid_query: [400, 'Missing parameters on query: {{params}}'],

@@ -26,9 +26,11 @@ No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/
 - [ ] User routes;
     - [ ] Edit user (only user itself and admin)
 - [ ] Admin routes;
-    - [ ] Ban user (deactivates the account, hides all their scores) / unban user 
-    - [ ] Edit/delete song
-    - [ ] Delete score
+    - [ ] Ban user (deactivates the account, hides all their scores) / unban user
+    - [ ] Add song (fetch info from validator)
+    - [x] Edit song (.ini metadata only)
+    - [ ] Delete song (delete associated chart file, delete associated scores and their respective .replay files)
+    - [ ] Delete score (delete associated .replay file)
 - [ ] (all endpoints) project/select only fields actually used by front-end to optimize data transfer
 
 ## Frontend

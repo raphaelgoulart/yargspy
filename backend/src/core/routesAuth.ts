@@ -1,4 +1,4 @@
-import { userLoginBodySchema } from '../app.exports'
+import { ServerError, userLoginBodySchema } from '../app.exports'
 import { type IUserLogin, type IUserProfile } from '../controllers.exports'
 import type { ServerAuthHandler, RouteRequest } from '../lib.exports'
 import { User, type UserSchemaDocument } from '../models/User'
@@ -13,4 +13,9 @@ export const verifyUserLoginBody: ServerAuthHandler<IUserLogin> = async function
 export const verifyUserJWT: ServerAuthHandler<IUserProfile> = async function (req) {
   const user = await User.findByToken(req.headers.authorization)
   ;(req as RouteRequest<{user?: UserSchemaDocument}>).user = user
+}
+
+export const verifyAdmin: ServerAuthHandler = async function (req) {
+    const user = (req as RouteRequest<{user?: UserSchemaDocument}>).user
+    if (!user || !user.admin) throw new ServerError('err_invalid_auth_admin')
 }
