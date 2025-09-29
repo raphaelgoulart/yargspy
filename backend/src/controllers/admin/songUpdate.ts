@@ -1,8 +1,10 @@
 import { TokenError } from 'fast-jwt'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
-import type { ServerHandler, ServerErrorHandler } from '../../lib.exports'
+import type { ServerHandler, ServerErrorHandler, RouteRequest } from '../../lib.exports'
 import { Song } from '../../models/Song'
+import { AdminAction, AdminLog } from '../../models/AdminLog'
+import type { UserSchemaDocument } from '../../models/User'
 
 export interface ISongUpdate {
   body: {
@@ -17,6 +19,7 @@ export interface ISongUpdate {
     sustainCutoffThreshold?: number
     hopoFrequency?: number
     multiplierNote?: number
+    reason?: string
   }
 }
 
@@ -41,7 +44,13 @@ const songUpdateHandler: ServerHandler<ISongUpdate> = async function (req, reply
   if (req.body.multiplierNote !== undefined) song.multiplierNote = req.body.multiplierNote
 
   await song.save()
-  // TODO: log admin action
+  // log admin action (this can be async)
+  new AdminLog({
+    admin: (req as RouteRequest<{ user: UserSchemaDocument }>).user,
+    action: AdminAction.SongUpdate,
+    item: song,
+    reason: req.body.reason,
+  }).save()
   serverReply(
     reply,
     'ok',

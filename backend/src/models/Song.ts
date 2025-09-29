@@ -139,8 +139,4 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
   }
 )
 
-// custom methods
-// TODO: method to select all scores for that song (in a given instrument/diff)
-// (if a player has multiple scores, only the top-most in the selected criteria (score/notes hit) should be selected);
-
 export const Song = model<SongSchemaInput, SongSchemaModel>('Song', songSchema)

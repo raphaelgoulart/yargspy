@@ -31,6 +31,7 @@ No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/
     - [x] Edit song (.ini metadata only)
     - [ ] Delete song (delete associated chart file, delete associated scores and their respective .replay files)
     - [ ] Delete score (delete associated .replay file)
+    - [ ] View admin logs
 - [ ] (all endpoints) project/select only fields actually used by front-end to optimize data transfer
 
 ## Frontend
