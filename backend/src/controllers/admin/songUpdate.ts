@@ -41,6 +41,7 @@ const songUpdateHandler: ServerHandler<ISongUpdate> = async function (req, reply
   if (req.body.multiplierNote !== undefined) song.multiplierNote = req.body.multiplierNote
 
   await song.save()
+  // TODO: log admin action
   serverReply(
     reply,
     'ok',
