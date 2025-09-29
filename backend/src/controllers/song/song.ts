@@ -16,7 +16,7 @@ const songDataHandler: ServerHandler<ISongData> = async function (req, reply) {
   const song = await Song.findById(req.query.id)
   if (!song) {
     if (req.query.id) throw new ServerError([404, `Song ${req.query.id} not found`])
-    else throw new ServerError([400, `id parameter missing from query`])
+    else throw new ServerError('err_invalid_query', null, {params: 'id'})
   }
 
   serverReply(

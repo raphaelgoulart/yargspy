@@ -29,7 +29,7 @@ const adminSongUpdateHandler: ServerHandler<IAdminSongUpdate> = async function (
   const song = await Song.findById(req.body.id)
   if (!song) {
     if (req.body.id) throw new ServerError([404, `Song ${req.body.id} not found`])
-    else throw new ServerError([400, `id parameter missing from request body`])
+    else throw new ServerError('err_invalid_query', null, {params: 'id'})
   }
 
   if (req.body.name !== undefined) song.name = req.body.name
@@ -54,8 +54,8 @@ const adminSongUpdateHandler: ServerHandler<IAdminSongUpdate> = async function (
   serverReply(
     reply,
     'ok',
-     {
-     song
+    {
+      song
     },
   )
 }
