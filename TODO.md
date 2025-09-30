@@ -30,7 +30,7 @@ No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/
     - [ ] Add song (fetch info from validator)
     - [x] Edit song (.ini metadata only)
     - [ ] Delete song (delete associated chart file, delete associated scores and their respective .replay files)
-    - [ ] Delete score (delete associated .replay file) (TODO: figure this out properly since there's a relation between band scores and instrument scores)
+    - [x] Delete score (delete associated .replay file and all scores associated to that replay file)
     - [ ] View admin logs
 - [ ] (all endpoints) project/select only fields actually used by front-end to optimize data transfer
 
