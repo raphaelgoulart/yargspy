@@ -27,7 +27,7 @@ No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/
     - [ ] Edit user (only user itself and admin)
 - [ ] Admin routes;
     - [x] Ban user (deactivates the account, hides all their scores) / unban user
-    - [ ] Add song (fetch info from validator)
+    - [x] Add song (fetch info from validator)
     - [x] Edit song (.ini metadata only)
     - [x] Delete song (delete associated chart file, delete associated scores and their respective .replay files)
     - [x] Delete score (delete associated .replay file and all scores associated to that replay file)
