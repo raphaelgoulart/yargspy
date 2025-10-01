@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { adminSongUpdateController, adminUserBanController, adminScoreDeleteController, adminSongDeleteController } from '../controllers.exports'
+import { adminSongUpdateController, adminUserBanController, adminScoreDeleteController, adminSongDeleteController, adminSongAddController } from '../controllers.exports'
 import { verifyAdmin, verifyUserJWT } from '../core.exports'
 
 export default function AdminRoute(app: FastifyInstance) {
@@ -30,5 +30,12 @@ export default function AdminRoute(app: FastifyInstance) {
     logLevel: 'warn',
     preHandler: app.auth([verifyUserJWT, verifyAdmin], {relation: 'and'}),
     ...adminSongDeleteController,
+  })
+  app.route({
+    method: ['POST', 'HEAD'],
+    url: '/admin/songAdd',
+    logLevel: 'warn',
+    preHandler: app.auth([verifyUserJWT, verifyAdmin], {relation: 'and'}),
+    ...adminSongAddController,
   })
 }

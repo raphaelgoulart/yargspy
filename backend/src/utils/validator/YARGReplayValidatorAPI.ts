@@ -130,6 +130,14 @@ export interface YARGReplayValidatorResults {
   hopoFrequency: number
 }
 
+export interface FormattedYARGSongResults {
+  chartData: {
+    noteCount: ReplayCountObject
+    starPowerCount: ReplayCountObject
+  }
+  hopoFrequency: number
+}
+
 export interface FormattedYARGReplayResults {
   replayInfo: {
     filePath: string
@@ -357,5 +365,32 @@ export class YARGReplayValidatorAPI {
     if (stderr) throw new ServerError('err_unknown', isDev() ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnReplayInfo()' } : {})
 
     return this.formatReplayInfoResults(this.camelCaseKeyTransform<YARGReplayValidatorResults>(JSON.parse(stdout)))
+  }
+
+  static async returnSongInfo(chartFilePath: FilePathLikeTypes, song: SongSchemaDocument, eighthNoteHopo?: boolean, hopoFreq?: number): Promise<FormattedYARGSongResults> {
+    // TODO: bunch of duplicate code, refactor later
+    const validatorPath = getValidatorPath()
+    const chartFile = pathLikeToFilePath(chartFilePath)
+
+    const readMode = this.readMode.midiOnly
+
+    const prefix = process.platform === "win32" ? "" : "dotnet ";
+    let command = `${prefix}"./${validatorPath.fullname}" _ "${chartFile.path}" -m ${readMode}`
+
+    // Input parameters from Song model
+    if (song.isRb3con) command += ' -c true'
+    if (song.proDrums !== undefined) command += ` -p ${booleanToString(song.proDrums)}`
+    if (song.fiveLaneDrums !== undefined) command += ` -g ${booleanToString(song.fiveLaneDrums)}`
+    if (song.sustainCutoffThreshold !== undefined) command += ` -s ${song.sustainCutoffThreshold.toString()}`
+    if (song.multiplierNote !== undefined) command += ` -n ${song.multiplierNote.toString()}`
+
+    // Other input params
+    if (eighthNoteHopo !== undefined) command += ` -e ${booleanToString(eighthNoteHopo)}`
+    if (hopoFreq !== undefined) command += ` -f ${hopoFreq.toString()}`
+
+    const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
+    if (stderr) throw new ServerError('err_unknown', isDev() ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnSongInfo()' } : {})
+
+    return this.camelCaseKeyTransform<FormattedYARGSongResults>(JSON.parse(stdout))
   }
 }
