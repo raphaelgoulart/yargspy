@@ -13,7 +13,10 @@ export interface IUserProfile {
 // #region Handler
 
 const userProfileHandler: ServerHandler<IUserProfile> = async function (req, reply) {
-  const user = req.query.username ? await User.findOne({username: req.query.username}) : await User.findByToken(req.headers.authorization)
+  const currentUser = await User.findByToken(req.headers.authorization)
+  const select = []
+  if (currentUser && currentUser.admin) select.push('+email','+emailVerified')
+  const user = req.query.username ? await User.findOne({username: req.query.username}).select(select).lean() : await User.findById(currentUser._id).select(select).lean();
   if (!user) {
     if (req.query.username) throw new ServerError([404, `User ${req.query.username} not found`])
     else throw new ServerError('err_auth_required')
@@ -23,16 +26,7 @@ const userProfileHandler: ServerHandler<IUserProfile> = async function (req, rep
     reply,
     'success_user_profile',
     {
-      user: {
-        _id: user._id,
-        username: user.username,
-        profilePhotoURL: user.profilePhotoURL,
-        active: user.active,
-        admin: user.admin,
-        country: user.country,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      },
+      user
     },
     { username: user.username }
   )
