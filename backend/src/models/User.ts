@@ -63,7 +63,7 @@ export interface UserSchemaDocument extends UserSchemaInput, Document {
    * Sets the user's country based on request header.
    * - - - -
    */
-  setCountry(req: ServerRequest): Promise<void>
+  setCountryAndSave(req: ServerRequest): Promise<void>
 }
 
 // Statics here
@@ -151,7 +151,7 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
 
         if (!valid) throw new ServerError('err_user_register_duplicated_username', null)
       },
-      async setCountry(req) {
+      async setCountryAndSave(req) {
         this.country = (req.headers['cloudfront-viewer-country'] as string | undefined) ?? 'XX';
         await this.save()
       }

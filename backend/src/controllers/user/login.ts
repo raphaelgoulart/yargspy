@@ -13,7 +13,7 @@ export interface IUserLogin {
 const userLoginHandler: ServerHandler<IUserLogin> = async function (req, reply) {
   const user = (req as RouteRequest<{ user: UserSchemaDocument }>).user
   const token = await user.generateToken()
-  user.setCountry(req) // take opportunity to update the user's country flag (this can be async)
+  user.setCountryAndSave(req) // take opportunity to update the user's country flag (this can be async)
   serverReply(reply, 'suceess_user_login', { token })
 }
 

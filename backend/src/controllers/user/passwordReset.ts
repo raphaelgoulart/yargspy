@@ -22,7 +22,7 @@ const userPasswordResetHandler: ServerHandler<IPasswordReset> = async function (
   if (!user) throw new ServerError('err_invalid_auth_token')
 
   user.password = password;
-  await user.setCountry(req); // also saves the user
+  await user.setCountryAndSave(req); // also saves the user
   serverReply(reply, 'ok')
 }
 

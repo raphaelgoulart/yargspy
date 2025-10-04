@@ -19,12 +19,12 @@ const userEmailVerifyHandler: ServerHandler<IUserEmailVerify> = async function (
   const doc = await EmailToken.consume(Purpose.Verify, req.query.token);
   if (!doc) throw new ServerError('err_invalid_auth_token')
 
-  const user = await User.findById(doc.user);
+  const user = await User.findById(doc.user).select('+emailVerified');
   if (!user) throw new ServerError('err_invalid_auth_token')
 
   if (!user.emailVerified) {
     user.emailVerified = true;
-    await user.setCountry(req); // also saves the user
+    await user.setCountryAndSave(req); // also saves the user
   }
   serverReply(reply, 'ok')
 }

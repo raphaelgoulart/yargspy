@@ -17,7 +17,7 @@ const userRegisterHandler: ServerHandler<IUserRegister> = async function (req, r
   // TODO: validate hCaptcha
   const user = new User(body)
   await user.checkUsernameEmailCaseInsensitive()
-  await user.setCountry(req); // this'll also save the user
+  await user.setCountryAndSave(req); // this'll also save the user
   await issueAndSendVerification(user.id, user.email);
   return serverReply(reply, 'success_user_register')
 }

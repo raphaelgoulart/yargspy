@@ -9,16 +9,16 @@ import { issueAndSendVerification } from '../../utils.exports'
 
 export interface IUserEmailResend {
   body: {
-    email: string
+    username: string
   }
 }
 
 const userEmailResendHandler: ServerHandler<IUserEmailResend> = async function (req, reply) {
-  if (!req.body.email) throw new ServerError('err_invalid_query', null, { params: "email" })
+  if (!req.body.username) throw new ServerError('err_invalid_query', null, { params: "username" })
 
-  const user = await User.findOne({ email: req.body.email.toLowerCase() });
+  const user = await User.findOne({ username: req.body.username }).select('+email +emailVerified');
   if (user && !user.emailVerified) {
-    await issueAndSendVerification(user.id, req.body.email.toLowerCase());
+    await issueAndSendVerification(user.id, user.email);
   }
   
   serverReply(reply, 'ok')
