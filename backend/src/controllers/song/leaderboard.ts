@@ -108,7 +108,7 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
                         $addFields: {
                             uploader: {
                                 username: "$uploaderInfo.username",
-                                // TODO: more info? country flag?
+                                country: "$uploaderInfo.country",
                             }
                         }
                     },
@@ -139,7 +139,7 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
                                     $addFields: {
                                         uploader: {
                                             username: "$uploaderInfo.username",
-                                            // TODO: more info? country flag?
+                                            country: "$uploaderInfo.country",
                                         }
                                     }
                                 },

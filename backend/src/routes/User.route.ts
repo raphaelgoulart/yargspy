@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { userEntriesController, userLoginController, userProfileController, userRegisterController, userScoresController } from '../controllers.exports'
+import { userEmailResendController, userEmailVerifyController, userEntriesController, userLoginController, userPasswordForgotController, userPasswordResetController, userProfileController, userRegisterController, userScoresController } from '../controllers.exports'
 import { verifyUserJWT, verifyUserLoginBody } from '../core.exports'
 
 export default function UserRoute(app: FastifyInstance) {
@@ -36,5 +36,33 @@ export default function UserRoute(app: FastifyInstance) {
     url: '/user/scores',
     logLevel: 'warn',
     ...userScoresController,
+  })
+
+  app.route({
+    method: ['GET', 'HEAD'],
+    url: '/user/emailVerify',
+    logLevel: 'warn',
+    ...userEmailVerifyController,
+  })
+
+  app.route({
+    method: ['POST', 'HEAD'],
+    url: '/user/emailResend',
+    logLevel: 'warn',
+    ...userEmailResendController,
+  })
+
+  app.route({
+    method: ['POST', 'HEAD'],
+    url: '/user/passwordForgot',
+    logLevel: 'warn',
+    ...userPasswordForgotController,
+  })
+
+  app.route({
+    method: ['POST', 'HEAD'],
+    url: '/user/passwordReset',
+    logLevel: 'warn',
+    ...userPasswordResetController,
   })
 }

@@ -54,9 +54,9 @@ const adminSongAddHandler: ServerHandler = async function (req, reply) {
       songDataFile: { filePath: songDataPath },
     } = Object.fromEntries(fileFields.entries()) as unknown as IAdminSongAddFileFieldsObject
 
-    if (!chartFilePath || !songDataPath) throw new ServerError('err_song_songdata_required') // TODO: NEW ERROR
+    if (!chartFilePath || !songDataPath) throw new ServerError('err_song_songdata_required')
     const songHash = await chartFilePath.generateHash()
-    if (await Song.findByHash(songHash)) throw new ServerError('err_song_duplicated_song') // TODO: NEW ERROR
+    if (await Song.findByHash(songHash)) throw new ServerError('err_song_duplicated_song')
     await checkChartFilesIntegrity(chartTemp, midiTemp)
 
     let eighthNoteHopo: boolean | undefined

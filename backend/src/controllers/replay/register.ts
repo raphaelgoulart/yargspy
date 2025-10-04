@@ -119,8 +119,12 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       hopoFreq = f
     } else {
       if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts'" })
-      // TODO: in prod get file from S3 and put in temp folder if using AWS
-      chartFilePath = getChartFilePathFromSongEntry(songEntry) // TODO: if DEV only
+      if (isDev()) {
+        chartFilePath = getChartFilePathFromSongEntry(songEntry)
+      } else {
+        // TODO: in prod, remove the line below, get file from S3 and put in temp folder if using AWS
+        chartFilePath = getChartFilePathFromSongEntry(songEntry)
+      }
     }
 
     // Unreacheable code: Either the song entry is found or filled with the provided chart and song metadata files above
@@ -129,7 +133,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     // Validate REPLAY file
     const replayInfo = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, isSongEntryFound, songEntry, eighthNoteHopo, hopoFreq)
 
-    if (replayInfo.replayInfo.bandScore == 0) throw new ServerError('err_replay_no_notes_hit') // TODO: NEW ERROR
+    if (replayInfo.replayInfo.bandScore == 0) throw new ServerError('err_replay_no_notes_hit')
 
     if (!isSongEntryFound) {
       // Add remaining song info to song object (i.e. hopo_threshold, instruments diffs and notes etc.) then save to DB

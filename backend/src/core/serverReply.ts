@@ -83,6 +83,7 @@ export const codeMap = {
   err_empty_json_body: [400, "Body cannot be empty when content-type is set to 'application/json'"],
   err_invalid_auth_format: [401, 'Invalid authorization string format found on request headers'],
   err_invalid_auth: [401, 'The provided authorization token is not valid. Please logout this session, validate a new login and try again'],
+  err_invalid_auth_token: [401, 'The provided token is not valid.'],
   err_invalid_auth_admin: [401, 'The current endpoint is restricted for admin users only'],
   err_invalid_input: [400, 'Some request validation method on the server declined your request due to validation errors on fields'],
   err_syntax_json_body: [400, 'Response body JSON has a syntax error: {{additionalMessage}}'],
@@ -113,6 +114,7 @@ export const codeMap = {
   // user/login
   err_login_password_validation: [401, "The provided password and the registered user's password don't match"],
   err_login_user_inactive: [401, 'The registered user has been deactivated and is unable to login'],
+  err_login_user_email_unverified: [401, 'The registered user\'s email address has not been verified yet'],
   err_login_user_notfound: [400, 'The provided username {{username}} is not registered'],
   err_user_login_no_body: [400, 'No body response provided for user login validation route'],
   err_user_login_no_password: [400, 'No password provided for user login validation'],
@@ -121,6 +123,10 @@ export const codeMap = {
 
   // user/profile
   success_user_profile: [200, 'Profile data from user {{username}} has been retrieved successfully'],
+
+  // admin/songAdd
+  err_song_songdata_required: [422, 'Song not registered in the server database, the MIDI/CHART file and the song metadata file is required to validate YARG Replay file and register new song'],
+  err_song_duplicated_song: [409, 'The provided song has already been registered'],
 
   // replay/register
   err_replay_no_replay_uploaded: [400, 'No YARG REPLAY file provided on the request form data to register'],
@@ -134,7 +140,8 @@ export const codeMap = {
   err_replay_duplicated_score: [409, 'The provided YARG REPLAY has already been registered'],
   success_replay_register: [201, 'Your score was registered successfully'],
   success_replay_and_song_register: [201, 'Your score and song was registered successfully'],
-  err_replay_no_valid_players: [400, 'Provided YARG REPLAY file only contains players that played using custom engines unsupported by the server, score registering has been aborted']
+  err_replay_no_valid_players: [400, 'Provided YARG REPLAY file only contains players that played using custom engines unsupported by the server, score registering has been aborted'],
+  err_replay_no_notes_hit: [400, 'No player has hit any notes in this YARG REPLAY file']
 } as const
 
 export type ReplyCodeNames = keyof typeof codeMap

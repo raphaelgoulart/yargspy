@@ -1,5 +1,18 @@
 import zod from 'zod'
 
+const passwordZodObject = zod
+  .string()
+  .min(8)
+  .max(48)
+
+  // Trigger not lowercase, uppercase, and numbers validation
+  .regex(/[A-Z]/)
+  .regex(/[a-z]/)
+  .regex(/[0-9]/)
+
+  // In the end, any symbol is required
+  .regex(/[^A-Za-z0-9]/)
+
 export const userLoginBodySchema = zod.object({
   username: zod.string().nonempty().min(3).max(32),
   password: zod.string().nonempty().min(8).max(48),
@@ -38,18 +51,7 @@ export const userRegisterBodySchema = zod.object({
       { error: 'err_user_register_username_invalid_type2', params: { pattern: '/\\.\\.+|__+/' } }
     ),
 
-  password: zod
-    .string()
-    .min(8)
-    .max(48)
-
-    // Trigger not lowercase, uppercase, and numbers validation
-    .regex(/[A-Z]/)
-    .regex(/[a-z]/)
-    .regex(/[0-9]/)
-
-    // In the end, any symbol is required
-    .regex(/[^A-Za-z0-9]/),
+  password: passwordZodObject,
   email: zod.email(),
   // TODO: hCaptcha
 })
@@ -87,7 +89,12 @@ export const userUpdateBodySchema = zod.object({
 })
 
 export const adminUserBanBodySchema = zod.object({
-    id: zod.string().nonoptional(),
-    active: zod.boolean().nonoptional(),
-    reason: zod.string().nonempty()
+  id: zod.string().nonoptional(),
+  active: zod.boolean().nonoptional(),
+  reason: zod.string().nonempty()
+})
+
+export const userPasswordResetBodySchema = zod.object({
+  token: zod.string().min(10),
+  password: passwordZodObject
 })

@@ -160,17 +160,19 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
       async findByToken(auth?: string) {
         const token = bearerTokenVerifier(auth)
         const decoded = jwtVerify(token)
-        const user = await this.findOne({ _id: decoded._id })
+        const user = await this.findOne({ _id: decoded._id }).select('+emailVerified')
         if (!user) throw new ServerError('err_invalid_auth')
         if (!user.active) throw new ServerError('err_login_user_inactive')
+        if (!user.emailVerified) throw new ServerError('err_login_user_email_unverified')
         return user
       },
       async findByCredentials(username: string, password: string) {
-        const user = await this.findOne({ username }).select(['+password'])
+        const user = await this.findOne({ username }).select(['+password', '+emailVerified'])
         if (!user) throw new ServerError('err_login_user_notfound', null, { username })
         const isMatch = await bcrypt.compare(password, user.password)
         if (!isMatch) throw new ServerError('err_login_password_validation')
         if (!user.active) throw new ServerError('err_login_user_inactive')
+        if (!user.emailVerified) throw new ServerError('err_login_user_email_unverified')
         return user
       },
     },

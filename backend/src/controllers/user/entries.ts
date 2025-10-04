@@ -37,7 +37,7 @@ const userEntriesHandler: ServerHandler<IUserEntries> = async function (req, rep
             // Filter for production env
             username: user.username,
             profilePhotoURL: user.profilePhotoURL,
-            // TODO: country flag?
+            country: user.country
           }
     ),
   })

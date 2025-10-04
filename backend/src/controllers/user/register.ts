@@ -4,6 +4,7 @@ import { ServerError, userRegisterBodySchema } from '../../app.exports'
 import { serverReply } from '../../core.exports'
 import type { ServerHandler, ServerErrorHandler } from '../../lib.exports'
 import { User } from '../../models/User'
+import { issueAndSendVerification } from '../../utils.exports'
 
 export interface IUserRegister {
   body: ZodInfer<typeof userRegisterBodySchema>
@@ -17,6 +18,7 @@ const userRegisterHandler: ServerHandler<IUserRegister> = async function (req, r
   const user = new User(body)
   await user.checkUsernameEmailCaseInsensitive()
   await user.setCountry(req); // this'll also save the user
+  await issueAndSendVerification(user.id, user.email);
   return serverReply(reply, 'success_user_register')
 }
 
