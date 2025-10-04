@@ -13,9 +13,10 @@ export interface IUserRegister {
 
 const userRegisterHandler: ServerHandler<IUserRegister> = async function (req, reply) {
   const body = userRegisterBodySchema.parse(req.body)
+  // TODO: validate hCaptcha
   const user = new User(body)
-  await user.checkUsernameCaseInsensitive()
-  await user.save()
+  await user.checkUsernameEmailCaseInsensitive()
+  await user.setCountry(req); // this'll also save the user
   return serverReply(reply, 'success_user_register')
 }
 
@@ -31,6 +32,8 @@ const userRegisterErrorHandler: ServerErrorHandler<IUserRegister> = function (er
       if (issue.message === 'Invalid input: expected string, received undefined' && issue.path[0] === 'username') return serverReply(reply, 'err_user_register_no_username')
       // No password
       if (issue.message === 'Invalid input: expected string, received undefined' && issue.path[0] === 'password') return serverReply(reply, 'err_user_register_no_password')
+      // No email
+      if (issue.message === 'Invalid input: expected string, received undefined' && issue.path[0] === 'email')    return serverReply(reply, 'err_user_register_no_email')
     }
     if (issue.code === 'too_small') {
       // Too small username
@@ -46,11 +49,15 @@ const userRegisterErrorHandler: ServerErrorHandler<IUserRegister> = function (er
     }
 
     // Password validation
-    if (issue.code === 'invalid_format' && issue.path[0] === 'password') {
-      if (issue.pattern === '/[a-z]/') return serverReply(reply, 'err_user_register_password_nolowercase')
-      if (issue.pattern === '/[A-Z]/') return serverReply(reply, 'err_user_register_password_nouppercase')
-      if (issue.pattern === '/[0-9]/') return serverReply(reply, 'err_user_register_password_nonumber')
-      if (issue.pattern === '/[^A-Za-z0-9]/') return serverReply(reply, 'err_user_register_password_nospecialchar')
+    if (issue.code === 'invalid_format') {
+      if (issue.path[0] === 'password') {
+        if (issue.pattern === '/[a-z]/') return serverReply(reply, 'err_user_register_password_nolowercase')
+        if (issue.pattern === '/[A-Z]/') return serverReply(reply, 'err_user_register_password_nouppercase')
+        if (issue.pattern === '/[0-9]/') return serverReply(reply, 'err_user_register_password_nonumber')
+        if (issue.pattern === '/[^A-Za-z0-9]/') return serverReply(reply, 'err_user_register_password_nospecialchar')
+      } else if (issue.path[0] === 'email') {
+        return serverReply(reply, 'err_user_register_email_invalid')
+      }
     }
 
     if (issue.code === 'custom') return serverReply(reply, issue.message)

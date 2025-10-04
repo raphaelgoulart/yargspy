@@ -91,11 +91,12 @@ export const codeMap = {
   ok: [200, 'Request completed by the server'],
 
   // user/register
-  err_user_register_duplicated_username_typo: [409, 'Provided username {{username}} is a typo of another registered user'],
-  err_user_register_duplicated_username: [409, 'Provided username {{username}} is already being used'],
+  err_user_register_duplicated_username: [409, 'Provided username/email is already being used'],
   err_user_register_no_body: [400, 'No body response provided for user registering route'],
   err_user_register_no_password: [400, 'No password provided for user registering'],
   err_user_register_no_username: [400, 'No username provided for user registering'],
+  err_user_register_no_email: [400, 'No email provided for user registering'],
+  err_user_register_email_invalid: [400, 'Provided email address is invalid'],
   err_user_register_password_nolowercase: [400, 'Provided password must contain at least one lowercase character'],
   err_user_register_password_nonumber: [400, 'Provided password must contain at least one numeric digit'],
   err_user_register_password_nospecialchar: [400, 'Provided password must contain at least one special character'],

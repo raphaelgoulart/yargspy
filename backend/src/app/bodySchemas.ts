@@ -50,6 +50,8 @@ export const userRegisterBodySchema = zod.object({
 
     // In the end, any symbol is required
     .regex(/[^A-Za-z0-9]/),
+  email: zod.email(),
+  // TODO: hCaptcha
 })
 
 export const userUpdateBodySchema = zod.object({

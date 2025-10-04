@@ -21,9 +21,7 @@ export interface AdminLogSchemaInput {
 export interface AdminLogSchemaDocument extends AdminLogSchemaInput, Document {}
 
 // Statics here
-export interface AdminLogSchemaModel extends Model<AdminLogSchemaDocument> {
-  findByHash(hash: string): Promise<AdminLogSchemaDocument | null>
-}
+export interface AdminLogSchemaModel extends Model<AdminLogSchemaDocument> {}
 
 //#region Schema
 

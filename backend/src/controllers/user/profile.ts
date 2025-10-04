@@ -29,6 +29,7 @@ const userProfileHandler: ServerHandler<IUserProfile> = async function (req, rep
         profilePhotoURL: user.profilePhotoURL,
         active: user.active,
         admin: user.admin,
+        country: user.country,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },

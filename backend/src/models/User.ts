@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs'
 import { type Document, model, type Model, Schema } from 'mongoose'
 import { bearerTokenVerifier, jwtSign, jwtVerify, passwordValidator } from '../utils.exports'
 import { ServerError } from '../app.exports'
+import type { ServerRequest } from '../lib.exports'
 
 export interface UserSchemaInput {
   /**
@@ -13,9 +14,17 @@ export interface UserSchemaInput {
    */
   password: string
   /**
+   * The email address belonging to the user.
+   */
+  email: string
+  /**
    * The profile photo URL.
    */
   profilePhotoURL: string
+  /**
+   * Tells if the user has verified its email address
+   */
+  emailVerified: boolean
   /**
    * Tells if the user registry is active
    */
@@ -29,9 +38,13 @@ export interface UserSchemaInput {
    */
   createdAt: Date
   /**
-   * Tells where the user entry was last updated.
+   * Tells when the user entry was last updated.
    */
   updatedAt: Date
+  /**
+   * The user's country code
+   */
+  country: string
 }
 
 // Methods here
@@ -45,7 +58,12 @@ export interface UserSchemaDocument extends UserSchemaInput, Document {
    * Performs a case-insensitive username validation.
    * - - - -
    */
-  checkUsernameCaseInsensitive(): Promise<void>
+  checkUsernameEmailCaseInsensitive(): Promise<void>
+  /**
+   * Sets the user's country based on request header.
+   * - - - -
+   */
+  setCountry(req: ServerRequest): Promise<void>
 }
 
 // Statics here
@@ -80,8 +98,18 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
       required: true,
       select: false,
     },
+    email: {
+      type: String,
+      required: true,
+      select: false,
+    },
     profilePhotoURL: {
       type: String,
+    },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+      select: false,
     },
     active: {
       type: Boolean,
@@ -99,6 +127,10 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
       type: Schema.Types.Date,
       default: Date.now,
     },
+    country: {
+      type: String,
+      default: 'XX'
+    },
   },
   {
     timestamps: true,
@@ -107,20 +139,22 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
         const token = jwtSign({ _id: this.id, admin: this.admin })
         return token
       },
-      async checkUsernameCaseInsensitive() {
-        const users = User.find()
-        let valid: boolean | 'typo' = true
+      async checkUsernameEmailCaseInsensitive() {
+        const users = User.find().select({username: 1, email: 1})
+        let valid: boolean = true
         for await (const user of users) {
-          if (user.username.toLowerCase() === this.username.toLowerCase()) {
-            if (user.username === this.username) valid = false
-            else valid = 'typo'
+          if (user.username.toLowerCase() === this.username.toLowerCase() || user.email.toLowerCase() === this.email.toLowerCase()) {
+            valid = false
             break
           }
         }
 
-        if (valid === 'typo') throw new ServerError('err_user_register_duplicated_username_typo', null, { username: this.username })
-        else if (!valid) throw new ServerError('err_user_register_duplicated_username', null, { username: this.username })
+        if (!valid) throw new ServerError('err_user_register_duplicated_username', null)
       },
+      async setCountry(req) {
+        this.country = (req.headers['cloudfront-viewer-country'] as string | undefined) ?? 'XX';
+        await this.save()
+      }
     },
     statics: {
       async findByToken(auth?: string) {
@@ -143,8 +177,9 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
   }
 )
 
-// Case insensitive usernames
+// Case insensitive usernames / emails
 userSchema.index({ username: 1 }, { collation: { locale: 'en', strength: 2 } })
+userSchema.index({ email: 1 }, { collation: { locale: 'en', strength: 2 } })
 
 userSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
