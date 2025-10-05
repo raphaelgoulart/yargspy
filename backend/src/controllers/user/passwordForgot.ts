@@ -24,7 +24,7 @@ const userPasswordForgotHandler: ServerHandler<IPasswordForgot> = async function
   if (!req.body.h.captcha.response) throw new ServerError('err_invalid_query', null, { params: "h-captcha-response" })
   if (!await checkHCaptcha(req.body.h.captcha.response)) throw new ServerError('err_captcha')
 
-  const user = await User.findOne({ email: req.body.email.toLowerCase() });
+  const user = await User.findOne({ email: req.body.email.toLowerCase(), active: true });
   if (user) {
     await issueAndSendReset(user.id, req.body.email.toLowerCase());
   }
