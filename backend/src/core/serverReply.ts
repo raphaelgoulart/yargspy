@@ -126,7 +126,7 @@ export const codeMap = {
   success_user_profile: [200, 'Profile data from user {{username}} has been retrieved successfully'],
 
   // admin/songAdd
-  err_song_songdata_required: [422, 'Song not registered in the server database, the MIDI/CHART file and the song metadata file is required to validate YARG Replay file and register new song'],
+  err_song_songdata_required: [422, 'Song not registered in the server database, the MIDI/CHART file and the song metadata file is required to register new song'],
   err_song_duplicated_song: [409, 'The provided song has already been registered'],
 
   // replay/register
