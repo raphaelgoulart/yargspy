@@ -3,8 +3,8 @@ import { isDev } from "../checkers/isDev";
 
 export async function issueAndSendVerification(userId: string, email: string) {
   const { token } = await EmailToken.issue(userId, Purpose.Verify);
-  const url = 'https://yargspy.com/user/emailVerify' // TODO: fetch URL dynamically
-  const link = `${url}?token=${encodeURIComponent(token)}`;
+  const url = 'https://yargspy.com/user/register' // TODO: fetch URL dynamically
+  const link = `${url}/${encodeURIComponent(token)}`;
   await sendEmail({
     to: email,
     subject: 'Confirm your email',
@@ -22,7 +22,7 @@ export async function issueAndSendVerification(userId: string, email: string) {
 export async function issueAndSendReset(userId: string, email: string) {
   const { token } = await EmailToken.issue(userId, Purpose.Reset);
   const url = 'https://yargspy.com/user/passwordReset' // TODO: fetch URL dynamically
-  const link = `${url}?token=${encodeURIComponent(token)}`;
+  const link = `${url}/${encodeURIComponent(token)}`;
   await sendEmail({
     to: email,
     subject: 'Reset your password',
@@ -35,7 +35,7 @@ export async function issueAndSendReset(userId: string, email: string) {
   });
 }
 
-function sendEmail(data: { to: string; subject: string; html: string; text: string; }) {
+async function sendEmail(data: { to: string; subject: string; html: string; text: string; }) {
   if (isDev()) {
     console.log(data)
   } else {

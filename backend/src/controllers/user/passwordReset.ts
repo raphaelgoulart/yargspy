@@ -7,14 +7,15 @@ import { serverReply } from "../../core.exports"
 import type { ServerErrorHandler, ServerHandler } from "../../lib.exports"
 import { EmailToken, Purpose } from "../../models/EmailToken"
 import { User } from "../../models/User"
+import { checkHCaptcha } from '../../utils/checkers/checkHCaptcha'
 
 export interface IPasswordReset {
   body: ZodInfer<typeof userPasswordResetBodySchema>
 }
 
 const userPasswordResetHandler: ServerHandler<IPasswordReset> = async function (req, reply) { 
-  const { token, password } = userPasswordResetBodySchema.parse(req.body)
-  // TODO: validate hCaptcha
+  const { token, password, h } = userPasswordResetBodySchema.parse(req.body)
+  if (!await checkHCaptcha(h.captcha.response)) throw new ServerError('err_captcha')
 
   const doc = await EmailToken.consume(Purpose.Reset, token);
   if (!doc) throw new ServerError('err_invalid_auth_token')

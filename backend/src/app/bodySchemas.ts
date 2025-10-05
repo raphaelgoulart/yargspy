@@ -13,6 +13,13 @@ const passwordZodObject = zod
   // In the end, any symbol is required
   .regex(/[^A-Za-z0-9]/)
 
+const hCaptchaZodObject = zod
+  .object({
+    captcha: zod.object({
+      response: zod.string().nonoptional(),
+    }),
+  })
+
 export const userLoginBodySchema = zod.object({
   username: zod.string().nonempty().min(3).max(32),
   password: zod.string().nonempty().min(8).max(48),
@@ -96,6 +103,6 @@ export const adminUserBanBodySchema = zod.object({
 
 export const userPasswordResetBodySchema = zod.object({
   token: zod.string().min(10),
-  password: passwordZodObject
-  // TODO: hCaptcha
+  password: passwordZodObject,
+  h: hCaptchaZodObject
 })
