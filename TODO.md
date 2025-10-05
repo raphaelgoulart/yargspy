@@ -18,8 +18,6 @@
 
 No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/leaderboards/95FD6F3E703C10437E882698004F3B01) to decide what data the models should have
 
-- [ ] Protect /user/register against bots (hCAPTCHA);
-  - I kind of only want to do that after we start the front-end though, since the hCAPTCHA widget is the only way to actually test this.
 - [x] Score model (essentially replay file metadata, don't need to be as thorough though since the user can just download the replay for more data);
   - [x] Create tool to verify and extract replay data using YARG.Core (based on [ReplayCli](https://github.com/YARC-Official/YARG.Core/tree/master/ReplayCli))
     - [ ] (maybe) If hosting on server, create cronjob to update the YARG.Core dlls if needed

@@ -60,7 +60,7 @@ export const userRegisterBodySchema = zod.object({
 
   password: passwordZodObject,
   email: zod.email(),
-  // TODO: hCaptcha
+  h: hCaptchaZodObject
 })
 
 export const userUpdateBodySchema = zod.object({

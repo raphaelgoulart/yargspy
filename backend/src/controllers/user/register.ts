@@ -5,6 +5,7 @@ import { serverReply } from '../../core.exports'
 import type { ServerHandler, ServerErrorHandler } from '../../lib.exports'
 import { User } from '../../models/User'
 import { issueAndSendVerification } from '../../utils.exports'
+import { checkHCaptcha } from '../../utils/checkers/checkHCaptcha'
 
 export interface IUserRegister {
   body: ZodInfer<typeof userRegisterBodySchema>
@@ -13,9 +14,11 @@ export interface IUserRegister {
 // #region Handler
 
 const userRegisterHandler: ServerHandler<IUserRegister> = async function (req, reply) {
-  const body = userRegisterBodySchema.parse(req.body)
-  // TODO: validate hCaptcha
-  const user = new User(body)
+  const { username, password, email, h} = userRegisterBodySchema.parse(req.body)
+  if (!await checkHCaptcha(h.captcha.response)) throw new ServerError('err_captcha')
+  const user = new User({
+    username, password, email
+  })
   await user.checkUsernameEmailCaseInsensitive()
   await user.setCountryAndSave(req); // this'll also save the user
   await issueAndSendVerification(user.id, user.email);
