@@ -88,6 +88,7 @@ export const codeMap = {
   err_invalid_input: [400, 'Some request validation method on the server declined your request due to validation errors on fields'],
   err_syntax_json_body: [400, 'Response body JSON has a syntax error: {{additionalMessage}}'],
   err_invalid_query: [400, 'Missing parameters on query: {{params}}'],
+  err_captcha: [400, 'Captcha validation failed, please try again'],
   err_unknown: [500, 'An unknown error occurred, please try again later'],
   ok: [200, 'Request completed by the server'],
 

@@ -6,17 +6,23 @@ import { serverReply } from "../../core.exports"
 import type { ServerErrorHandler, ServerHandler } from "../../lib.exports"
 import { User } from "../../models/User"
 import { issueAndSendReset } from '../../utils.exports'
+import { checkHCaptcha } from "../../utils/checkers/checkHCaptcha"
 
 export interface IPasswordForgot {
   body: {
     email: string
-    // TODO: hCaptcha
+    h: {
+      captcha: {
+        response: string
+      }
+    }
   }
 }
 
 const userPasswordForgotHandler: ServerHandler<IPasswordForgot> = async function (req, reply) {
   if (!req.body.email) throw new ServerError('err_invalid_query', null, { params: "email" })
-  // TODO: validate hCaptcha
+  if (!req.body.h.captcha.response) throw new ServerError('err_invalid_query', null, { params: "h-captcha-response" })
+  if (!checkHCaptcha(req.body.h.captcha.response)) throw new ServerError('err_captcha')
 
   const user = await User.findOne({ email: req.body.email.toLowerCase() });
   if (user) {

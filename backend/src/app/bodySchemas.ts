@@ -97,4 +97,5 @@ export const adminUserBanBodySchema = zod.object({
 export const userPasswordResetBodySchema = zod.object({
   token: zod.string().min(10),
   password: passwordZodObject
+  // TODO: hCaptcha
 })

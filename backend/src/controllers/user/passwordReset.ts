@@ -14,6 +14,7 @@ export interface IPasswordReset {
 
 const userPasswordResetHandler: ServerHandler<IPasswordReset> = async function (req, reply) { 
   const { token, password } = userPasswordResetBodySchema.parse(req.body)
+  // TODO: validate hCaptcha
 
   const doc = await EmailToken.consume(Purpose.Reset, token);
   if (!doc) throw new ServerError('err_invalid_auth_token')
