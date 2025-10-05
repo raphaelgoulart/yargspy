@@ -26,12 +26,15 @@ No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/
 - [ ] User routes;
   - [ ] Edit user (only user itself and admin)
 - [ ] (all endpoints) project/select only fields actually used by front-end to optimize data transfer
+- [ ] finish [Server API Documentation](docs/serverapi.md)
 
 ## Frontend
 
-Everything lol
-
-Should fit YARG design standards (color, BG and typography) whilst making sure to state that it's unofficial
+- [ ] Individual player page
+- [ ] Individual leaderboard page
+- [ ] Login via modal if on PC
+- [ ] Admin routes
+- [ ] Privacy policy, ToS, etc.
 
 ## Long-term?
 

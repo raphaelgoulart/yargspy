@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap');
+@import 'tailwindcss';
+
+:root {
+  --body-font: 'Inter', system-ui, sans-serif;
+  --header-font: 'Red Hat Display', system-ui, sans-serif;
+}
+html, body {
+  font-family: var(--body-font);
+  color: var(--color-slate-300);
+  background-color: #101828
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--header-font);
+  color: var(--color-white);
+}
+a:not([class*='text-']) {
+  color: var(--color-white);
+}
