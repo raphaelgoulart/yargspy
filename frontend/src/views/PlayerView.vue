@@ -32,7 +32,7 @@
           <p class="mb-5 font-bold text-lg/5 text-white">General info</p>
           <p class="mb-2"><b>Joined: </b>{{ convertedDateTime(user.createdAt) }}</p>
           <p class="mb-2"><b>Last online: </b>{{ convertedDateTime(user.updatedAt) }}</p>
-          <p v-if="scores" class="mb-2"><b>Submitted runs: </b> {{ scores.totalEntries }}</p>
+          <p v-if="scores" class="mb-2"><b>Submitted runs: </b> {{ scores.totalEntries.toLocaleString() }}</p>
         </div>
         <div class="col-span-3 w-full p-4 sm:border rounded-md border-gray-800">
           <span class="mb-5 font-bold text-lg/5 text-white">Latest submissions</span>

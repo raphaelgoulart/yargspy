@@ -10,12 +10,12 @@ export const convertedDateTime = (dateTime: string, small: boolean = false): str
     const timeDifference = today.getTime() - targetDate.getTime();
     const millisecondsInADay = 1000 * 60 * 60 * 24;
     const daysDifference = timeDifference / millisecondsInADay;
-    return Math.floor(daysDifference) + 'd'
+    return Math.floor(daysDifference).toLocaleString() + 'd'
   }
   else return moment(dateTime).fromNow();
 }
 
-export const percent = (n: number): string => Math.floor(n*10000)/100 + "%"
+export const percent = (n: number): string => (Math.floor(n*10000)/100).toLocaleString() + "%"
 
 export const getDownloadLink = (replay: string): string => `${api.defaults.baseURL}/file/replay/${replay}.replay`
 

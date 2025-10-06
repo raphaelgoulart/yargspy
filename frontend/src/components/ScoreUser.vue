@@ -10,7 +10,7 @@
       <span class="text-xs">{{ getDifficulty(score.difficulty!) }} <span v-if="score.engine! > 0">({{ getEngine(score.engine!) }})</span></span>
     </td>
     <td scope="col">
-      <ScoreStars :stars="score.stars" /><span class="text-white font-semibold">{{ score.score }}</span>
+      <ScoreStars :stars="score.stars" /><span class="text-white font-semibold">{{ score.score.toLocaleString() }}</span>
     </td>
     <td scope="col">
       <ScorePercent :n="score.percent!" />
@@ -43,19 +43,19 @@
           <div class="col-span-2"><b>Modifiers: </b><ScoreModifiers :modifiers="score.modifiers" /></div>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(0rem,1fr))]">
-          <div><b>Notes hit: </b>{{ score.notesHit }}</div>
-          <div><b>Max combo: </b>{{ score.maxCombo }}</div>
-          <div><b>SP phrases hit: </b>{{ score.starPowerPhrasesHit }}</div>
-          <div><b>SP activations: </b>{{ score.starPowerActivationCount }}</div>
+          <div><b>Notes hit: </b>{{ score.notesHit?.toLocaleString() }}</div>
+          <div><b>Max combo: </b>{{ score.maxCombo?.toLocaleString() }}</div>
+          <div><b>SP phrases hit: </b>{{ score.starPowerPhrasesHit?.toLocaleString() }}</div>
+          <div><b>SP activations: </b>{{ score.starPowerActivationCount?.toLocaleString() }}</div>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(0rem,1fr))]">
-          <div v-if="isGuitar(score.gamemode!)"><b>Overstrums: </b>{{ score.overhits }}</div>
-          <div v-if="isDrums(score.gamemode!) || isKeys(score.gamemode!)"><b>Overhits: </b>{{ score.overhits }}</div>
-          <div><b>Solo bonuses: </b>{{ score.soloBonuses }}</div>
-          <div v-if="isGuitar(score.gamemode!) || isKeys(score.gamemode!)"><b>Sustain score: </b>{{ score.sustainScore }}</div>
-          <div v-if="isGuitar(score.gamemode!)"><b>Ghost inputs: </b>{{ score.ghostInputs }}</div>
-          <div v-if="isDrums(score.gamemode!)"><b>Ghosts hit: </b>{{ score.ghostNotesHit }}</div>
-          <div v-if="isDrums(score.gamemode!)"><b>Accents hit: </b>{{ score.accentNotesHit }}</div>
+          <div v-if="isGuitar(score.gamemode!)"><b>Overstrums: </b>{{ score.overhits?.toLocaleString() }}</div>
+          <div v-if="isDrums(score.gamemode!) || isKeys(score.gamemode!)"><b>Overhits: </b>{{ score.overhits?.toLocaleString() }}</div>
+          <div><b>Solo bonuses: </b>{{ score.soloBonuses?.toLocaleString() }}</div>
+          <div v-if="isGuitar(score.gamemode!) || isKeys(score.gamemode!)"><b>Sustain score: </b>{{ score.sustainScore?.toLocaleString() }}</div>
+          <div v-if="isGuitar(score.gamemode!)"><b>Ghost inputs: </b>{{ score.ghostInputs?.toLocaleString() }}</div>
+          <div v-if="isDrums(score.gamemode!)"><b>Ghosts hit: </b>{{ score.ghostNotesHit?.toLocaleString() }}</div>
+          <div v-if="isDrums(score.gamemode!)"><b>Accents hit: </b>{{ score.accentNotesHit?.toLocaleString() }}</div>
         </div>
       </td>
     </tr>
