@@ -4,6 +4,7 @@ export interface EnvironmentCheckerReturnObject {
   port: number
   mongoDBURI: string
   jwtSecret: string
+  hCaptchaSecret: string
 }
 
 /**
@@ -21,8 +22,11 @@ export const checkProcessEnv = (app: FastifyInstance): EnvironmentCheckerReturnO
 
   const jwtSecret = process.env.JWT_SECRET as string | undefined
   if (!jwtSecret) throw new Error('No JWT secret provided as environmente variable.')
+    
+  const hCaptchaSecret = process.env.HCAPTCHA_SECRET_KEY as string | undefined
+  if (!hCaptchaSecret) throw new Error('No hCaptcha secret provided as environmente variable.')
 
-  app.log.info(`Using the following environment variables:\n\tPORT: ${port}\n\tMONGODB URI: ${mongoDBURI}\n\tJWT SECRET: ${jwtSecret}\n`)
+  app.log.info(`Using the following environment variables:\n\tPORT: ${port}\n\tMONGODB URI: ${mongoDBURI}\n\tJWT SECRET: ${jwtSecret}\n\tHCAPTCHA SECRET: ${hCaptchaSecret}\n`)
 
-  return { port, mongoDBURI, jwtSecret }
+  return { port, mongoDBURI, jwtSecret, hCaptchaSecret }
 }
