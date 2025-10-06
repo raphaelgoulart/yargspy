@@ -1,20 +1,22 @@
 <template>
-  <div class="mt-20 banner">
-    <div class="mx-auto container flex">
-      <img :src="user?.profilePhotoURL ? user.profilePhotoURL : '/src/assets/img/avatar.jpg'" class="w-64 relative top-6 rounded-md" />
-      <div class="mx-4 mt-12 mb-auto bg-black/50 rounded-md p-4" v-if="user">
-        <div class="inline-flex items-center gap-3 mb-2 text-5xl font-semibold" :class="user ? 'text-white' : 'text-gray-400'">
-          <CountryFlag v-if="user" :code="user.country" :size='10' />
-          {{ user.username }}
-        </div><br>
-        <div class="inline-flex gap-3 mt-1" v-if="user.admin || !user.active">
-          <TheBadge color="red" v-if="!user.active">Banned</TheBadge>
-          <TheBadge color="dark" v-if="user.admin">Admin</TheBadge>
+  <div class="pt-20">
+    <div class="banner">
+      <div class="mx-auto container flex">
+        <img :src="user?.profilePhotoURL ? user.profilePhotoURL : '/src/assets/img/avatar.jpg'" class="w-64 relative top-6 rounded-md" />
+        <div class="mx-4 mt-12 mb-auto bg-black/50 rounded-md p-4" v-if="user">
+          <div class="inline-flex items-center gap-3 mb-2 text-5xl font-semibold" :class="user ? 'text-white' : 'text-gray-400'">
+            <CountryFlag v-if="user" :code="user.country" :size='10' />
+            {{ user.username }}
+          </div><br>
+          <div class="inline-flex gap-3 mt-1" v-if="user.admin || !user.active">
+            <TheBadge color="red" v-if="!user.active">Banned</TheBadge>
+            <TheBadge color="dark" v-if="user.admin">Admin</TheBadge>
+          </div>
         </div>
-      </div>
-      <div class="mx-4 my-15 ml-auto" v-if="user && auth.user && (auth.user._id == user?._id || auth.user.admin)">
-        <TheButton v-if="user._id != auth.user._id" color="red" class="mr-1">{{ user.active ? 'Ban user' : 'Unban user' }}</TheButton>
-        <TheButton>Edit profile</TheButton>
+        <div class="mx-4 my-15 ml-auto" v-if="user && auth.user && (auth.user._id == user?._id || auth.user.admin)">
+          <TheButton v-if="user._id != auth.user._id" color="red" class="mr-1">{{ user.active ? 'Ban user' : 'Unban user' }}</TheButton>
+          <TheButton>Edit profile</TheButton>
+        </div>
       </div>
     </div>
   </div>
@@ -35,7 +37,7 @@
         <div class="col-span-3 w-full p-4 sm:border rounded-md border-gray-800">
           <span class="mb-5 font-bold text-lg/5 text-white">Latest submissions</span>
           <LoadingSpinner v-if="scoreLoading" class="text-center" />
-          <div class="relative overflow-x-auto sm:rounded-md mt-5" v-if="scores && !scoreLoading">
+          <div class="relative overflow-x-auto mt-5" v-if="scores && !scoreLoading">
             <table class="w-full text-sm text-left rtl:text-right text-gray-400">
               <thead class="text-xs bg-gray-700 text-gray-400">
                   <tr>
