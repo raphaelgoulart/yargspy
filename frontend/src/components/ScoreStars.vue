@@ -22,6 +22,6 @@ const src = ['/src/assets/img/StarProgressEmpty.png','/src/assets/img/StarStanda
 const roundedStars = computed((): number => Math.floor(props.stars))
 const imgToRender = (n: number): string => {
   if (roundedStars.value == 6) return src[2]!
-  return src[n >= roundedStars.value ? 1 : 0]!
+  return src[n <= roundedStars.value ? 1 : 0]!
 }
 </script>

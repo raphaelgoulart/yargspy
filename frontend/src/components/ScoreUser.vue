@@ -1,7 +1,7 @@
 <template>
   <tr class="border-t-1 border-gray-800">
     <td scope="col" class="pl-3 py-2">
-      <RouterLink :to="'leaderboard/'+score.song._id" class="font-semibold">{{ score.song.name }}</RouterLink>
+      <RouterLink :to="'/leaderboard/'+score.song._id" class="font-semibold">{{ score.song.name }}</RouterLink>
       <span v-if="score.songSpeed != 1"> ({{ percent(score.songSpeed) }})</span><br />
       <span class="text-xs">{{ score.song.artist }} ({{ score.song.charter }})</span>
     </td>
