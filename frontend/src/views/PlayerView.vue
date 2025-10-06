@@ -66,7 +66,7 @@
             </table>
             <ThePagination
               v-if="scores"
-              class="mt-3"
+              class="pt-3 border-t-1 border-gray-800"
               :count="scores?.totalEntries"
               :page="page"
               :limit="limit"
