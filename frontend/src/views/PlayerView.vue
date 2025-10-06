@@ -2,12 +2,12 @@
   <div class="mt-20 banner">
     <div class="mx-auto container flex">
       <img :src="user?.profilePhotoURL ? user.profilePhotoURL : '/src/assets/img/avatar.jpg'" class="w-64 relative top-6 rounded-md" />
-      <div class="mx-4 mt-12 mb-auto bg-black/50 rounded-md p-4">
-        <div v-if="!loading" class="inline-flex items-center gap-3 mb-2 text-5xl font-semibold" :class="user ? 'text-white' : 'text-gray-400'">
+      <div class="mx-4 mt-12 mb-auto bg-black/50 rounded-md p-4" v-if="user">
+        <div class="inline-flex items-center gap-3 mb-2 text-5xl font-semibold" :class="user ? 'text-white' : 'text-gray-400'">
           <CountryFlag v-if="user" :code="user.country" :size='10' />
-          {{ user?.username ?? "User not found" }}
+          {{ user.username }}
         </div><br>
-        <div class="inline-flex gap-3 mt-1" v-if="user && (user.admin || !user.active)">
+        <div class="inline-flex gap-3 mt-1" v-if="user.admin || !user.active">
           <TheBadge color="red" v-if="!user.active">Banned</TheBadge>
           <TheBadge color="dark" v-if="user.admin">Admin</TheBadge>
         </div>
