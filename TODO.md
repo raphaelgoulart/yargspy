@@ -31,7 +31,6 @@ No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/
 
 ## Frontend
 
-- [ ] Individual player page
 - [ ] Individual leaderboard page
 - [ ] Login via modal if on PC
 - [ ] Admin routes

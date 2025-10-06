@@ -35,7 +35,7 @@
         <div class="col-span-3 w-full p-4 sm:border rounded-md border-gray-800">
           <span class="mb-5 font-bold text-lg/5 text-white">Latest submissions</span>
           <LoadingSpinner v-if="scoreLoading" class="text-center" />
-          <div class="relative overflow-x-auto sm:rounded-md mt-5" v-if="scores">
+          <div class="relative overflow-x-auto sm:rounded-md mt-5" v-if="scores && !scoreLoading">
             <table class="w-full text-sm text-left rtl:text-right text-gray-400">
               <thead class="text-xs bg-gray-700 text-gray-400">
                   <tr>
@@ -131,6 +131,8 @@ async function fetchUser() {
   }
 }
 async function fetchScores() {
+  scoreLoading.value = true
+  error.value = ''
   try {
     const params: IPlayerScoresQuery = {
       id: user.value!._id,
