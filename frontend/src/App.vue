@@ -12,7 +12,7 @@ import 'vue-sonner/style.css'
   <div class="min-h-screen bg-gray-900">
     <TheHeader />
     <div class="text-slate-300">
-      <RouterView />
+      <RouterView :key="$route.fullPath" />
     </div>
   </div>
 </template>

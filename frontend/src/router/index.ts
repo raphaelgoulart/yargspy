@@ -17,8 +17,11 @@ const router = createRouter({
       component: StandardView,
       children: [
         { path: '', name: 'players', component: () => import('../views/PlayerListView.vue') },
-        { path: ':username', name: 'player', component: () => import('../views/PlayerView.vue') },
       ],
+    },
+    {
+      path: '/player/:username',
+      component: () => import('../views/PlayerView.vue')
     },
     {
       path: '/leaderboard',
