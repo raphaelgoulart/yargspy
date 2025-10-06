@@ -7,7 +7,8 @@
     </RouterLink>
     <div class="p-4 text-center">
       <RouterLink :to="to">
-        <span class="mb-2 text-xl font-semibold tracking-tight text-slate-300">
+        <span class="inline-flex items-center gap-1 mb-2 text-xl font-semibold tracking-tight text-slate-300">
+          <CountryFlag :code="country" :size="3" />
           {{ username }}
         </span>
       </RouterLink>
@@ -16,6 +17,8 @@
 </template>
 
 <script setup lang="ts">
+import CountryFlag from './CountryFlag.vue';
+
 const props = defineProps({
   username: {
     type: String,
@@ -25,6 +28,10 @@ const props = defineProps({
     type: String,
     default: '/src/assets/img/avatar.jpg',
   },
+  country: {
+    type: String,
+    default: 'xx'
+  }
 })
 
 const to = `player/${props.username}`

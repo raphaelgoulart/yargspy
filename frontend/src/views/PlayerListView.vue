@@ -35,6 +35,7 @@
         :key="user._id"
         :username="user.username"
         :profile-photo-url="user.profilePhotoURL"
+        :country="user.country"
       />
     </div>
     <ThePagination

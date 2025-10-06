@@ -46,7 +46,7 @@ export const GameMode = {
 } as const
 
 export const GameVersion = {
-  v0_13: 0,
+  v0_13_1: 0,
 }
 
 //#region Types

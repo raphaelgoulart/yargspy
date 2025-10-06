@@ -5,6 +5,7 @@ import type { ServerErrorHandler, ServerHandler } from '../../lib.exports'
 import { Engine, Modifier, Score } from '../../models/Score'
 import { Difficulty, Instrument } from '../../models/Song'
 import { ObjectId } from 'mongodb'
+import type { PipelineStage } from 'mongoose'
 
 export interface ISongLeaderboard {
     body: {
@@ -56,7 +57,7 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
     const limit = req.body.limit ?? 25;
 
     // Query
-    let mongoQuery = { // Using native mongo query instead of mongoose for perf gains with aggregate
+    let mongoQuery: ISongLeaderboardQuery = { // Using native mongo query instead of mongoose for perf gains with aggregate
         song: new ObjectId(songId),
         instrument: instrument,
         // Ensure no "modifier" exists outside of the allowed set
@@ -66,7 +67,7 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
             }
         },
         hidden: false
-    } as ISongLeaderboardQuery
+    }
     if (instrument != Instrument.Band) { // Only use these values if it's not a band (255) score
         mongoQuery.difficulty = difficulty
         mongoQuery.engine = engine
@@ -74,10 +75,10 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
     if (!allowSlowdowns) mongoQuery.songSpeed = { $gte: 1 }
 
     // Sorting method
-    const sortingMethod = instrument != Instrument.Band && sortByNotesHit ? {'notesHit': -1, 'maxCombo': -1, 'songSpeed': -1, 'createdAt': 1} : {'score': -1, 'songSpeed': -1, 'createdAt': 1}
+    const sortingMethod: Record<string, 1 | -1> = instrument != Instrument.Band && sortByNotesHit ? {'notesHit': -1, 'maxCombo': -1, 'songSpeed': -1, 'createdAt': 1} : {'score': -1, 'songSpeed': -1, 'createdAt': 1}
 
     // Aggregate so only the top score of each user is returned, instead of _all_ scores
-    const pipeline = [
+    const pipeline: PipelineStage[] = [
         { $match: mongoQuery }, // apply filters
         { $sort: sortingMethod }, // apply sort order to fetch highest score
         {
