@@ -2,7 +2,7 @@ import { TokenError } from 'fast-jwt'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
 import type { ServerHandler, ServerErrorHandler, RouteRequest } from '../../lib.exports'
-import { User, type UserSchemaDocument } from '../../models/User'
+import { User } from '../../models/User'
 
 export interface IUserProfile {
   query: {
@@ -13,7 +13,11 @@ export interface IUserProfile {
 // #region Handler
 
 const userProfileHandler: ServerHandler<IUserProfile> = async function (req, reply) {
-  const currentUser = req.headers.authorization ? await User.findByToken(req.headers.authorization) : null
+  let currentUser = null;
+  if (req.headers.authorization) 
+    try {
+      currentUser = await User.findByToken(req.headers.authorization)
+    } catch {}
   const select = []
   if (currentUser && currentUser.admin) select.push('+email','+emailVerified')
   const user = req.query.username ? await User.findOne({username: req.query.username}).select(select).lean() : 
