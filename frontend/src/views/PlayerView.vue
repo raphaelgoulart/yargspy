@@ -69,7 +69,7 @@
               </tbody>
             </table>
             <ThePagination
-              v-if="scores"
+              v-if="scores?.entries.length"
               class="pt-3 border-t-1 border-gray-800"
               :count="scores?.totalEntries"
               :page="page"
@@ -107,7 +107,7 @@ const scoreLoading = ref(true)
 const error = ref('')
 const route = useRoute()
 const user = ref(null as IUser | null)
-const scores = ref(null as IScoreEntriesResponse | null) // TODO: type
+const scores = ref(null as IScoreEntriesResponse | null)
 
 interface IPlayerScoresQuery {
   id: string

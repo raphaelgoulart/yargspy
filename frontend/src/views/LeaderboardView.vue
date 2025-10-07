@@ -92,7 +92,7 @@
                 </tr>
             </thead>
             <tbody class="text-sm text-slate-300">
-              <ScoreBand v-for="score in scores.entries" :key='score._id' :score="score" />
+              <ScoreBand v-for="(score, i) in scores.entries" :key='score._id' :score="score" :i="i" :songName="song!.name" :songArtist="song!.artist" :instruments="instruments" />
             </tbody>
           </table>
         </div>
