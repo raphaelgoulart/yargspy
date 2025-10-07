@@ -32,10 +32,9 @@ No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/
 
 ## Frontend
 
-- [ ] Individual leaderboard page
-- [ ] Login via modal if on PC
-- [ ] Admin routes
 - [ ] Privacy policy, ToS, etc.
+- [ ] Admin routes
+- [ ] Login via modal if on PC
 
 ## Long-term?
 
