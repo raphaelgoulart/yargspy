@@ -139,7 +139,7 @@
         </div>
       </div>
       <ThePagination
-        v-if="scores?.entries.length"
+        v-if="!scoreLoading && scores?.entries.length"
         class="pt-3 border-t-1 border-gray-800"
         :count="scores?.totalEntries"
         :page="page"

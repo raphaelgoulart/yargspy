@@ -69,7 +69,6 @@
               </tbody>
             </table>
             <ThePagination
-              v-if="scores?.entries.length"
               class="pt-3 border-t-1 border-gray-800"
               :count="scores?.totalEntries"
               :page="page"
