@@ -34,6 +34,7 @@ No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/
 
 - [ ] Privacy policy, ToS, etc.
 - [ ] Admin routes
+- [ ] Edit user
 - [ ] Login via modal if on PC
 
 ## Long-term?

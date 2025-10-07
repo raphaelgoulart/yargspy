@@ -1,4 +1,4 @@
-<h1>YARGLB</h1>
+<h1>YARGSpy</h1>
 
 **Description:**  
 Unofficial leaderboard API server for YARG using NodeJS and MongoDB, with REPLAY file validation program written in C#.
