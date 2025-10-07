@@ -3,23 +3,23 @@
     <div class="w-full p-4 pb-2 sm:border rounded-md border-gray-800">
       <p class="mb-5 font-bold text-lg/5 text-white">Song info</p>
       <img :src="imgSrc" class="w-full rounded-md mb-2" />
-      <LoadingSpinner v-if="loading" class="text-center" />
+      <LoadingSpinner v-if="loading" class="text-center mt-2" />
       <TheAlert color="red" v-else-if="error" class="text-center"
-        ><ExclamationCircleIcon class="size-5 inline" />
-        <span class="align-middle ml-1">{{ error }}</span></TheAlert
+      ><ExclamationCircleIcon class="size-5 inline" />
+      <span class="align-middle ml-1">{{ error }}</span></TheAlert
       >
       <div v-if="song" class="pt-2">
         <h2 class="text-4xl mb-2 font-semibold">{{ song.name }}</h2>
-        <p class="text-2xl mb-2">by {{ song.artist }}<span v-if="song.year">, {{ song.year.replace(',','').trim() }}</span></p>
+        <p class="text-2xl mb-2">by <span class="font-medium">{{ song.artist }}</span><span v-if="song.year">, {{ song.year.replace(',','').trim() }}</span></p>
         <p v-if="song.album" class="mb-2">From {{ song.album }}</p>
         <p><b>Charted by: </b>{{ song.charter }}</p>
         <hr class="my-4 text-gray-700" />
         <div v-if="Object.keys(instruments).length">
-          <FormDropdown :items="instrumentList" v-model="instrument" class="mb-2" @update:modelValue="setInstrument()" />
+          <FormDropdown :disabled="scoreLoading" :items="instrumentList" v-model="instrument" class="mb-2" @update:modelValue="setInstrument()" />
           <FormDropdown :items="new Map([...Array(6).keys()].map(i => [i.toString(), getDifficulty(i)]))" class="mb-2" @update:modelValue="setDifficulty()"
-            v-model="difficulty" :disabled="instrument == bandString" :availableItems="availableDifficultyList" />
-          <TheButton color="blue" @click="allowedModifiersOpen = !allowedModifiersOpen" class="text-center w-full mb-1">Allowed modifiers...</TheButton>
-          <Transition
+            v-model="difficulty" :disabled="scoreLoading || instrument == bandString" :availableItems="availableDifficultyList" />
+            <TheButton :disabled="scoreLoading" color="blue" @click="allowedModifiersOpen = !allowedModifiersOpen" class="text-center w-full mb-1">Allowed modifiers...</TheButton>
+            <Transition
             enter-active-class="transition duration-200 ease-out origin-top"
             enter-from-class="opacity-0 scale-y-0"
             enter-to-class="opacity-100 scale-y-100"
@@ -27,15 +27,54 @@
             leave-from-class="opacity-100 scale-y-100"
             leave-to-class="opacity-0 scale-y-0">
             <div v-if="allowedModifiersOpen">
-              <FormCheckbox v-for="(c,i) in allowedModifiersEdit" :key="i" :label="getModifier(Number(i))" :checked="c" v-model="allowedModifiersEdit[i]" />
-              <TheButton @click="setAllowedModifiers()" class="text-center w-full mt-1 mb-2">Save</TheButton>
+              <FormCheckbox v-for="(c,i) in allowedModifiersEdit" :key="i" :label="getModifier(Number(i))" :checked="c" v-model="allowedModifiersEdit[i]" :disabled="scoreLoading" />
+              <TheButton :disabled="scoreLoading" @click="setAllowedModifiers()" class="text-center w-full mt-1 mb-2">Save</TheButton>
             </div>
           </Transition>
         </div>
       </div>
     </div>
     <div class="col-span-3 w-full p-4 sm:border rounded-md border-gray-800">
+      <div class="text-sm font-medium text-center border-b border-gray-700 mb-2">
+        <ul class="flex flex-wrap -mb-px">
+          <TheTab label>Engine</TheTab>
+          <TheTab v-for="(_,i) in 3" :key="i" :active="engine == i" :disabled="instrument == bandString" @click="setEngine(i)">{{ getEngine(i) }}</TheTab>
+        </ul>
+      </div>
 
+      <div class="flex justify-between p-2">
+        <div><FormCheckbox v-model="allowSlowdowns" label="Allow Slowdowns" @update:model-value="setOther()" /></div>
+        <fieldset v-if="instrument != bandString" :disabled="scoreLoading">
+          <div class="flex items-center gap-x-3">
+            <legend class="text-sm/6">Sort by:</legend>
+            <FormRadio name="sortBy" label="Score" checked  @click="setSort(false)" />
+            <FormRadio name="sortBy" label="Notes hit" @click="setSort(true)" />
+          </div>
+        </fieldset>
+      </div>
+      <LoadingSpinner v-if="scoreLoading" class="text-center" />
+      <TheAlert color="red" v-else-if="scoreError" class="text-center"
+      ><ExclamationCircleIcon class="size-5 inline" />
+      <span class="align-middle ml-1">{{ scoreError }}</span></TheAlert
+      >
+      <div v-if="scores && !scoreLoading">
+        <div v-if="instrument == bandString">
+          <b>TODO: </b>Band score
+        </div>
+        <div v-else>
+          <b>TODO: </b>Instrument score
+        </div>
+      </div>
+      <ThePagination
+        v-if="scores"
+        class="pt-3 border-t-1 border-gray-800"
+        :count="scores?.totalEntries"
+        :page="page"
+        :limit="limit"
+        @page="setPage"
+        @size="setLimit"
+        :page-sizes="[10, 25, 50, 100]"
+      />
     </div>
   </div>
 </template>
@@ -50,10 +89,25 @@ import api from '@/plugins/axios';
 import axios from 'axios';
 import { computed, ref, toRaw } from 'vue';
 import { useRoute } from 'vue-router';
-import { Difficulty, type ISong } from '@/plugins/types';
-import { getInstrument, getDifficulty, getModifier } from '@/plugins/utils';
+import { Difficulty, type IScoreEntriesResponse, type ISong } from '@/plugins/types';
+import { getInstrument, getDifficulty, getModifier, getEngine } from '@/plugins/utils';
 import TheButton from '@/components/TheButton.vue';
 import FormCheckbox from '@/components/FormCheckbox.vue';
+import TheTab from '@/components/TheTab.vue';
+import FormRadio from '@/components/FormRadio.vue';
+import ThePagination from '@/components/ThePagination.vue';
+
+interface ISongScoresQuery {
+  id: string,
+  instrument: number,
+  difficulty?: number,
+  engine?: number,
+  allowedModifiers?: Array<number>,
+  allowSlowdowns: boolean,
+  sortByNotesHit?: boolean,
+  page: number,
+  limit: number
+}
 
 const bandString = '255'
 const imgSrc = ref('/src/assets/img/song.png')
@@ -66,14 +120,15 @@ const error = ref('')
 const scoreError = ref('')
 
 const song = ref(null as ISong | null)
+const scores = ref(null as IScoreEntriesResponse | null)
 const instruments = ref({} as Record<number,Record<number,object>>)
 const page = ref(1)
-const limit = ref(10)
+const limit = ref(25)
 
 const instrument = ref(bandString)
 const difficulty = ref(Difficulty.Expert.toString())
 const engine = ref(0) // Default
-const allowedModifiersDefault = {
+const allowedModifiersDefault: { [key: number]: boolean } = {
   0: true,
   1: false,
   2: false,
@@ -143,8 +198,35 @@ async function fetchSong(){
 
   }
 }
-async function fetchScores(){
-
+async function fetchScores() {
+  scoreLoading.value = true
+  scoreError.value = ''
+  try {
+    const params: ISongScoresQuery = {
+      id: song.value!._id,
+      instrument: Number(instrument.value),
+      allowSlowdowns: allowSlowdowns.value,
+      allowedModifiers: Object.keys(allowedModifiers.value).filter(key => allowedModifiers.value[Number(key)]).map(Number),
+      page: page.value,
+      limit: limit.value
+    }
+    if (instrument.value != bandString) {
+      params.difficulty = Number(difficulty.value)
+      params.engine = engine.value
+      params.sortByNotesHit = sortByNotesHit.value
+    }
+    const result = await api.post('song/leaderboard', params)
+    scores.value = result.data as IScoreEntriesResponse
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.status! < 500) {
+      scoreError.value = `An error occurred while fetching the user's scores: ${e.response?.data.message} (${e.response?.status})`
+    } else {
+      console.log(e)
+      scoreError.value = 'An unknown error has occurred while fetching the user\'s scores.'
+    }
+  } finally {
+    scoreLoading.value = false
+  }
 }
 async function fetchAlbumArt(artist: string, album: string) {
   const result = await albumArtFinder(artist, album)
@@ -185,6 +267,20 @@ function setDifficulty() {
 function setAllowedModifiers() {
   // consolidate edited data into original object
   allowedModifiers.value = structuredClone(toRaw(allowedModifiersEdit.value))
+  page.value = 1
+  fetchScores()
+}
+
+function setEngine(i: number) {
+   if (instrument.value == bandString) return;
+  engine.value = i
+  page.value = 1
+  fetchScores()
+}
+
+function setSort(value: boolean) {
+  if (sortByNotesHit.value == value) return
+  sortByNotesHit.value = value
   page.value = 1
   fetchScores()
 }

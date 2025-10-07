@@ -28,6 +28,7 @@ No problem taking inspiration from [ScoreSpy](https://clonehero.scorespy.online/
   - [ ] Edit user (only user itself and admin)
 - [ ] (all endpoints) project/select only fields actually used by front-end to optimize data transfer
 - [ ] finish [Server API Documentation](docs/serverapi.md)
+- [ ] CI/CD
 
 ## Frontend
 
