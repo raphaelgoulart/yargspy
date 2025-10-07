@@ -3,7 +3,7 @@
     <div class="w-full p-4 pb-2 sm:border rounded-md border-gray-800">
       <p class="mb-5 font-bold text-lg/5 text-white">Song info</p>
       <img :src="imgSrc" class="w-full rounded-md mb-2" />
-      <LoadingSpinner v-if="loading" class="text-center mt-2" />
+      <LoadingSpinner v-if="loading" class="text-center mt-4 mb-2" />
       <TheAlert color="red" v-else-if="error" class="text-center"
       ><ExclamationCircleIcon class="size-5 inline" />
       <span class="align-middle ml-1">{{ error }}</span></TheAlert
@@ -15,8 +15,8 @@
         <p><b>Charted by: </b>{{ song.charter }}</p>
         <hr class="my-4 text-gray-700" />
         <div v-if="Object.keys(instruments).length">
-          <FormDropdown :disabled="scoreLoading" :items="instrumentList" v-model="instrument" class="mb-2" @update:modelValue="setInstrument()" />
-          <FormDropdown :items="new Map([...Array(6).keys()].map(i => [i.toString(), getDifficulty(i)]))" class="mb-2" @update:modelValue="setDifficulty()"
+          <FormDropdown :disabled="scoreLoading" :items="instrumentList" v-model="instrument" class="mb-2" @update:modelValue="setInstrument($event!)" />
+          <FormDropdown :items="new Map([...Array(6).keys()].map(i => [i.toString(), getDifficulty(i)]))" class="mb-2" @update:modelValue="setDifficulty($event!)"
             v-model="difficulty" :disabled="scoreLoading || instrument == bandString" :availableItems="availableDifficultyList" />
             <TheButton :disabled="scoreLoading" color="blue" @click="allowedModifiersOpen = !allowedModifiersOpen" class="text-center w-full mb-1">Allowed modifiers...</TheButton>
             <Transition
@@ -57,16 +57,89 @@
       ><ExclamationCircleIcon class="size-5 inline" />
       <span class="align-middle ml-1">{{ scoreError }}</span></TheAlert
       >
-      <div v-if="scores && !scoreLoading">
+      <TheAlert color="yellow" v-else-if="scores?.entries.length == 0" class="text-center mt-2"
+        ><ExclamationTriangleIcon class="size-5 inline" />
+        <span class="align-middle ml-1">No scores found matching the given criteria.</span></TheAlert
+      >
+      <div v-if="scores?.entries.length && !scoreLoading">
         <div v-if="instrument == bandString">
-          <b>TODO: </b>Band score
+          <table class="w-full text-sm text-left rtl:text-right text-gray-400">
+            <thead class="text-xs bg-gray-700 text-gray-400">
+                <tr>
+                    <th scope="col" class="pl-3 py-2">
+                      #
+                    </th>
+                    <th scope="col">
+                      Score
+                    </th>
+                    <th scope="col">
+                      Band
+                    </th>
+                    <th scope="col">
+                      Stars
+                    </th>
+                    <th scope="col">
+                      Speed
+                    </th>
+                    <th scope="col">
+                      Ver.
+                    </th>
+                    <th scope="col">
+                      Played
+                    </th>
+                    <th scope="col" class="pr-3">
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="text-sm text-slate-300">
+              <ScoreBand v-for="score in scores.entries" :key='score._id' :score="score" />
+            </tbody>
+          </table>
         </div>
         <div v-else>
-          <b>TODO: </b>Instrument score
+          <table class="w-full text-sm text-left rtl:text-right text-gray-400">
+            <thead class="text-xs bg-gray-700 text-gray-400">
+                <tr>
+                    <th scope="col" class="pl-3 py-2">
+                      #
+                    </th>
+                    <th scope="col">
+                      Score
+                    </th>
+                    <th scope="col">
+                      Player
+                    </th>
+                    <th scope="col">
+                      Stars
+                    </th>
+                    <th scope="col">
+                      Acc.
+                    </th>
+                    <th scope="col">
+                      Combo
+                    </th>
+                    <th scope="col">
+                      Speed
+                    </th>
+                    <th scope="col">
+                      Ver.
+                    </th>
+                    <th scope="col">
+                      Played
+                    </th>
+                    <th scope="col" class="pr-3">
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="text-sm text-slate-300">
+              <ScoreInstrument v-for="(score, i) in scores.entries" :key='score._id' :score="score" :i="i" :songName="song!.name" :songArtist="song!.artist"
+              :difficulty="instruments[Number(instrument)]![Number(difficulty)]!" />
+            </tbody>
+          </table>
         </div>
       </div>
       <ThePagination
-        v-if="scores"
+        v-if="scores?.entries.length"
         class="pt-3 border-t-1 border-gray-800"
         :count="scores?.totalEntries"
         :page="page"
@@ -83,7 +156,7 @@
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import TheAlert from '@/components/TheAlert.vue';
 import FormDropdown from '@/components/FormDropdown.vue';
-import { ExclamationCircleIcon } from '@heroicons/vue/20/solid';
+import { ExclamationCircleIcon, ExclamationTriangleIcon } from '@heroicons/vue/20/solid';
 import { albumArtFinder } from '@/plugins/albumArtFinder';
 import api from '@/plugins/axios';
 import axios from 'axios';
@@ -96,6 +169,8 @@ import FormCheckbox from '@/components/FormCheckbox.vue';
 import TheTab from '@/components/TheTab.vue';
 import FormRadio from '@/components/FormRadio.vue';
 import ThePagination from '@/components/ThePagination.vue';
+import ScoreInstrument from '@/components/ScoreInstrument.vue';
+import ScoreBand from '@/components/ScoreBand.vue';
 
 interface ISongScoresQuery {
   id: string,
@@ -245,10 +320,9 @@ function setLimit(i: number) {
   fetchScores()
 }
 
-function setInstrument() {
-  if (instrument.value == bandString) {
-    // TODO: disable engine tabs if value == bandString
-  } else {
+function setInstrument(value: string) {
+  instrument.value = value
+  if (instrument.value != bandString) {
     const highestDifficulty = Math.max(...Object.keys(instruments.value[Number(instrument.value)]!).map(k => Number(k)))
     if (!(Number(difficulty.value) in instruments.value[Number(instrument.value)]!)) difficulty.value = highestDifficulty.toString()
   }
@@ -256,7 +330,8 @@ function setInstrument() {
   fetchScores()
 }
 
-function setDifficulty() {
+function setDifficulty(value: string) {
+  difficulty.value = value
   if (instrument.value == bandString) return;
   const instNumber = Number(instrument.value)
   if (Number(difficulty.value) == Difficulty.ExpertPlus && instNumber < 20 && instNumber >= 30) return;
@@ -272,7 +347,7 @@ function setAllowedModifiers() {
 }
 
 function setEngine(i: number) {
-   if (instrument.value == bandString) return;
+  if (instrument.value == bandString) return;
   engine.value = i
   page.value = 1
   fetchScores()

@@ -19,7 +19,7 @@ export const percent = (n: number): string => (Math.floor(n*10000)/100).toLocale
 
 export const getDownloadLink = (replay: string): string => `${api.defaults.baseURL}/file/replay/${replay}.replay`
 
-export const getDownloadFileName = (entry: IScore, username: string): string => username + "-" + entry.song.name + "-" + entry.song.artist + "-" + entry.replayPath + ".replay"
+export const getDownloadFileName = (entry: IScore, username: string, songName: string, songArtist: string): string => username + "-" + songName + "-" + songArtist + "-" + entry.replayPath + ".replay"
 
 // TODO: improve functions below
 export function getInstrument(index: number) {
@@ -105,4 +105,10 @@ export function isKeys(gameMode: number) {
 }
 export function isProGuitar(gameMode: number) {
   return ([GameMode.ProGuitar] as number[]).includes(gameMode)
+}
+export function getNumberWithOrdinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  const suffix = s[(v - 20) % 10] || s[v] || s[0];
+  return n.toString() + suffix;
 }

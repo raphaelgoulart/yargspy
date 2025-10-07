@@ -1,26 +1,35 @@
 <template>
   <tr class="border-t-1 border-gray-800">
     <td scope="col" class="pl-3 py-2">
-      <RouterLink :to="'/leaderboard/'+score.song._id" class="font-semibold">{{ score.song.name }}</RouterLink>
-      <span v-if="score.songSpeed != 1"> ({{ percent(score.songSpeed) }})</span><br />
-      <span class="text-xs">{{ score.song.artist }} ({{ score.song.charter }})</span>
+      <b :class="i==0 ? 'text-yellow-300' : i==1 ? 'text-gray-300' : i==2 ? 'text-amber-600' : ''">{{ getNumberWithOrdinal(i+1) }}</b>
+    </td>
+    <td scope="col" class="font-semibold">
+      {{ score.score.toLocaleString() }}
+    </td>
+    <td scope="col" class="font-medium" :title="score.modifiers.length ? 'This player used at least one modifier' : ''">
+      <CountryFlag :code="score.uploader.country" :size="1" /> <RouterLink :to="'/player/'+score.uploader.username">{{ score.uploader.username }}</RouterLink><span v-if="score.modifiers.length">*</span>
     </td>
     <td scope="col">
-      {{ getInstrument(score.instrument) }}<br>
-      <span class="text-xs">{{ getDifficulty(score.difficulty!) }} <span v-if="score.engine! > 0">({{ getEngine(score.engine!) }})</span></span>
+      <ScoreStars :stars="score.stars" />
     </td>
     <td scope="col">
-      <ScoreStars :stars="score.stars" /><span class="text-white font-semibold">{{ score.score.toLocaleString() }}</span>
+      <ScorePercent :n="score.percent!" /><span class="hidden lg:inline text-xs"> ({{ score.notesHit?.toLocaleString() }}/{{ difficulty.notes.toLocaleString() }})</span>
     </td>
     <td scope="col">
-      <ScorePercent :n="score.percent!" />
+      {{ score.maxCombo!.toLocaleString() }}
+    </td>
+    <td scope="col">
+      {{ percent(score.songSpeed) }}
+    </td>
+    <td scope="col">
+      {{ getVersion(score.version) }}
     </td>
     <td scope="col">
       {{ convertedDateTime(score.createdAt, true) }}
     </td>
     <td scope="col" class="pr-3 text-right">
       <div class="flex justify-end items-center gap-1">
-        <a :href="getDownloadLink(score.replayPath)" :download="getDownloadFileName(score, username)"><ArrowDownTrayIcon class="w-5 transition-transform duration-200 hover:scale-110" /></a>
+        <a :href="getDownloadLink(score.replayPath)" :download="getDownloadFileName(score, score.uploader.username, songName, songArtist)"><ArrowDownTrayIcon class="w-5 transition-transform duration-200 hover:scale-110" /></a>
         <a @click="open = !open">
           <ChevronUpIcon v-if="open" class="w-5 hover:cursor-pointer transition-transform duration-200 hover:scale-120" />
           <ChevronDownIcon v-else class="w-5 hover:cursor-pointer transition-transform duration-200 hover:scale-120" />
@@ -36,21 +45,18 @@
     leave-from-class="opacity-100 scale-y-100"
     leave-to-class="opacity-0 scale-y-0">
     <tr v-if="open">
-      <td colspan="6" class="px-3 pt-1 pb-2 text-xs">
+      <td colspan="10" class="px-3 pt-1 pb-2 text-xs">
         <div class="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(0rem,1fr))]">
-          <div><b>Game version: </b>{{ getVersion(score.version) }}</div>
           <div><b>Profile name: </b>{{ score.profileName }}</div>
-          <div class="col-span-2"><b>Modifiers: </b><ScoreModifiers :modifiers="score.modifiers" /></div>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(0rem,1fr))]">
-          <div><b>Notes hit: </b>{{ score.notesHit?.toLocaleString() }}</div>
-          <div><b>Max combo: </b>{{ score.maxCombo?.toLocaleString() }}</div>
-          <div><b>SP phrases hit: </b>{{ score.starPowerPhrasesHit?.toLocaleString() }}</div>
-          <div><b>SP activations: </b>{{ score.starPowerActivationCount?.toLocaleString() }}</div>
+          <div><b>Modifiers: </b><ScoreModifiers :modifiers="score.modifiers" /></div>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(0rem,1fr))]">
           <div v-if="isGuitar(score.gamemode!)"><b>Overstrums: </b>{{ score.overhits?.toLocaleString() }}</div>
           <div v-if="isDrums(score.gamemode!) || isKeys(score.gamemode!)"><b>Overhits: </b>{{ score.overhits?.toLocaleString() }}</div>
+          <div><b>SP phrases hit: </b>{{ score.starPowerPhrasesHit?.toLocaleString() }}/{{ difficulty.starPowerPhrases.toLocaleString() }}</div>
+          <div><b>SP activations: </b>{{ score.starPowerActivationCount?.toLocaleString() }}</div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(0rem,1fr))]">
           <div><b>Solo bonuses: </b>{{ score.soloBonuses?.toLocaleString() }}</div>
           <div v-if="isGuitar(score.gamemode!) || isKeys(score.gamemode!)"><b>Sustain score: </b>{{ score.sustainScore?.toLocaleString() }}</div>
           <div v-if="isGuitar(score.gamemode!)"><b>Ghost inputs: </b>{{ score.ghostInputs?.toLocaleString() }}</div>
@@ -63,18 +69,22 @@
 </template>
 
 <script setup lang="ts">
-import { type IScore } from '@/plugins/types';
-import { convertedDateTime, getDifficulty, getEngine, getInstrument, percent, getDownloadLink, getDownloadFileName, getVersion } from '@/plugins/utils';
+import type { IScore } from '@/plugins/types';
 import { ref, type PropType } from 'vue';
+import { getNumberWithOrdinal, convertedDateTime, getDownloadLink, getDownloadFileName, getVersion, percent, isGuitar, isDrums, isKeys } from '@/plugins/utils'
+import { ChevronUpIcon, ChevronDownIcon, ArrowDownTrayIcon } from '@heroicons/vue/20/solid';
 import ScorePercent from './ScorePercent.vue';
-import ScoreStars from './ScoreStars.vue'
-import ScoreModifiers from './ScoreModifiers.vue';
-import { ArrowDownTrayIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/vue/20/solid';
-import { isGuitar, isDrums, isKeys } from '@/plugins/utils';
+import ScoreStars from './ScoreStars.vue';
+import ScoreModifiers from './ScoreModifiers.vue'
+import { RouterLink } from 'vue-router';
+import CountryFlag from './CountryFlag.vue';
 
 const open = ref(false)
 defineProps({
   score: {type: Object as PropType<IScore>, required: true},
-  username: {type: String, required: true}
+  i: {type: Number, required: true},
+  songName: {type: String, required: true},
+  songArtist: {type: String, required: true},
+  difficulty: {type: Object, required: true}
 })
 </script>

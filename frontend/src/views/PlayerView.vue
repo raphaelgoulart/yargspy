@@ -37,7 +37,11 @@
         <div class="col-span-3 w-full p-4 sm:border rounded-md border-gray-800">
           <span class="mb-5 font-bold text-lg/5 text-white">Latest submissions</span>
           <LoadingSpinner v-if="scoreLoading" class="text-center" />
-          <div class="relative overflow-x-auto mt-5" v-if="scores && !scoreLoading">
+          <TheAlert color="yellow" v-else-if="scores?.entries.length == 0" class="text-center mt-2"
+            ><ExclamationTriangleIcon class="size-5 inline" />
+            <span class="align-middle ml-1">No scores found for this user.</span></TheAlert
+          >
+          <div class="relative overflow-x-auto mt-5" v-if="scores?.entries.length && !scoreLoading">
             <table class="w-full text-sm text-left rtl:text-right text-gray-400">
               <thead class="text-xs bg-gray-700 text-gray-400">
                   <tr>
@@ -61,7 +65,7 @@
                   </tr>
               </thead>
               <tbody class="text-sm text-slate-300">
-                <ScoreUser v-for="score in scores.entries" :key='score._id' :score="score" :username="user.username" />
+                <ScorePlayer v-for="score in scores.entries" :key='score._id' :score="score" :username="user.username" />
               </tbody>
             </table>
             <ThePagination
@@ -87,11 +91,11 @@ import TheAlert from '@/components/TheAlert.vue';
 import TheBadge from '@/components/TheBadge.vue';
 import TheButton from '@/components/TheButton.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import ScoreUser from '@/components/ScoreUser.vue'
+import ScorePlayer from '@/components/ScorePlayer.vue'
 import api from '@/plugins/axios';
 import type { IUser, IScoreEntriesResponse } from '@/plugins/types';
 import { useAuthStore } from '@/stores/auth';
-import { ExclamationCircleIcon } from '@heroicons/vue/20/solid';
+import { ExclamationCircleIcon, ExclamationTriangleIcon } from '@heroicons/vue/20/solid';
 import axios from 'axios';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';

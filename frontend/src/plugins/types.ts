@@ -47,7 +47,7 @@ export interface IUser {
 export interface IScore {
   _id: string
   song: ISong
-  uploader: string
+  uploader: { username: string, country: string }
   replayPath: string
   replayFileHash: string
   childrenScores: IScore[]
