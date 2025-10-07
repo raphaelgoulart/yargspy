@@ -20,6 +20,14 @@ export interface ISong {
   charter: string
   name: string
   year?: string
+  availableInstruments?: [
+    {
+      difficulty: number,
+      instrument: number,
+      notes: number,
+      starPowerPhrases: number
+    }
+  ]
 }
 
 export interface IUser {
@@ -101,4 +109,13 @@ export const GameMode = {
 
   // 20-24: Other
   // Dj = 20,
+} as const
+
+export const Difficulty = {
+  Beginner: 0,
+  Easy: 1,
+  Medium: 2,
+  Hard: 3,
+  Expert: 4,
+  ExpertPlus: 5,
 } as const

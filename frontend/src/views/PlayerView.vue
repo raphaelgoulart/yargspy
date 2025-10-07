@@ -6,7 +6,7 @@
         <div class="mx-4 mt-12 mb-auto bg-black/50 rounded-md p-4" v-if="user">
           <div class="inline-flex items-center gap-3 mb-2 text-5xl font-semibold" :class="user ? 'text-white' : 'text-gray-400'">
             <CountryFlag v-if="user" :code="user.country" :size='10' />
-            {{ user.username }}
+            <h1>{{ user.username }}</h1>
           </div><br>
           <div class="inline-flex gap-3 mt-1" v-if="user.admin || !user.active">
             <TheBadge color="red" v-if="!user.active">Banned</TheBadge>
