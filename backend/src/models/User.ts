@@ -159,7 +159,8 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
         if (!valid) throw new ServerError('err_user_register_duplicated_username', null)
       },
       async setCountryAndSave(req) {
-        this.country = (req.headers['cloudfront-viewer-country'] as string | undefined) ?? 'XX'
+        if (req.headers['cf-ipcountry']) this.country = req.headers['cf-ipcountry'] == 'T1' ? 'XX' : req.headers['cf-ipcountry']
+        else this.country = (req.headers['cloudfront-viewer-country'] as string | undefined) ?? 'XX'
         await this.save()
       },
     },
