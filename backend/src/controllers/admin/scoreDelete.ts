@@ -20,21 +20,21 @@ const adminScoreDeleteHandler: ServerHandler<IAdminScoreDelete> = async function
   const missingParams = []
   if (!req.body.id) missingParams.push('id')
   if (!req.body.reason) missingParams.push('reason')
-  if (missingParams.length) throw new ServerError('err_invalid_query', null, {params: missingParams.join(', ')})
-    
+  if (missingParams.length) throw new ServerError('err_invalid_query', null, { params: missingParams.join(', ') })
+
   const score = await Score.findById(req.body.id)
   if (!score) throw new ServerError([404, `Score ${req.body.id} not found`])
 
   // delete replay file
   const replayPath = score.replayPath
-  if (isDev()) {
+  if (isDev() || process.env.FILE_ROOT) {
     const replayFilePath = getServerFile().gotoFile(`replay/${replayPath}.replay`)
     if (replayFilePath.exists) replayFilePath.delete() // this can be async
   } else {
     // TODO: on prod, delete file in S3
   }
   // (DB) delete scores associated to that replay file
-  const result = await Score.deleteMany({replayPath: replayPath})
+  const result = await Score.deleteMany({ replayPath: replayPath })
   // log admin action (this can be async)
   new AdminLog({
     admin: (req as RouteRequest<{ user: UserSchemaDocument }>).user,
@@ -42,13 +42,9 @@ const adminScoreDeleteHandler: ServerHandler<IAdminScoreDelete> = async function
     item: req.body.id,
     reason: req.body.reason,
   }).save()
-  serverReply(
-    reply,
-    'ok',
-    {
-      count: result.deletedCount
-    },
-  )
+  serverReply(reply, 'ok', {
+    count: result.deletedCount,
+  })
 }
 
 // #region Error Handler

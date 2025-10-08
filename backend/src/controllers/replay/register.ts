@@ -119,7 +119,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       hopoFreq = f
     } else {
       if (!songEntry) throw new ServerError('err_unknown', { error: "Unreachable code on 'src/controllers/replayRegister.ts'" })
-      if (isDev()) {
+      if (isDev() || process.env.FILE_ROOT) {
         chartFilePath = getChartFilePathFromSongEntry(songEntry)
       } else {
         // TODO: in prod, remove the line below, get file from S3 and put in temp folder if using AWS
@@ -157,7 +157,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
       songEntry.availableInstruments = availableInstruments
 
-      if (isDev()) {
+      if (isDev() || process.env.FILE_ROOT) {
         chartFilePath = await chartFilePath.rename(getChartFilePathFromSongEntry(songEntry))
       } else {
         // TODO: on prod, upload to S3 instead of copy
@@ -269,7 +269,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     bandScore.modifiers = bandModifiers
 
     // Move replay file
-    if (isDev()) {
+    if (isDev() || process.env.FILE_ROOT) {
       await replayFilePath.rename(getServerFile().gotoFile(`replay/${replayFilePath.fullname}`))
     } else {
       // TODO: on prod, upload to S3 instead of copy
@@ -284,7 +284,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
     // Done! Reply with song ID for front-end redirection
     //serverReply(reply, 'success_replay_register', { playerScoreIDs: playerScores.map((score) => score._id), bandScoreID: bandScore._id })
-    
+
     user.setCountryAndSave(req) // take opportunity to update the user's country flag (this can be async)
     serverReply(reply, 'success_replay_register', { song: songEntry._id })
   } catch (err) {
