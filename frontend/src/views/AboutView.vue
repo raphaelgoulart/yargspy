@@ -14,9 +14,10 @@
     <p class="pt-4">
       This website was built by
       <a href="https://github.com/raphaelgoulart" target="_blank">raphaelgoulart</a> and
-      <a href="https://ruggeryiury.github.io/my-linktree/" target="_blank">Ruggy</a>. If you need
-      support, please join our <a href="#">Discord server</a>. If you want to contribute, check out
-      the <a href="https://github.com/raphaelgoulart/yarglb" target="_blank">GitHub repository</a>.
+      <a href="https://ruggeryiury.github.io/my-linktree/" target="_blank">Ruggy</a>. Some assets
+      were taken from YARG's website and game. If you need support, please join our
+      <a href="#">Discord server</a>. If you want to contribute, check out the
+      <a href="https://github.com/raphaelgoulart/yarglb" target="_blank">GitHub repository</a>.
     </p>
     <h1 class="py-8 text-center text-4xl font-bold">FREQUENTLY ASKED QUESTIONS</h1>
     <FaqItem q="Why isn't this official?" defaultOpen
@@ -25,8 +26,8 @@
       was made without coordination with them, so it has not been determined whether this project
       aligns with the vision of YARG and its development.<br />Also, while we're doing our best to
       ensure this'll work on a large scale, we have no idea on how it'd actually fare with YARG's
-      entire player base, and I'd probably need assistance if I were to maintain this in an
-      official capacity.</FaqItem
+      entire player base, and I'd probably need assistance if I were to maintain this in an official
+      capacity.</FaqItem
     >
     <FaqItem q="Will there be a custom version of the game, like what ScoreSpy was to Clone Hero?"
       >This is part of long-term plans, and the way the groundwork is laid out right now should make

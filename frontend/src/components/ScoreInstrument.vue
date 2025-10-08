@@ -7,7 +7,7 @@
       {{ score.score.toLocaleString() }}
     </td>
     <td scope="col" class="font-medium" :title="score.modifiers.length ? 'This player used at least one modifier' : ''">
-      <CountryFlag :code="score.uploader.country" :size="1" /> <RouterLink :to="'/player/'+score.uploader.username">{{ score.uploader.username }}</RouterLink><span v-if="score.modifiers.length">*</span>
+      <CountryFlag :code="score.uploader.country" :size="1" /> <RouterLink :to="{ name: 'player', params: { username: score.uploader.username } }">{{ score.uploader.username }}</RouterLink><span v-if="score.modifiers.length">*</span>
     </td>
     <td scope="col">
       <ScoreStars :stars="score.stars" />

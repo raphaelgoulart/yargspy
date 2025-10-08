@@ -38,7 +38,7 @@ const props = defineProps({
   album: String,
 })
 
-const to = `leaderboard/${props.id}`
+const to = { name: 'leaderboard', params: { id: props.id } }
 const imgSrc = ref('/src/assets/img/song.png')
 
 onMounted(async () => {

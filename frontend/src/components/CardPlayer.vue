@@ -3,11 +3,13 @@
     class="card-player w-48 max-w-9/10 m-2 border rounded-lg shadow-sm bg-gray-800 border-gray-700 inline-block transition-scale duration-200 hover:scale-103 hover:bg-gray-700"
   >
     <RouterLink :to="to">
-      <img class="rounded-t-lg w-48" :src="profilePhotoUrl" alt="" />
+      <img class="rounded-t-lg w-48 h-48 object-cover" :src="profilePhotoUrl" alt="" />
     </RouterLink>
     <div class="p-4 text-center">
       <RouterLink :to="to">
-        <span class="inline-flex items-center gap-1 mb-2 text-xl font-semibold tracking-tight text-slate-300">
+        <span
+          class="inline-flex items-center gap-1 mb-2 text-xl font-semibold tracking-tight text-slate-300"
+        >
           <CountryFlag :code="country" :size="3" />
           {{ username }}
         </span>
@@ -17,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import CountryFlag from './CountryFlag.vue';
+import CountryFlag from './CountryFlag.vue'
 
 const props = defineProps({
   username: {
@@ -30,9 +32,9 @@ const props = defineProps({
   },
   country: {
     type: String,
-    default: 'xx'
-  }
+    default: 'xx',
+  },
 })
 
-const to = `player/${props.username}`
+const to = { name: 'player', params: { username: props.username } }
 </script>

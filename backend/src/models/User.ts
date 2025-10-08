@@ -45,6 +45,10 @@ export interface UserSchemaInput {
    * The user's country code
    */
   country: string
+  /**
+   * The profile banner URL.
+   */
+  bannerURL: string
 }
 
 // Methods here
@@ -129,7 +133,10 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
     },
     country: {
       type: String,
-      default: 'XX'
+      default: 'XX',
+    },
+    bannerURL: {
+      type: String,
     },
   },
   {
@@ -140,7 +147,7 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
         return token
       },
       async checkUsernameEmailCaseInsensitive() {
-        const users = User.find().select({username: 1, email: 1})
+        const users = User.find().select({ username: 1, email: 1 })
         let valid: boolean = true
         for await (const user of users) {
           if (user.username.toLowerCase() === this.username.toLowerCase() || user.email.toLowerCase() === this.email.toLowerCase()) {
@@ -152,9 +159,9 @@ const userSchema = new Schema<UserSchemaInput, UserSchemaModel>(
         if (!valid) throw new ServerError('err_user_register_duplicated_username', null)
       },
       async setCountryAndSave(req) {
-        this.country = (req.headers['cloudfront-viewer-country'] as string | undefined) ?? 'XX';
+        this.country = (req.headers['cloudfront-viewer-country'] as string | undefined) ?? 'XX'
         await this.save()
-      }
+      },
     },
     statics: {
       async findByToken(auth?: string) {

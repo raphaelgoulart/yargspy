@@ -21,7 +21,8 @@ const router = createRouter({
     },
     {
       path: '/player/:username',
-      component: () => import('../views/PlayerView.vue')
+      name: 'player',
+      component: () => import('../views/PlayerView.vue'),
     },
     {
       path: '/leaderboard',
@@ -42,33 +43,72 @@ const router = createRouter({
     {
       path: '/upload',
       component: StandardView,
-      children: [{ path: '', name: 'upload', component: () => import('../views/UploadView.vue'), meta: { requiresAuth: true } }],
+      children: [
+        {
+          path: '',
+          name: 'upload',
+          component: () => import('../views/UploadView.vue'),
+          meta: { requiresAuth: true },
+        },
+      ],
     },
     {
       path: '/login',
       component: StandardView,
-      children: [{ path: '', name: 'login', component: () => import('../views/LoginView.vue'), meta: { noAuth: true } }],
+      children: [
+        {
+          path: '',
+          name: 'login',
+          component: () => import('../views/LoginView.vue'),
+          meta: { noAuth: true },
+        },
+      ],
     },
     {
       path: '/register',
       component: StandardView,
       children: [
-        { path: '', name: 'register', component: () => import('../views/RegisterView.vue'), meta: { noAuth: true } },
-        { path: ':token', name: 'verify', component: () => import('../views/RegisterVerifyView.vue'), meta: { noAuth: true } },
+        {
+          path: '',
+          name: 'register',
+          component: () => import('../views/RegisterView.vue'),
+          meta: { noAuth: true },
+        },
+        {
+          path: ':token',
+          name: 'verify',
+          component: () => import('../views/RegisterVerifyView.vue'),
+          meta: { noAuth: true },
+        },
       ],
     },
     {
       path: '/passwordReset',
       component: StandardView,
       children: [
-        { path: '', name: 'passwordForgot', component: () => import('../views/PasswordForgotView.vue'), meta: { noAuth: true } },
-        { path: ':token', name: 'passwordReset', component: () => import('../views/PasswordResetView.vue'), meta: { noAuth: true } }
+        {
+          path: '',
+          name: 'passwordForgot',
+          component: () => import('../views/PasswordForgotView.vue'),
+          meta: { noAuth: true },
+        },
+        {
+          path: ':token',
+          name: 'passwordReset',
+          component: () => import('../views/PasswordResetView.vue'),
+          meta: { noAuth: true },
+        },
       ],
     },
     {
       path: '/about',
       component: StandardView,
       children: [{ path: '', name: 'about', component: () => import('../views/AboutView.vue') }],
+    },
+    {
+      path: '/tospp',
+      component: StandardView,
+      children: [{ path: '', name: 'tospp', component: () => import('../views/ToSPPView.vue') }],
     },
     // TODO: admin routes
   ],

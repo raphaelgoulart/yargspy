@@ -22,11 +22,11 @@ export interface ISong {
   year?: string
   availableInstruments?: [
     {
-      difficulty: number,
-      instrument: number,
-      notes: number,
+      difficulty: number
+      instrument: number
+      notes: number
       starPowerPhrases: number
-    }
+    },
   ]
 }
 
@@ -42,12 +42,13 @@ export interface IUser {
   country: string
   email?: string
   emailVerified: boolean
+  bannerURL?: string
 }
 
 export interface IScore {
   _id: string
   song: ISong
-  uploader: { username: string, country: string }
+  uploader: { username: string; country: string }
   replayPath: string
   replayFileHash: string
   childrenScores: IScore[]
