@@ -28,6 +28,7 @@
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.4",
     "node-lib": "file:..\\dependencies\\js\\node-lib-1.3.0.tgz",
+    "nodemailer": "^7.0.9",
     "set-default-options": "file:..\\dependencies\\js\\set-default-options-1.0.1.tgz",
     "zod": "^4.0.5"
   },

@@ -1,9 +1,10 @@
 import { EmailToken, Purpose } from "../../models/EmailToken";
 import { isDev } from "../checkers/isDev";
+import nodemailer from 'nodemailer'
 
 export async function issueAndSendVerification(userId: string, email: string) {
   const { token } = await EmailToken.issue(userId, Purpose.Verify);
-  const url = 'https://yargspy.com/user/register' // TODO: fetch URL dynamically
+  const url = `${process.env.FRONTEND_URL}/#/${process.env.FRONTEND_VERIFY}`
   const link = `${url}/${encodeURIComponent(token)}`;
   await sendEmail({
     to: email,
@@ -17,11 +18,10 @@ export async function issueAndSendVerification(userId: string, email: string) {
     text: `Confirm your email: ${link}`
   });
 }
-  
 
 export async function issueAndSendReset(userId: string, email: string) {
   const { token } = await EmailToken.issue(userId, Purpose.Reset);
-  const url = 'https://yargspy.com/user/passwordReset' // TODO: fetch URL dynamically
+  const url = `${process.env.FRONTEND_URL}/#/${process.env.FRONTEND_RESET}`
   const link = `${url}/${encodeURIComponent(token)}`;
   await sendEmail({
     to: email,
@@ -35,10 +35,30 @@ export async function issueAndSendReset(userId: string, email: string) {
   });
 }
 
-async function sendEmail(data: { to: string; subject: string; html: string; text: string; }) {
-  if (isDev()) {
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: process.env.SMTP_SECURE === 'true',
+  auth: {
+    user: process.env.SMTP_USERNAME,
+    pass: process.env.SMTP_PASSWORD,
+  },
+});
+
+export async function sendEmail(data: { to: string; subject: string; html: string; text: string; }) {
+  const mailOptions = {
+    from: process.env.SMTP_FROM,
+    to: data.to,
+    subject: data.subject,
+    text: data.text,
+    html: data.html,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    if (isDev()) console.log('Email sent successfully:', info.response);
+  } catch (error) {
+    console.error('Error sending email:', error);
     console.log(data)
-  } else {
-    // TODO: in prod, send via SES
   }
-}
+};
