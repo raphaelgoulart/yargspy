@@ -6,15 +6,23 @@ import { serverReply } from "../../core.exports"
 import type { ServerErrorHandler, ServerHandler } from "../../lib.exports"
 import { User } from "../../models/User"
 import { issueAndSendVerification } from '../../utils.exports'
+import { checkHCaptcha } from "../../utils/checkers/checkHCaptcha"
 
 export interface IUserEmailResend {
   body: {
     username: string
+    h: {
+      captcha: {
+        response: string
+      }
+    }
   }
 }
 
 const userEmailResendHandler: ServerHandler<IUserEmailResend> = async function (req, reply) {
   if (!req.body.username) throw new ServerError('err_invalid_query', null, { params: "username" })
+  if (!req.body.h.captcha.response) throw new ServerError('err_invalid_query', null, { params: "h-captcha-response" })
+  if (!await checkHCaptcha(req.body.h.captcha.response)) throw new ServerError('err_captcha')
 
   const user = await User.findOne({ username: req.body.username }).select('+email +emailVerified');
   if (user && !user.emailVerified) {

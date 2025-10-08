@@ -1,6 +1,6 @@
 <template>
-  <form ref="form">
-    <div>
+  <div>
+    <form ref="form">
       <div class="mb-4">
         <FormInput name="username" label="Username" v-model="username" autocomplete='username' required minlength="3" maxlength="32">
           <div class="text-gray-500 pr-1"><UserIcon class="size-5" aria-hidden="true" /></div>
@@ -19,20 +19,30 @@
         @click="$emit('forgotPassword')"><span class="inline-block transition-all duration-300 hover:scale-105">Forgot your password?</span></div>
       </div>
       <div class="text-xs my-2">Don't have an account? <span class="text-white font-semibold hover:cursor-pointer inline-block transition-all duration-300 hover:scale-105" @click="$emit('register')">Register</span></div>
-      <TheAlert v-if="error" :color="emailVerification ? 'yellow' : 'red'" class="text-center">
-        <div v-if="emailVerification">
-          <ExclamationTriangleIcon class="size-5 inline" />
-          This account's email is not verified yet.<br />Didn't receive the email?
-          <a class="hover:cursor-pointer" @click="resend">Click here</a> to resend it.
+    </form>
+    <TheAlert v-if="error" :color="emailVerification ? 'yellow' : 'red'" class="text-center">
+      <div v-if="emailVerification">
+        <ExclamationTriangleIcon class="size-5 inline" />
+        This account's email is not verified yet.<br />Didn't receive the email?
+        Click the button below to resend it.
+      </div>
+      <div v-else>
+        <ExclamationCircleIcon class="size-5 inline" />
+        <span class="align-middle ml-1">{{ error }}</span>
+      </div>
+    </TheAlert>
+    <div v-if="error && emailVerification">
+      <form ref="verificationForm">
+        <div class="mb-2 flex justify-center">
+          <VueHcaptcha :sitekey="hCaptchaSiteKey" class="border-gray-700"></VueHcaptcha>
         </div>
-        <div v-else>
-          <ExclamationCircleIcon class="size-5 inline" />
-          <span class="align-middle ml-1">{{ error }}</span>
+        <div class="mb-2">
+          <TheButton type="submit" @click="resend" :disabled="loading">Resend</TheButton>
         </div>
-      </TheAlert>
-      <LoadingSpinner no-text v-if="loading" class="text-center mb-2" />
+      </form>
     </div>
-  </form>
+    <LoadingSpinner no-text v-if="loading" class="text-center mb-2" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -46,6 +56,7 @@ import api from '@/plugins/axios';
 import LoadingSpinner from './LoadingSpinner.vue';
 import { useAuthStore } from '@/stores/auth';
 import FormInput from './FormInput.vue';
+import VueHcaptcha from '@hcaptcha/vue3-hcaptcha'
 
 const auth = useAuthStore();
 
@@ -57,6 +68,9 @@ const loading = ref(false)
 const error = ref('')
 const emailVerification = ref(false)
 const emit = defineEmits(['login', 'register', 'forgotPassword'])
+
+const hCaptchaSiteKey = import.meta.env.VITE_HCAPTCHA_SITE_KEY
+const verificationForm = ref()
 
 if (auth.user) {
   toast.warning("You're already logged in!")
@@ -80,6 +94,7 @@ async function login(ev: Event) {
     toast.success('Logged in successfully!')
     emit('login')
   } catch (e) {
+    emailVerification.value = false
     if (axios.isAxiosError(e) && e.status! < 500) {
       if (e.response?.data.code == "err_login_user_email_unverified") {
         error.value = params.username
@@ -98,10 +113,18 @@ async function login(ev: Event) {
   }
 
 }
-async function resend() {
+async function resend(ev: Event) {
+  ev.preventDefault()
+  if (!verificationForm.value.reportValidity()) return
+  const formData = new FormData(verificationForm.value)
+  if (!formData.get('h-captcha-response')) {
+    toast.error('Please fill out the captcha.')
+    return
+  }
+  formData.set('username', error.value)
   loading.value = true
   try {
-    await api.post('/user/emailResend', { username: error.value})
+    await api.post('/user/emailResend', formData)
     error.value = ''
     toast.success('Verification email sent successfully.')
   } catch (e) {
