@@ -15,9 +15,10 @@
       This website was built by
       <a href="https://github.com/raphaelgoulart" target="_blank">raphaelgoulart</a> and
       <a href="https://ruggeryiury.github.io/my-linktree/" target="_blank">Ruggy</a>. Some assets
-      were taken from YARG's website and game. If you need support, please join our
-      <a href="#">Discord server</a>. If you want to contribute, check out the
-      <a href="https://github.com/raphaelgoulart/yarglb" target="_blank">GitHub repository</a>.
+      were taken from YARG's website and game. If you want to contribute, check out the
+      <a href="https://github.com/raphaelgoulart/yargspy" target="_blank">GitHub repository</a>. If
+      you need support, open a GitHub issue, message goulart (burrismo) on Discord or email
+      contact@raphaelgoul.art.
     </p>
     <h1 class="py-8 text-center text-4xl font-bold">FREQUENTLY ASKED QUESTIONS</h1>
     <FaqItem q="Why isn't this official?" defaultOpen
