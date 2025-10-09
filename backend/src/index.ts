@@ -11,7 +11,7 @@ import 'dotenv/config'
 const serverStart = async () => {
   console.log('YARG Leaderboard Server v0.0.1\nBy raphaelgoulart and Ruggy\n__________________________________________________________________')
   // Init fastify
-  const app = fastify({ logger: fastifyLoggerOptions, disableRequestLogging: true })
+  const app = fastify({ logger: fastifyLoggerOptions, disableRequestLogging: true, trustProxy: process.env.PROXY === 'true' })
 
   app.log.info(isDev() ? 'Initializing Server in development mode...\n' : 'Initializing Server...\n')
 
