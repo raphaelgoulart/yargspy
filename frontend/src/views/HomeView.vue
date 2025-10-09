@@ -13,8 +13,8 @@
           <a href="https://yarg.in/">YARG</a> (Yet Another Rhythm Game)
         </p>
         <TheAlert class="mt-4" color="yellow"
-          ><ExclamationTriangleIcon class="w-5 inline" /> This website is still under construction;
-          some functionality might be broken or outright non-existent.</TheAlert
+          ><ExclamationTriangleIcon class="w-5 inline" /> This website is still in development; some
+          functionality might be broken or outright non-existent.</TheAlert
         >
         <h1 class="font-bold text-5xl pb-8">GET STARTED</h1>
         <div class="flex items-center justify-center gap-x-3" v-if="!auth.user">
