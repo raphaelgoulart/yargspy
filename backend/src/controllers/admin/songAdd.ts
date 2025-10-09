@@ -91,7 +91,8 @@ const adminSongAddHandler: ServerHandler = async function (req, reply) {
     songEntry.availableInstruments = availableInstruments
 
     if (isDev() || process.env.FILE_ROOT) {
-      await chartFilePath.rename(getChartFilePathFromSongEntry(songEntry))
+      await chartFilePath.copy(getChartFilePathFromSongEntry(songEntry))
+      await chartFilePath.delete()
     } else {
       // TODO: on prod, upload to S3 instead of copy
       chartFilePath.delete() // delete local file after uploading to S3

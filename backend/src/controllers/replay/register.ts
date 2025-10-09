@@ -158,7 +158,9 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       songEntry.availableInstruments = availableInstruments
 
       if (isDev() || process.env.FILE_ROOT) {
-        chartFilePath = await chartFilePath.rename(getChartFilePathFromSongEntry(songEntry))
+        const newChartFilePath = await chartFilePath.copy(getChartFilePathFromSongEntry(songEntry))
+        await chartFilePath.delete()
+        chartFilePath = newChartFilePath
       } else {
         // TODO: on prod, upload to S3 instead of copy
         chartFilePath.delete() // delete local file after uploading to S3
@@ -270,7 +272,8 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
     // Move replay file
     if (isDev() || process.env.FILE_ROOT) {
-      await replayFilePath.rename(getServerFile().gotoFile(`replay/${replayFilePath.fullname}`))
+      await replayFilePath.copy(getServerFile().gotoFile(`replay/${replayFilePath.fullname}`))
+      await replayFilePath.delete()
     } else {
       // TODO: on prod, upload to S3 instead of copy
       replayFilePath.delete() // delete local file after uploading to S3
