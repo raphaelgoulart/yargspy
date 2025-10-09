@@ -45,7 +45,7 @@ const imgSrc = ref(defaultSongImg)
 onMounted(async () => {
   const result = await albumArtFinder(props.artist, props.album)
   if (result && result.data) {
-    imgSrc.value = result.data.album.image[2]['#text']
+    if (result.data.album.image[2]['#text']) imgSrc.value = result.data.album.image[2]['#text']
   }
 })
 </script>
