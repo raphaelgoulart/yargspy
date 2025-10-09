@@ -32,6 +32,7 @@ const serverStart = async () => {
   try {
     await app.listen({
       port,
+      host: process.env.HOST ? process.env.HOST : 'localhost',
       listenTextResolver(address) {
         return `Listening: ${address}...`
       },
