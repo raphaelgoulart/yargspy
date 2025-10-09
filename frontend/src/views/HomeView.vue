@@ -12,7 +12,11 @@
           Unofficial replay-validation-based leaderboards for
           <a href="https://yarg.in/">YARG</a> (Yet Another Rhythm Game)
         </p>
-        <h1 class="font-bold text-5xl pt-6 pb-8">GET STARTED</h1>
+        <TheAlert class="mt-4" color="yellow"
+          ><ExclamationTriangleIcon class="w-5 inline" /> This website is still under construction;
+          some functionality might be broken or outright non-existent.</TheAlert
+        >
+        <h1 class="font-bold text-5xl pb-8">GET STARTED</h1>
         <div class="flex items-center justify-center gap-x-3" v-if="!auth.user">
           <TheButton to="/login">Log in</TheButton>
           <TheButton to="/register">Register</TheButton>
@@ -25,8 +29,10 @@
 </template>
 
 <script setup lang="ts">
+import TheAlert from '@/components/TheAlert.vue'
 import TheButton from '@/components/TheButton.vue'
-import { useAuthStore } from '@/stores/auth';
+import { ExclamationTriangleIcon } from '@heroicons/vue/20/solid'
+import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 </script>

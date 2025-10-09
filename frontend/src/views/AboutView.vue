@@ -20,6 +20,11 @@
       you need support, open a GitHub issue, message goulart (burrismo) on Discord or email
       contact@raphaelgoul.art.
     </p>
+    <p class="pt-4">
+      Special thanks to
+      <a href="https://metriccepheid.online/" target="_blank">metriccepheid</a> for providing the
+      hosting solution!
+    </p>
     <h1 class="py-8 text-center text-4xl font-bold">FREQUENTLY ASKED QUESTIONS</h1>
     <FaqItem q="Why isn't this official?" defaultOpen
       >This is a project made for fun by the aforementioned people, and, although YARG's lead
