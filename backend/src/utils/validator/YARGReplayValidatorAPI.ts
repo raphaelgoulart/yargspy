@@ -316,7 +316,8 @@ export class YARGReplayValidatorAPI {
     const validatorPath = getValidatorPath()
     const replayFile = pathLikeToFilePath(replayFilePath)
 
-    const prefix = process.platform === "win32" ? "" : "dotnet ";
+    const dotnetExecutable = process.env.DOTNET_PATH ? process.env.DOTNET_PATH : 'dotnet'
+    const prefix = process.platform === 'win32' ? '' : `${dotnetExecutable} `
     const command = `${prefix}"${validatorPath.fullname}" "${replayFile.path}" -m ${this.readMode.returnSongHash}`
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
     if (stderr) throw new ServerError('err_unknown', { error: stderr, errorOrigin: 'YARGReplayValidatorAPI.returnSongHash()' })
@@ -347,7 +348,8 @@ export class YARGReplayValidatorAPI {
 
     const readMode = isSongEntryFound ? this.readMode.replayOnly : this.readMode.replayAndMidi
 
-    const prefix = process.platform === "win32" ? "" : "dotnet ";
+    const dotnetExecutable = process.env.DOTNET_PATH ? process.env.DOTNET_PATH : 'dotnet'
+    const prefix = process.platform === 'win32' ? '' : `${dotnetExecutable} `
     let command = `${prefix}"./${validatorPath.fullname}" "${replayFile.path}" "${chartFile.path}" -m ${readMode}`
 
     // Input parameters from Song model
@@ -374,7 +376,8 @@ export class YARGReplayValidatorAPI {
 
     const readMode = this.readMode.midiOnly
 
-    const prefix = process.platform === "win32" ? "" : "dotnet ";
+    const dotnetExecutable = process.env.DOTNET_PATH ? process.env.DOTNET_PATH : 'dotnet'
+    const prefix = process.platform === 'win32' ? '' : `${dotnetExecutable} `
     let command = `${prefix}"./${validatorPath.fullname}" _ "${chartFile.path}" -m ${readMode}`
 
     // Input parameters from Song model

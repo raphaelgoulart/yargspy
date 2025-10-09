@@ -17,6 +17,7 @@
 import { albumArtFinder } from '@/plugins/albumArtFinder'
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import defaultSongImg from '../assets/img/song.png'
 
 const props = defineProps({
   name: {
@@ -39,7 +40,7 @@ const props = defineProps({
 })
 
 const to = { name: 'leaderboard', params: { id: props.id } }
-const imgSrc = ref('/src/assets/img/song.png')
+const imgSrc = ref(defaultSongImg)
 
 onMounted(async () => {
   const result = await albumArtFinder(props.artist, props.album)

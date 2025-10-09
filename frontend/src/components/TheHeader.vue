@@ -4,7 +4,7 @@
       <div class="flex pr-7.5">
         <RouterLink to="/" class="-m-1.5 p-1.5">
           <span class="sr-only">YARGSpy</span>
-          <img class="h-8 w-auto" src="/src/assets/img/yargspy-W.png" alt="YARGSpy logo" />
+          <img class="h-8 w-auto" :src="yargspyW" alt="YARGSpy logo" />
         </RouterLink>
       </div>
       <div class="flex lg:hidden">
@@ -25,11 +25,10 @@
       <div class="hidden lg:flex lg:flex-1 lg:justify-end">
         <div v-if="auth.user" class="flex gap-x-6">
           <span class="text-sm/6">
-            Welcome, <HeaderLink :to="'player/'+auth.user.username">{{ auth.user.username }}</HeaderLink>
+            Welcome,
+            <HeaderLink :to="'player/' + auth.user.username">{{ auth.user.username }}</HeaderLink>
           </span>
-          <HeaderLink @click="logout">
-            Log out
-          </HeaderLink>
+          <HeaderLink @click="logout"> Log out </HeaderLink>
         </div>
         <HeaderLink to="/login" v-else
           >Log in
@@ -46,7 +45,7 @@
         <div class="flex items-center justify-between">
           <RouterLink to="/" class="-m-1.5 p-1.5" @click="mobileMenuOpen = false">
             <span class="sr-only">YARGSpy</span>
-            <img class="h-8 w-auto" src="/src/assets/img/yargspy-W.png" alt="" />
+            <img class="h-8 w-auto" :src="yargspyW" alt="" />
           </RouterLink>
           <button
             type="button"
@@ -61,11 +60,9 @@
           <div class="-my-6 divide-y divide-white/10">
             <div class="space-y-2 py-6">
               <div v-for="item in filteredNavigation" :key="item.name">
-                <HeaderLink @click="mobileMenuOpen = false"
-                  :to="item.to"
-                  :mobile="true"
-                  >{{ item.name }}</HeaderLink
-              >
+                <HeaderLink @click="mobileMenuOpen = false" :to="item.to" :mobile="true">{{
+                  item.name
+                }}</HeaderLink>
               </div>
             </div>
             <div class="py-6">
@@ -86,6 +83,7 @@ import { Bars3Icon, XMarkIcon, ArrowLongRightIcon } from '@heroicons/vue/24/outl
 import HeaderLink from './HeaderLink.vue'
 import { useAuthStore } from '@/stores/auth'
 import { toast } from 'vue-sonner'
+import yargspyW from '../assets/img/yargspy-W.png'
 
 const navigation = [
   { name: 'Players', to: '/player', logged: false },
@@ -98,9 +96,7 @@ const auth = useAuthStore()
 
 const mobileMenuOpen = ref(false)
 
-const filteredNavigation = computed(() =>
-  navigation.filter(item => !item.logged || auth.user)
-)
+const filteredNavigation = computed(() => navigation.filter((item) => !item.logged || auth.user))
 function logout() {
   auth.logout()
   toast.success('Logged out successfully!')

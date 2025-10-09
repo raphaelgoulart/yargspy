@@ -199,6 +199,7 @@ import FormRadio from '@/components/FormRadio.vue'
 import ThePagination from '@/components/ThePagination.vue'
 import ScoreInstrument from '@/components/ScoreInstrument.vue'
 import ScoreBand from '@/components/ScoreBand.vue'
+import defaultSongImg from '../assets/img/song.png'
 
 interface ISongScoresQuery {
   id: string
@@ -213,7 +214,7 @@ interface ISongScoresQuery {
 }
 
 const bandString = '255'
-const imgSrc = ref('/src/assets/img/song.png')
+const imgSrc = ref(defaultSongImg)
 const route = useRoute()
 const allowedModifiersOpen = ref(false)
 

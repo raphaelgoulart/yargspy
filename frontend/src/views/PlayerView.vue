@@ -105,6 +105,7 @@ import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import ThePagination from '@/components/ThePagination.vue'
 import { convertedDateTime } from '@/plugins/utils'
+import defaultPlayerImg from '../assets/img/avatar.jpg'
 
 const loading = ref(true)
 const scoreLoading = ref(true)
@@ -113,7 +114,7 @@ const route = useRoute()
 const user = ref(null as IUser | null)
 const scores = ref(null as IScoreEntriesResponse | null)
 
-const imgSrc = ref('/src/assets/img/avatar.jpg')
+const imgSrc = ref(defaultPlayerImg)
 const bannerSrc = ref("url('https://yarg.in/notes.webp'), url('https://yarg.in/gradient.webp')")
 
 interface IPlayerScoresQuery {

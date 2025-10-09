@@ -20,6 +20,7 @@
 
 <script setup lang="ts">
 import CountryFlag from './CountryFlag.vue'
+import defaultProfilePhoto from '../assets/img/avatar.jpg'
 
 const props = defineProps({
   username: {
@@ -28,7 +29,7 @@ const props = defineProps({
   },
   profilePhotoUrl: {
     type: String,
-    default: '/src/assets/img/avatar.jpg',
+    default: defaultProfilePhoto,
   },
   country: {
     type: String,
