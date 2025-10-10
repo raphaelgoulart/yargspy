@@ -40,7 +40,7 @@
         <div class="w-full p-4 pb-2 sm:border rounded-md border-gray-800">
           <p class="mb-5 font-bold text-lg/5 text-white">General info</p>
           <p class="mb-2"><b>Joined: </b>{{ convertedDateTime(user.createdAt) }}</p>
-          <p class="mb-2"><b>Last active at: </b>{{ convertedDateTime(user.updatedAt) }}</p>
+          <p class="mb-2"><b>Last active: </b>{{ convertedDateTime(user.updatedAt) }}</p>
           <p v-if="scores" class="mb-2">
             <b>Submitted runs: </b> {{ scores.totalEntries.toLocaleString() }}
           </p>
