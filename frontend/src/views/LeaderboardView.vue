@@ -14,10 +14,11 @@
           by <span class="font-medium">{{ song.artist }}</span
           ><span v-if="song.year">, {{ song.year.replace(',', '').trim() }}</span>
         </p>
-        <p v-if="song.album" class="mb-2">From {{ song.album }}</p>
-        <p><b>Charted by: </b>{{ song.charter }}</p>
+        <p v-if="song.album" class="mb-2">From <StringColorParsed :value="song.album" /></p>
+        <p><b>Charted by: </b><StringColorParsed :value="song.charter" /></p>
         <hr class="my-4 text-gray-700" />
         <div v-if="Object.keys(instruments).length">
+          <div>Instrument</div>
           <FormDropdown
             :disabled="scoreLoading"
             :items="instrumentList"
@@ -25,6 +26,7 @@
             class="mb-2"
             @update:modelValue="setInstrument($event!)"
           />
+          <div>Difficulty</div>
           <FormDropdown
             :items="new Map([...Array(6).keys()].map((i) => [i.toString(), getDifficulty(i)]))"
             class="mb-2"
@@ -199,6 +201,7 @@ import FormRadio from '@/components/FormRadio.vue'
 import ThePagination from '@/components/ThePagination.vue'
 import ScoreInstrument from '@/components/ScoreInstrument.vue'
 import ScoreBand from '@/components/ScoreBand.vue'
+import StringColorParsed from '@/components/StringColorParsed.vue'
 import defaultSongImg from '../assets/img/song.png'
 
 interface ISongScoresQuery {

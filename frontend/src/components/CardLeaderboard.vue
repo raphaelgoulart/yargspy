@@ -7,7 +7,7 @@
       <div class="px-6 flex flex-col my-auto text-left">
         <span class="font-bold text-lg/5">{{ name }}</span>
         <p class="text-sm my-1 text-slate-300">{{ artist }}</p>
-        <p class="text-xs text-slate-300">{{ charter }}</p>
+        <p class="text-xs text-slate-300"><StringColorParsed :value="charter" /></p>
       </div>
     </div>
   </RouterLink>
@@ -17,6 +17,7 @@
 import { albumArtFinder } from '@/plugins/albumArtFinder'
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import StringColorParsed from './StringColorParsed.vue'
 import defaultSongImg from '../assets/img/song.png'
 
 const props = defineProps({
