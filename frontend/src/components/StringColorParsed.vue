@@ -15,11 +15,11 @@ const props = defineProps({
 })
 
 const parseColorTags = computed((): { item: string | undefined; color: string | undefined }[] => {
-  const split = props.value.split(/(<color="?#\w\w\w\w\w\w"?>)|(<\/color>)/)
+  const split = props.value.split(/(<color="?#?\w+"?>)|(<\/color>)/)
   const out = []
   let currentColor = undefined
   let currentItem = undefined
-  const inPattern = /<color="?(#\w\w\w\w\w\w)"?>/
+  const inPattern = /<color="?(#?\w+)"?>/
   const outPattern = /<\/color>/
   for (const i in split) {
     const item = split[i]
