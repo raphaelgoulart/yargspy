@@ -94,8 +94,19 @@
         <fieldset v-if="instrument != bandString" :disabled="scoreLoading">
           <div class="flex items-center gap-x-3">
             <legend class="text-sm/6">Sort by:</legend>
-            <FormRadio name="sortBy" label="Score" checked @click="setSort(false)" />
-            <FormRadio name="sortBy" label="Notes hit" @click="setSort(true)" />
+            <FormRadio
+              name="sortBy"
+              label="Score"
+              value=""
+              checked
+              @update:modelValue="setSort(false)"
+            />
+            <FormRadio
+              name="sortBy"
+              label="Notes hit"
+              value="1"
+              @update:modelValue="setSort(true)"
+            />
           </div>
         </fieldset>
       </div>
