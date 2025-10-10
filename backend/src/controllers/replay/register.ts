@@ -27,7 +27,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
   const playerScores: ScoreSchemaDocument[] = []
 
   try {
-    const parts = req.parts({ limits: { parts: 4 } })
+    const parts = req.parts({ limits: { parts: 4, fileSize: 5242880 } })
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
     const bodyMap = new Map<keyof IReplayRegisterBody, any>()
 
