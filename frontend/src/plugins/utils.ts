@@ -160,36 +160,3 @@ export function getNumberWithOrdinal(n: number): string {
   const suffix = s[(v - 20) % 10] || s[v] || s[0]
   return n.toString() + suffix
 }
-export function parseColorTags(
-  input: string,
-): { item: string | undefined; color: string | undefined }[] {
-  const split = input.split(/(<color="?#\w\w\w\w\w\w"?>)|(<\/color>)/)
-  const out = []
-  let currentColor = undefined
-  let currentItem = undefined
-  const inPattern = /<color="?(#\w\w\w\w\w\w)"?>/
-  const outPattern = /<\/color>/
-  for (const i in split) {
-    const item = split[i]
-    if (!item) continue
-    const match = item.match(inPattern)
-    if (match) {
-      currentColor = match[1]
-    } else if (outPattern.test(item)) {
-      out.push({
-        item: currentItem,
-        color: currentColor,
-      })
-      currentItem = undefined
-      currentColor = undefined
-    } else {
-      if (currentColor) currentItem = item
-      else
-        out.push({
-          item: item,
-          color: undefined,
-        })
-    }
-  }
-  return out
-}

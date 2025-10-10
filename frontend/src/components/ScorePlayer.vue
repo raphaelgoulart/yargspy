@@ -7,7 +7,9 @@
         >{{ score.song.name }}</RouterLink
       >
       <span v-if="score.songSpeed != 1"> ({{ percent(score.songSpeed) }})</span><br />
-      <span class="text-xs">{{ score.song.artist }} ({{ score.song.charter }})</span>
+      <span class="text-xs"
+        >{{ score.song.artist }} (<StringColorParsed :value="score.song.charter" />)</span
+      >
     </td>
     <td scope="col">
       {{ getInstrument(score.instrument) }}<br />
@@ -112,6 +114,7 @@ import { ref, type PropType } from 'vue'
 import ScorePercent from './ScorePercent.vue'
 import ScoreStars from './ScoreStars.vue'
 import ScoreModifiers from './ScoreModifiers.vue'
+import StringColorParsed from './StringColorParsed.vue'
 import { ArrowDownTrayIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/vue/20/solid'
 import { isGuitar, isDrums, isKeys } from '@/plugins/utils'
 
