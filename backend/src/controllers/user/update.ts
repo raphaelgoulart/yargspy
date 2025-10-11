@@ -25,7 +25,7 @@ const userUpdateHandler: ServerHandler<IUserUpdate> = async function (req, reply
     // TODO: more fields for admin-only editing? username? email?
     await userEdit.save()
     serverReply(reply, 'ok', {
-      userEdit,
+      user: userEdit,
     })
   } else {
     if (profilePhotoURL !== undefined) user.profilePhotoURL = profilePhotoURL
