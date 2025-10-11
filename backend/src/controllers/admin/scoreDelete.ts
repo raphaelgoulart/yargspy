@@ -23,7 +23,7 @@ const adminScoreDeleteHandler: ServerHandler<IAdminScoreDelete> = async function
   if (missingParams.length) throw new ServerError('err_invalid_query', null, { params: missingParams.join(', ') })
 
   const score = await Score.findById(req.body.id)
-  if (!score) throw new ServerError([404, `Score ${req.body.id} not found`])
+  if (!score) throw new ServerError('err_id_not_found', null, { id: req.body.id })
 
   // delete replay file
   const replayPath = score.replayPath

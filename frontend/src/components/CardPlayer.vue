@@ -3,7 +3,11 @@
     class="card-player w-48 max-w-9/10 m-2 border rounded-lg shadow-sm bg-gray-800 border-gray-700 inline-block transition-scale duration-200 hover:scale-103 hover:bg-gray-700"
   >
     <RouterLink :to="to">
-      <img class="rounded-t-lg w-48 h-48 object-cover" :src="profilePhotoUrl" alt="" />
+      <img
+        class="rounded-t-lg w-48 h-48 object-cover"
+        :src="profilePhotoUrl ? profilePhotoUrl : defaultProfilePhoto"
+        alt=""
+      />
     </RouterLink>
     <div class="py-4 text-center">
       <RouterLink :to="to">
@@ -29,7 +33,6 @@ const props = defineProps({
   },
   profilePhotoUrl: {
     type: String,
-    default: defaultProfilePhoto,
   },
   country: {
     type: String,

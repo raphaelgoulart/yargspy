@@ -13,17 +13,16 @@ export interface IUserProfile {
 // #region Handler
 
 const userProfileHandler: ServerHandler<IUserProfile> = async function (req, reply) {
-  let currentUser = null;
-  if (req.headers.authorization) 
+  let currentUser = null
+  if (req.headers.authorization)
     try {
       currentUser = await User.findByToken(req.headers.authorization)
     } catch {}
   const select = []
-  if (currentUser && currentUser.admin) select.push('+email','+emailVerified')
-  const user = req.query.username ? await User.findOne({username: req.query.username}).select(select).lean() : 
-    (currentUser ? await User.findById(currentUser._id).select(select).lean() : null);
+  if (currentUser && currentUser.admin) select.push('+email', '+emailVerified')
+  const user = req.query.username ? await User.findOne({ username: req.query.username }).select(select).lean() : currentUser ? await User.findById(currentUser._id).select(select).lean() : null
   if (!user) {
-    if (req.query.username) throw new ServerError([404, `User ${req.query.username} not found`])
+    if (req.query.username) throw new ServerError('err_login_user_notfound', null, { username: req.query.username })
     else throw new ServerError('err_auth_required')
   }
 
@@ -31,7 +30,7 @@ const userProfileHandler: ServerHandler<IUserProfile> = async function (req, rep
     reply,
     'success_user_profile',
     {
-      user
+      user,
     },
     { username: user.username }
   )

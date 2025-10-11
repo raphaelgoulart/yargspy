@@ -19,7 +19,6 @@
 - [x] Score model (essentially replay file metadata, don't need to be as thorough though since the user can just download the replay for more data);
   - [x] Create tool to verify and extract replay data using YARG.Core (based on [ReplayCli](https://github.com/YARC-Official/YARG.Core/tree/master/ReplayCli))
     - [ ] (maybe) If hosting on server, create cronjob to update the YARG.Core dlls if needed
-- [ ] Edit user (only user itself and admin)
 - [ ] (all endpoints) project/select only fields actually used by front-end to optimize data transfer
 - [ ] finish [Server API Documentation](docs/serverapi.md)
 - [ ] CI/CD

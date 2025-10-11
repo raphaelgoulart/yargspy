@@ -3,7 +3,7 @@ import type { infer as ZodInfer } from 'zod'
 import { ServerError, userUpdateBodySchema } from '../../app.exports'
 import { serverReply } from '../../core.exports'
 import type { ServerHandler, ServerErrorHandler, RouteRequest } from '../../lib.exports'
-import type { UserSchemaDocument } from '../../models/User'
+import { User, type UserSchemaDocument } from '../../models/User'
 
 export interface IUserUpdate {
   body: ZodInfer<typeof userUpdateBodySchema>
@@ -13,15 +13,27 @@ export interface IUserUpdate {
 
 const userUpdateHandler: ServerHandler<IUserUpdate> = async function (req, reply) {
   const user = (req as RouteRequest<{ user: UserSchemaDocument }>).user
-  const isAdmin = user.admin
-  if (isAdmin) {
-    // TODO: Admin editing other user entries or itself
+  const { id, profilePhotoURL, bannerURL } = userUpdateBodySchema.parse(req.body)
+  if (id) {
+    // has id = admin editing someone else
+    const isAdmin = user.admin
+    if (!isAdmin) throw new ServerError('err_invalid_auth_admin')
+    const userEdit = await User.findById(id)
+    if (!userEdit) throw new ServerError('err_id_not_found', null, { id })
+    if (profilePhotoURL !== undefined) userEdit.profilePhotoURL = profilePhotoURL
+    if (bannerURL !== undefined) userEdit.bannerURL = bannerURL
+    // TODO: more fields for admin-only editing? username? email?
+    await userEdit.save()
+    serverReply(reply, 'ok', {
+      userEdit,
+    })
   } else {
-    const { profilePhotoURL } = userUpdateBodySchema.parse(req.body)
-
-    if (profilePhotoURL) user.profilePhotoURL = profilePhotoURL
-
+    if (profilePhotoURL !== undefined) user.profilePhotoURL = profilePhotoURL
+    if (bannerURL !== undefined) user.bannerURL = bannerURL
     await user.save()
+    serverReply(reply, 'ok', {
+      user,
+    })
   }
 }
 

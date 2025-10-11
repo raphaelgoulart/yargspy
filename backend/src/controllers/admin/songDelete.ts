@@ -21,13 +21,13 @@ const adminSongDeleteHandler: ServerHandler<IAdminSongDelete> = async function (
   const missingParams = []
   if (!req.body.id) missingParams.push('id')
   if (!req.body.reason) missingParams.push('reason')
-  if (missingParams.length) throw new ServerError('err_invalid_query', null, {params: missingParams.join(', ')})
-      
+  if (missingParams.length) throw new ServerError('err_invalid_query', null, { params: missingParams.join(', ') })
+
   const song = await Song.findById(req.body.id)
-  if (!song) throw new ServerError([404, `Song ${req.body.id} not found`])
+  if (!song) throw new ServerError('err_id_not_found', null, { id: req.body.id })
 
   // fetch scores for the song; delete their replay file (if it exists), and the DB entries
-  const scores = await Score.find({song: song})
+  const scores = await Score.find({ song: song })
   for (const score of scores) {
     const replayFilePath = getServerFile().gotoFile(`replay/${score.replayPath}.replay`)
     if (replayFilePath.exists) await replayFilePath.delete()
@@ -45,10 +45,7 @@ const adminSongDeleteHandler: ServerHandler<IAdminSongDelete> = async function (
     item: req.body.id,
     reason: req.body.reason,
   }).save()
-  serverReply(
-    reply,
-    'ok'
-  )
+  serverReply(reply, 'ok')
 }
 
 // #region Error Handler
