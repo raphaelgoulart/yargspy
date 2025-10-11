@@ -5,10 +5,10 @@
     <RouterLink :to="to">
       <img class="rounded-t-lg w-48 h-48 object-cover" :src="profilePhotoUrl" alt="" />
     </RouterLink>
-    <div class="p-4 text-center">
+    <div class="py-4 text-center">
       <RouterLink :to="to">
         <span
-          class="inline-flex items-center gap-1 mb-2 text-xl font-semibold tracking-tight text-slate-300"
+          class="inline-flex items-center gap-1 text-xl font-semibold tracking-tight text-slate-300"
         >
           <CountryFlag :code="country" :size="3" />
           {{ username }}
