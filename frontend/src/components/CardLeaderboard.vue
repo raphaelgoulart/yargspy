@@ -7,7 +7,7 @@
       <div class="px-6 flex flex-col my-auto text-left">
         <span class="font-bold text-lg/5">{{ name }}</span>
         <p class="text-sm my-1 text-slate-300">{{ artist }}</p>
-        <p class="text-xs text-slate-300"><StringColorParsed :value="charter" /></p>
+        <p v-if="charter" class="text-xs text-slate-300"><StringColorParsed :value="charter" /></p>
       </div>
     </div>
   </RouterLink>
@@ -31,7 +31,6 @@ const props = defineProps({
   },
   charter: {
     type: String,
-    required: true,
   },
   id: {
     type: String,
