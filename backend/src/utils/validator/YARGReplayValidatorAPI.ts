@@ -320,7 +320,7 @@ export class YARGReplayValidatorAPI {
     const prefix = process.platform === 'win32' ? '' : `${dotnetExecutable} `
     const command = `${prefix}"${validatorPath.fullname}" "${replayFile.path}" -m ${this.readMode.returnSongHash}`
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
-    if (stderr) throw new ServerError('err_unknown', { error: stderr, errorOrigin: 'YARGReplayValidatorAPI.returnSongHash()' })
+    if (stderr) throw new ServerError('err_validator_unknown', { error: stderr, errorOrigin: 'YARGReplayValidatorAPI.returnSongHash()' })
 
     return this.camelCaseKeyTransform<YARGReplayValidatorHashResults>(JSON.parse(stdout))
   }
@@ -364,7 +364,7 @@ export class YARGReplayValidatorAPI {
     if (hopoFreq !== undefined) command += ` -f ${hopoFreq.toString()}`
 
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
-    if (stderr) throw new ServerError('err_unknown', isDev() ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnReplayInfo()' } : {})
+    if (stderr) throw new ServerError('err_validator_unknown', isDev() ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnReplayInfo()' } : {})
 
     return this.formatReplayInfoResults(this.camelCaseKeyTransform<YARGReplayValidatorResults>(JSON.parse(stdout)))
   }
@@ -392,7 +392,7 @@ export class YARGReplayValidatorAPI {
     if (hopoFreq !== undefined) command += ` -f ${hopoFreq.toString()}`
 
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
-    if (stderr) throw new ServerError('err_unknown', isDev() ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnSongInfo()' } : {})
+    if (stderr) throw new ServerError('err_validator_unknown', isDev() ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnSongInfo()' } : {})
 
     return this.camelCaseKeyTransform<FormattedYARGSongResults>(JSON.parse(stdout))
   }

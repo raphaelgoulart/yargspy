@@ -40,6 +40,12 @@
               accept=".ini,.dta"
             />
           </div>
+          <TheAlert class="w-full text-center mt-4" v-if="!loading && !error"
+            ><ExclamationCircleIcon class="size-5 inline" /><span class="align-middle ml-1"
+              >If uploading a <b>.dta</b> file, make sure the only entry in it is the song you're
+              submitting; otherwise, the wrong data may be fetched.</span
+            ></TheAlert
+          >
         </div>
         <TheButton type="submit" @click="upload" :disabled="loading">Submit</TheButton>
       </form>
@@ -95,6 +101,8 @@ async function upload(ev: Event) {
     if (axios.isAxiosError(e) && e.status! < 500) {
       if (e.response?.data.code == 'err_replay_songdata_required') {
         songDataRequired.value = true
+      } else if (e.response?.data.code == 'err_validator_unknown') {
+        error.value = e.response?.data.error
       } else {
         error.value = e.response?.data.message
       }
@@ -102,7 +110,6 @@ async function upload(ev: Event) {
       console.log(e)
       error.value = 'An unknown error has occurred.'
     }
-  } finally {
     loading.value = false
   }
 }

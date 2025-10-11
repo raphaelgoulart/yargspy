@@ -350,7 +350,7 @@ async function fetchScores() {
 async function fetchAlbumArt(artist: string, album: string) {
   const result = await albumArtFinder(artist, album)
   if (result && result.data) {
-    if (result.data.album.image[2]['#text']) imgSrc.value = result.data.album.image[2]['#text']
+    if (result.data.album.image[4]['#text']) imgSrc.value = result.data.album.image[4]['#text']
   }
 }
 
