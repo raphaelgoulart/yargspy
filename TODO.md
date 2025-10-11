@@ -27,5 +27,4 @@
 ## Frontend
 
 - [ ] Admin routes
-- [ ] Edit user
 - [ ] Login via modal if on PC
