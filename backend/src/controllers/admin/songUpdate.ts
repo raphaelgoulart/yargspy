@@ -28,8 +28,8 @@ export interface IAdminSongUpdate {
 const adminSongUpdateHandler: ServerHandler<IAdminSongUpdate> = async function (req, reply) {
   const song = await Song.findById(req.body.id)
   if (!song) {
-    if (req.body.id) throw new ServerError([404, `Song ${req.body.id} not found`])
-    else throw new ServerError('err_invalid_query', null, {params: 'id'})
+    if (req.body.id) throw new ServerError('err_id_not_found', null, { id: req.body.id })
+    else throw new ServerError('err_invalid_query', null, { params: 'id' })
   }
 
   if (req.body.name !== undefined) song.name = req.body.name
@@ -51,13 +51,9 @@ const adminSongUpdateHandler: ServerHandler<IAdminSongUpdate> = async function (
     item: song,
     reason: req.body.reason,
   }).save()
-  serverReply(
-    reply,
-    'ok',
-    {
-      song
-    },
-  )
+  serverReply(reply, 'ok', {
+    song,
+  })
 }
 
 // #region Error Handler

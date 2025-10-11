@@ -1,11 +1,11 @@
-import { TokenError } from "fast-jwt"
+import { TokenError } from 'fast-jwt'
 import { type infer as ZodInfer } from 'zod'
-import { adminUserBanBodySchema, ServerError } from "../../app.exports"
-import { serverReply } from "../../core.exports"
-import type { RouteRequest, ServerErrorHandler, ServerHandler } from "../../lib.exports"
-import { User, type UserSchemaDocument } from "../../models/User"
-import { Score } from "../../models/Score"
-import { AdminAction, AdminLog } from "../../models/AdminLog"
+import { adminUserBanBodySchema, ServerError } from '../../app.exports'
+import { serverReply } from '../../core.exports'
+import type { RouteRequest, ServerErrorHandler, ServerHandler } from '../../lib.exports'
+import { User, type UserSchemaDocument } from '../../models/User'
+import { Score } from '../../models/Score'
+import { AdminAction, AdminLog } from '../../models/AdminLog'
 
 export interface IAdminUserBan {
   body: ZodInfer<typeof adminUserBanBodySchema>
@@ -16,8 +16,8 @@ export interface IAdminUserBan {
 const adminUserBanHandler: ServerHandler<IAdminUserBan> = async function (req, reply) {
   const body = adminUserBanBodySchema.parse(req.body)
   const user = await User.findById(body.id)
-  if (!user) throw new ServerError([404, `User ${body.id} not found`])
-  if (user.active == body.active) throw new ServerError([400, `User already in requested active state`])
+  if (!user) throw new ServerError('err_id_not_found', null, { id: body.id })
+  if (user.active == body.active) throw new ServerError('err_ban_active_state')
   Score.updateMany({ uploader: user }, { $set: { hidden: !body.active } }).then() // toggle user score visibility; this can be async
   user.active = body.active
   await user.save()
@@ -28,14 +28,10 @@ const adminUserBanHandler: ServerHandler<IAdminUserBan> = async function (req, r
     item: user,
     reason: body.reason,
   }).save()
-  serverReply(
-    reply,
-    'ok',
-    {
-      user: user.id,
-      active: user.active
-    },
-  )
+  serverReply(reply, 'ok', {
+    user: user.id,
+    active: user.active,
+  })
 }
 
 // #region Error Handler

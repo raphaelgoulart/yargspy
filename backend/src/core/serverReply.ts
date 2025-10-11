@@ -89,6 +89,7 @@ export const codeMap = {
   err_syntax_json_body: [400, 'Response body JSON has a syntax error: {{additionalMessage}}'],
   err_invalid_query: [400, 'Missing parameters on query: {{params}}'],
   err_captcha: [400, 'Captcha validation failed, please try again'],
+  err_id_not_found: [404, 'Element with id {{id}} not found.'],
   err_unknown: [500, 'An unknown error occurred, please try again later'],
   ok: [200, 'Request completed by the server'],
 
@@ -115,7 +116,7 @@ export const codeMap = {
   // user/login
   err_login_password_validation: [401, "The provided password and the registered user's password don't match"],
   err_login_user_inactive: [401, 'The registered user has been deactivated and is unable to login'],
-  err_login_user_email_unverified: [401, 'The registered user\'s email address has not been verified yet'],
+  err_login_user_email_unverified: [401, "The registered user's email address has not been verified yet"],
   err_login_user_notfound: [400, 'The provided username {{username}} is not registered'],
   err_user_login_no_body: [400, 'No body response provided for user login validation route'],
   err_user_login_no_password: [400, 'No password provided for user login validation'],
@@ -142,7 +143,10 @@ export const codeMap = {
   success_replay_register: [201, 'Your score was registered successfully'],
   success_replay_and_song_register: [201, 'Your score and song was registered successfully'],
   err_replay_no_valid_players: [400, 'Provided YARG REPLAY file only contains players that played using custom engines unsupported by the server, score registering has been aborted'],
-  err_replay_no_notes_hit: [400, 'No player has hit any notes in this YARG REPLAY file']
+  err_replay_no_notes_hit: [400, 'No player has hit any notes in this YARG REPLAY file'],
+
+  // admin/userBan
+  err_ban_active_state: [400, `User already in requested active state`],
 } as const
 
 export type ReplyCodeNames = keyof typeof codeMap

@@ -24,7 +24,7 @@
           <TheButton v-if="user._id != auth.user._id" color="red" class="mr-1">{{
             user.active ? 'Ban user' : 'Unban user'
           }}</TheButton>
-          <TheButton>Edit profile</TheButton>
+          <TheButton @click="editOpen = true">Edit profile</TheButton>
         </div>
       </div>
     </div>
@@ -40,7 +40,7 @@
         <div class="w-full p-4 pb-2 sm:border rounded-md border-gray-800">
           <p class="mb-5 font-bold text-lg/5 text-white">General info</p>
           <p class="mb-2"><b>Joined: </b>{{ convertedDateTime(user.createdAt) }}</p>
-          <p class="mb-2"><b>Last active at: </b>{{ convertedDateTime(user.updatedAt) }}</p>
+          <p class="mb-2"><b>Last active: </b>{{ convertedDateTime(user.updatedAt) }}</p>
           <p v-if="scores" class="mb-2">
             <b>Submitted runs: </b> {{ scores.totalEntries.toLocaleString() }}
           </p>
@@ -87,6 +87,83 @@
       </div>
     </div>
   </div>
+  <TransitionRoot appear :show="editOpen" as="template">
+    <Dialog as="div" @close="editOpen = false" class="relative z-10">
+      <TransitionChild
+        as="template"
+        enter="duration-300 ease-out"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="duration-200 ease-in"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-black/25" />
+      </TransitionChild>
+
+      <div class="fixed inset-0 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center">
+          <TransitionChild
+            as="template"
+            enter="duration-300 ease-out"
+            enter-from="opacity-0 scale-95"
+            enter-to="opacity-100 scale-100"
+            leave="duration-200 ease-in"
+            leave-from="opacity-100 scale-100"
+            leave-to="opacity-0 scale-95"
+          >
+            <DialogPanel
+              class="w-full max-w-md transform overflow-hidden rounded-md bg-gray-800 p-6 text-left align-middle shadow-xl transition-all"
+            >
+              <DialogTitle as="span" class="text-lg font-medium leading-6 text-white">
+                Edit Profile
+              </DialogTitle>
+              <div class="mt-2">
+                <form ref="editForm">
+                  <FormInput
+                    name="profilePhotoURL"
+                    label="Profile Picture URL"
+                    placeholder="https://..."
+                    v-model="editData.profilePhotoURL"
+                  />
+                  <div class="flex my-2">
+                    <img
+                      class="size-16 rounded-sm object-cover"
+                      :src="editData.profilePhotoURL ? editData.profilePhotoURL : defaultPlayerImg"
+                    />
+                    <span class="text-sm font-medium pl-1">Preview</span>
+                  </div>
+                  <FormInput
+                    name="bannerURL"
+                    label="Banner URL"
+                    placeholder="https://..."
+                    v-model="editData.bannerURL"
+                  />
+                  <img
+                    class="rounded-sm w-full h-16 mt-2 object-cover"
+                    :src="editData.bannerURL"
+                    v-show="editData.bannerURL"
+                  />
+                </form>
+              </div>
+              <div class="mt-4">
+                <TheButton type="submit" @click="editProfile" :disabled="editLoading"
+                  >Save</TheButton
+                >
+              </div>
+              <LoadingSpinner v-if="editLoading" class="text-center mt-2" />
+              <TheAlert v-if="editError" color="red" class="text-center mt-2">
+                <div>
+                  <ExclamationCircleIcon class="size-5 inline" />
+                  <span class="align-middle ml-1">{{ editError }}</span>
+                </div>
+              </TheAlert>
+            </DialogPanel>
+          </TransitionChild>
+        </div>
+      </div>
+    </Dialog>
+  </TransitionRoot>
 </template>
 
 <script setup lang="ts">
@@ -101,11 +178,14 @@ import type { IUser, IScoreEntriesResponse } from '@/plugins/types'
 import { useAuthStore } from '@/stores/auth'
 import { ExclamationCircleIcon, ExclamationTriangleIcon } from '@heroicons/vue/20/solid'
 import axios from 'axios'
-import { ref } from 'vue'
+import { ref, toRaw } from 'vue'
 import { useRoute } from 'vue-router'
 import ThePagination from '@/components/ThePagination.vue'
 import { convertedDateTime } from '@/plugins/utils'
 import defaultPlayerImg from '../assets/img/avatar.jpg'
+import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
+import FormInput from '@/components/FormInput.vue'
+import { toast } from 'vue-sonner'
 
 const loading = ref(true)
 const scoreLoading = ref(true)
@@ -115,7 +195,17 @@ const user = ref(null as IUser | null)
 const scores = ref(null as IScoreEntriesResponse | null)
 
 const imgSrc = ref(defaultPlayerImg)
-const bannerSrc = ref("url('https://yarg.in/notes.webp'), url('https://yarg.in/gradient.webp')")
+const defaultBannerSrc = "url('https://yarg.in/notes.webp'), url('https://yarg.in/gradient.webp')"
+const bannerSrc = ref(defaultBannerSrc)
+
+const editOpen = ref(false)
+const editForm = ref()
+const editData = ref({
+  profilePhotoURL: undefined as string | undefined,
+  bannerURL: undefined as string | undefined,
+})
+const editLoading = ref(false)
+const editError = ref('')
 
 interface IPlayerScoresQuery {
   id: string
@@ -131,10 +221,8 @@ fetchUser()
 async function fetchUser() {
   try {
     const result = await api.get('user/profile', { params: { username: route.params.username } })
-    user.value = result.data.user
+    updateUser(result.data.user)
     fetchScores()
-    if (user.value?.profilePhotoURL) imgSrc.value = user.value.profilePhotoURL
-    if (user.value?.bannerURL) bannerSrc.value = `url('${encodeURI(user.value.bannerURL)}')`
   } catch (e) {
     if (axios.isAxiosError(e) && e.status! < 500) {
       error.value = `An error occurred: ${e.response?.data.message} (${e.response?.status})`
@@ -146,6 +234,17 @@ async function fetchUser() {
     loading.value = false
   }
 }
+
+function updateUser(result: IUser) {
+  user.value = result
+  imgSrc.value = user.value.profilePhotoURL ? user.value.profilePhotoURL : defaultPlayerImg
+  editData.value.profilePhotoURL = user.value.profilePhotoURL
+  bannerSrc.value = user.value.bannerURL
+    ? `url('${encodeURI(user.value.bannerURL)}')`
+    : defaultBannerSrc
+  editData.value.bannerURL = user.value.bannerURL
+}
+
 async function fetchScores() {
   scoreLoading.value = true
   error.value = ''
@@ -178,6 +277,41 @@ function setLimit(i: number) {
   limit.value = i
   fetchScores()
 }
+
+/* const editOpen = ref(false)
+const editForm = ref()
+const editData = ref({
+  profilePhotoURL: undefined as string | undefined,
+  bannerURL: undefined as string | undefined,
+})
+const editLoading = ref(false)
+const editError = ref('') */
+
+async function editProfile(ev: Event) {
+  ev.preventDefault()
+  editLoading.value = true
+  editError.value = ''
+  const params = structuredClone(toRaw(editData.value)) as Record<string, string | undefined>
+  if (auth.user && auth.user.admin && user.value?._id != auth.user._id)
+    params['id'] = user.value?._id // admin editing someone else
+  try {
+    const result = await api.post('/user/update', params)
+    updateUser(result.data.user)
+    toast.success('User updated succesfully!')
+    editOpen.value = false
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.status! < 500) {
+      editError.value = e.response?.data.message
+    } else {
+      console.log(e)
+      editError.value = 'An unknown error has occurred.'
+    }
+  } finally {
+    editLoading.value = false
+  }
+}
+
+// TODO: ban modal
 </script>
 
 <style scoped>

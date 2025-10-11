@@ -15,17 +15,13 @@ export interface ISongData {
 const songDataHandler: ServerHandler<ISongData> = async function (req, reply) {
   const song = await Song.findById(req.query.id)
   if (!song) {
-    if (req.query.id) throw new ServerError([404, `Song ${req.query.id} not found`])
-    else throw new ServerError('err_invalid_query', null, {params: 'id'})
+    if (req.query.id) throw new ServerError('err_id_not_found', null, { id: req.query.id })
+    else throw new ServerError('err_invalid_query', null, { params: 'id' })
   }
 
-  serverReply(
-    reply,
-    'ok',
-     {
-     song
-    },
-  )
+  serverReply(reply, 'ok', {
+    song,
+  })
 }
 
 // #region Error Handler

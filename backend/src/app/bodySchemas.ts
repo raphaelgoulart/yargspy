@@ -64,35 +64,9 @@ export const userRegisterBodySchema = zod.object({
 })
 
 export const userUpdateBodySchema = zod.object({
+  id: zod.string().optional(), // for admin queries
   profilePhotoURL: zod.union([zod.url(), zod.string()]).optional(),
-  // username: {
-  //       type: String,
-  //       required: true,
-  //     },
-  //     password: {
-  //       type: String,
-  //       required: true,
-  //       select: false,
-  //     },
-  //     profilePhotoURL: {
-  //       type: String,
-  //     },
-  //     active: {
-  //       type: Boolean,
-  //       default: true,
-  //     },
-  //     admin: {
-  //       type: Boolean,
-  //       default: false,
-  //     },
-  //     createdAt: {
-  //       type: Schema.Types.Date,
-  //       default: Date.now(),
-  //     },
-  //     updatedAt: {
-  //       type: Schema.Types.Date,
-  //       default: Date.now(),
-  //     },
+  bannerURL: zod.union([zod.url(), zod.string()]).optional(),
 })
 
 export const adminUserBanBodySchema = zod.object({

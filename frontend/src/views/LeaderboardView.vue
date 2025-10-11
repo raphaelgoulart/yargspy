@@ -15,7 +15,7 @@
           ><span v-if="song.year">, {{ song.year.replace(',', '').trim() }}</span>
         </p>
         <p v-if="song.album" class="mb-2">From <StringColorParsed :value="song.album" /></p>
-        <p><b>Charted by: </b><StringColorParsed :value="song.charter" /></p>
+        <p v-if="song.charter"><b>Charted by: </b><StringColorParsed :value="song.charter" /></p>
         <hr class="my-4 text-gray-700" />
         <div v-if="Object.keys(instruments).length">
           <div>Instrument</div>
