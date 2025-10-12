@@ -8,9 +8,9 @@
       >
       <span v-if="score.songSpeed != 1"> ({{ percent(score.songSpeed) }})</span><br />
       <span class="text-xs"
-        >{{ score.song.artist }}
-        <span v-if="score.song.charter"
-          >(<StringColorParsed :value="score.song.charter" />)</span
+        ><StringColorParsed :value="score.song.artist" />
+        <span v-if="score.song.charter">
+          (<StringColorParsed :value="score.song.charter" />)</span
         ></span
       >
     </td>

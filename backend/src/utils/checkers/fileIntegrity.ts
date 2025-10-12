@@ -20,6 +20,7 @@ export const checkChartFilesIntegrity = async (chartPath: FilePath, midiPath: Fi
 
     // Excluding BOM from UTF-8 files (if any)
     if (chartMagicBytes.toLowerCase().startsWith('efbbbf')) chartMagicBytes = Buffer.from(chartMagicBytes.substring(6), 'hex').toString()
+    else chartMagicBytes = Buffer.from(chartMagicBytes.substring(0, 12), 'hex').toString()
     if (chartMagicBytes !== '[Song]' && chartMagicBytes !== '[song]') {
       throw new ServerError('err_replay_invalid_chart_file')
     }
