@@ -11,8 +11,9 @@
       <div v-if="song" class="pt-2">
         <h2 class="text-4xl mb-2 font-semibold">{{ song.name }}</h2>
         <p class="text-2xl mb-2">
-          by <span class="font-medium">{{ song.artist }}</span
-          ><span v-if="song.year">, {{ song.year.replace(',', '').trim() }}</span>
+          by <StringColorParsed :value="song.artist" class="font-medium" /><span v-if="song.year"
+            >, {{ song.year.replace(',', '').trim() }}</span
+          >
         </p>
         <p v-if="song.album" class="mb-2">From <StringColorParsed :value="song.album" /></p>
         <p v-if="song.charter"><b>Charted by: </b><StringColorParsed :value="song.charter" /></p>

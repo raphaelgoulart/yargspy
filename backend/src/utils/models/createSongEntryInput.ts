@@ -56,7 +56,12 @@ export const createSongEntryInput = async (chartFilePath: FilePath, chartFileHas
     newSongEntryMap.set('hopoFrequency', hopo_threshold ?? 170)
   } else {
     const iniString = await songDataPath.read('utf8')
-    const ini = iniParser(iniString.replaceAll('#', '\\#').replaceAll('\\\\#', '\\#')) as INISongDataObject
+    const ini = iniParser(
+      iniString
+        .replace(/^\uFEFF/g, '')
+        .replaceAll('#', '\\#')
+        .replaceAll('\\\\#', '\\#')
+    ) as INISongDataObject
     // replace is needed because # is a valid character in CH .inis
 
     if (!ini.song && !ini.Song) throw new ServerError('err_unknown', { error: `No Song/song attribute found while trying to parse INI file "${songDataPath.path}"` })
