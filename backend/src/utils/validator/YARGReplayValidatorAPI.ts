@@ -358,10 +358,11 @@ export class YARGReplayValidatorAPI {
     if (song.fiveLaneDrums !== undefined) command += ` -g ${booleanToString(song.fiveLaneDrums)}`
     if (song.sustainCutoffThreshold !== undefined) command += ` -s ${song.sustainCutoffThreshold.toString()}`
     if (song.multiplierNote !== undefined) command += ` -n ${song.multiplierNote.toString()}`
+    if (song.hopoFrequency !== undefined) command += ` -h ${song.hopoFrequency.toString()}`
 
     // Other input params
     if (eighthNoteHopo !== undefined) command += ` -e ${booleanToString(eighthNoteHopo)}`
-    if (hopoFreq !== undefined) command += ` -f ${hopoFreq.toString()}`
+    if (song.hopoFrequency === undefined && hopoFreq !== undefined) command += ` -f ${hopoFreq.toString()}`
 
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
     if (stderr) throw new ServerError('err_validator_unknown', isDev() ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnReplayInfo()' } : {})
