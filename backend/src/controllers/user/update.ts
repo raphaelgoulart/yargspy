@@ -30,7 +30,7 @@ const userUpdateHandler: ServerHandler<IUserUpdate> = async function (req, reply
   } else {
     if (profilePhotoURL !== undefined) user.profilePhotoURL = profilePhotoURL
     if (bannerURL !== undefined) user.bannerURL = bannerURL
-    await user.save()
+    await user.setCountryAndSave(req)
     serverReply(reply, 'ok', {
       user,
     })
