@@ -32,4 +32,3 @@
   - [ ] add song
   - [ ] delete song
   - [ ] update song
-- [ ] Login via modal if on PC

@@ -30,7 +30,7 @@
           </span>
           <HeaderLink @click="logout"> Log out </HeaderLink>
         </div>
-        <HeaderLink to="/login" v-else
+        <HeaderLink @click="login" v-else
           >Log in
           <span aria-hidden="true"
             ><ArrowLongRightIcon class="size-5 inline" aria-hidden="true" /></span
@@ -74,6 +74,22 @@
       </DialogPanel>
     </Dialog>
   </header>
+  <TheModal :open="modalOpen" :title="modalTitle" @close="modalOpen = false">
+    <div class="mt-2">
+      <LoginForm
+        v-if="modalState == 0"
+        @register="modalState = 1"
+        @forgot-password="modalState = 2"
+        @login="modalOpen = false"
+      />
+      <RegisterForm
+        v-else-if="modalState == 1"
+        @login="modalState = 0"
+        @register="modalState = 0"
+      />
+      <PasswordForgotForm v-else-if="modalState == 2" @register="modalState = 1" />
+    </div>
+  </TheModal>
 </template>
 
 <script setup lang="ts">
@@ -84,6 +100,11 @@ import HeaderLink from './HeaderLink.vue'
 import { useAuthStore } from '@/stores/auth'
 import { toast } from 'vue-sonner'
 import yargspyW from '../assets/img/yargspy-W.png'
+import { useRoute, useRouter } from 'vue-router'
+import TheModal from './TheModal.vue'
+import LoginForm from './LoginForm.vue'
+import RegisterForm from './RegisterForm.vue'
+import PasswordForgotForm from './PasswordForgotForm.vue'
 
 const navigation = [
   { name: 'Players', to: '/player', logged: false },
@@ -93,10 +114,28 @@ const navigation = [
 ]
 
 const auth = useAuthStore()
-
 const mobileMenuOpen = ref(false)
-
 const filteredNavigation = computed(() => navigation.filter((item) => !item.logged || auth.user))
+const route = useRoute()
+const router = useRouter()
+const modalOpen = ref(false)
+const modalState = ref(0) // 0 = login, 1 = register, 2 = forgotpassword
+const modalTitle = computed(() => {
+  if (modalState.value == 1) return 'Register'
+  if (modalState.value == 2) return 'Forgot your password?'
+  return 'Log in'
+})
+
+function login() {
+  if (route.name == 'login' || modalOpen.value) return
+  if (['register', 'verify', 'passwordForgot', 'passwordReset'].includes(route.name as string)) {
+    router.push('/login')
+    return
+  }
+  modalState.value = 0
+  modalOpen.value = true
+}
+
 function logout() {
   auth.logout()
   toast.success('Logged out successfully!')
