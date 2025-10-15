@@ -27,4 +27,10 @@
 ## Frontend
 
 - [ ] Admin routes
+  - [ ] logs
+  - [ ] delete score
+  - [ ] add song
+  - [ ] delete song
+  - [ ] update song
+  - [ ] (un)ban user
 - [ ] Login via modal if on PC

@@ -28,20 +28,27 @@ const SongEntriesHandler: ServerHandler<ISongEntries> = async function (req, rep
   if (charter) filter['charter'] = { $regex: charter, $options: 'i' }
   let sortingString: string | undefined
   if (sort) {
-    switch (sort){
-      case Sort.Name: sortingString = "name"; break;
-      case Sort.Artist: sortingString = "artist"; break;
-      case Sort.Charter: sortingString = "charter"; break;
-      default: break;
+    switch (sort) {
+      case Sort.Name:
+        sortingString = 'name'
+        break
+      case Sort.Artist:
+        sortingString = 'artist'
+        break
+      case Sort.Charter:
+        sortingString = 'charter'
+        break
+      default:
+        break
     }
-    if (sortingString) sortingString = (descending ? "-" : "") + sortingString
+    if (sortingString) sortingString = (descending ? '-' : '') + sortingString
   }
 
   const [allSongs, totalEntries] = await Promise.all([
     // .collation() is needed for case-insensitive sorting
-    Song.find(filter).collation({ locale: "en" }).sort(sortingString).skip(skip).limit(limit),
-    Song.countDocuments(filter)
-  ]);
+    Song.find(filter).collation({ locale: 'en' }).sort(sortingString).skip(skip).limit(limit),
+    Song.countDocuments(filter),
+  ])
   const totalPages = Math.ceil(totalEntries / limit)
 
   serverReply(reply, 'ok', {
@@ -75,7 +82,7 @@ const SongEntriesErrorHandler: ServerErrorHandler = function (error, req, reply)
 
 // #region Controller
 
-export const SongEntriesController = {
+export const songEntriesController = {
   errorHandler: SongEntriesErrorHandler,
   handler: SongEntriesHandler,
 } as const
