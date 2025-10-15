@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { songLeaderboardController, songDataController, SongEntriesController } from '../controllers.exports'
+import { songLeaderboardController, songDataController, songEntriesController, songHashToIdController } from '../controllers.exports'
 
 export default function SongRoute(app: FastifyInstance) {
   app.route({
@@ -20,6 +20,13 @@ export default function SongRoute(app: FastifyInstance) {
     method: ['GET', 'HEAD'],
     url: '/song/entries',
     logLevel: 'warn',
-    ...SongEntriesController,
+    ...songEntriesController,
+  })
+
+  app.route({
+    method: ['GET', 'HEAD'],
+    url: '/song/hashToId',
+    logLevel: 'warn',
+    ...songHashToIdController,
   })
 }

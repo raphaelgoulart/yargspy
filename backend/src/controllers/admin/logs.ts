@@ -16,29 +16,26 @@ export interface IAdminLogs {
 const adminLogsHandler: ServerHandler<IAdminLogs> = async function (req, reply) {
   const { page, limit, admin, action, startDate, endDate } = adminLogsQuerystringSchema.parse(req.query)
   const skip = (page - 1) * limit
-  const filter = {} as Record<string,any>
-  if (admin !== undefined) filter['admin'] = admin;
-  if (Number(action) >= 0) filter['action'] = action;
+  const filter = {} as Record<string, any>
+  if (admin !== undefined) filter['admin'] = admin
+  if (Number(action) >= 0) filter['action'] = action
   if (startDate !== undefined || endDate !== undefined) {
-    const date = {} as Record<string,any>
+    const date = {} as Record<string, any>
     if (startDate !== undefined) date['$gte'] = startDate
     if (endDate !== undefined) date['$lte'] = endDate
     filter['createdAt'] = date
   }
-  
-  const [actions, totalEntries] = await Promise.all([
-    AdminLog.find(filter).sort('-createdAt').skip(skip).limit(limit),
-    AdminLog.countDocuments(filter)
-  ]);
+
+  const [actions, totalEntries] = await Promise.all([AdminLog.find(filter).sort('-createdAt').skip(skip).limit(limit).populate('admin', 'username'), AdminLog.countDocuments(filter)])
   const totalPages = Math.ceil(totalEntries / limit)
-  
+
   serverReply(reply, 'ok', {
     totalEntries,
     totalPages,
     page,
     limit,
-    entries: actions
-    })
+    entries: actions,
+  })
 }
 
 // #region Error Handler

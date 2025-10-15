@@ -27,4 +27,8 @@
 ## Frontend
 
 - [ ] Admin routes
-- [ ] Login via modal if on PC
+  - [ ] logs
+  - [ ] delete score
+  - [ ] add song
+  - [ ] delete song
+  - [ ] update song
