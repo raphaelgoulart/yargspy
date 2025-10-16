@@ -22,7 +22,7 @@
           item.name
         }}</HeaderLink>
         <!-- ADMIN ITEMS -->
-        <Popover class="relative" v-if="auth.user?.admin" v-slot="{ open }">
+        <Popover class="relative" v-if="auth.user?.admin" v-slot="{ open, close }">
           <PopoverButton
             class="flex items-center gap-x-1 text-sm/6 font-semibold text-white hover:text-slate-300 hover:cursor-pointer focus:outline-none"
           >
@@ -61,7 +61,7 @@
                     />
                   </div>
                   <div class="flex-auto">
-                    <RouterLink :to="item.to" class="block font-semibold text-white">
+                    <RouterLink :to="item.to" class="block font-semibold text-white" @click="close">
                       {{ item.name }}
                       <span class="absolute inset-0" />
                     </RouterLink>

@@ -27,7 +27,7 @@
       }}</span>
     </td>
     <td scope="col">
-      <ScorePercent :n="score.percent!" />
+      <ScorePercent :n="score.percent!" :notesHit="score.notesHit" :maxCombo="score.maxCombo" />
     </td>
     <td scope="col">
       {{ convertedDateTime(score.createdAt, true) }}
