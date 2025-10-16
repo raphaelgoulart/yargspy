@@ -140,6 +140,26 @@ export function getVersion(index: number) {
   }
   return 'Unknown'
 }
+
+export function getAdminLogAction(index: number) {
+  switch (index) {
+    case 0:
+      return 'Ban User'
+    case 1:
+      return 'Unban User'
+    case 2:
+      return 'Add Song'
+    case 3:
+      return 'Update Song'
+    case 4:
+      return 'Delete Song'
+    case 5:
+      return 'Delete Score'
+    case 6:
+      return 'Update User'
+  }
+  return 'Unknown'
+}
 //
 
 export function isGuitar(gameMode: number) {

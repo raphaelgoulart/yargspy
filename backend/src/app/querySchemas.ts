@@ -20,10 +20,7 @@ export const userEntriesQuerystringSchema = zod.object({
       if (isNaN(num)) throw new ServerError('err_invalid_input')
       return num
     }),
-  username: zod
-    .string()
-    .min(3).max(32)
-    .optional()
+  username: zod.string().min(3).max(32).optional(),
 })
 
 export const songEntriesQuerystringSchema = zod.object({
@@ -45,15 +42,9 @@ export const songEntriesQuerystringSchema = zod.object({
       if (isNaN(num)) throw new ServerError('err_invalid_input')
       return num
     }),
-  name: zod
-    .string()
-    .optional(),
-  artist: zod
-    .string()
-    .optional(),
-  charter: zod
-    .string()
-    .optional(),
+  name: zod.string().optional(),
+  artist: zod.string().optional(),
+  charter: zod.string().optional(),
   sort: zod
     .string()
     .optional()
@@ -63,9 +54,7 @@ export const songEntriesQuerystringSchema = zod.object({
       if (isNaN(num)) throw new ServerError('err_invalid_input')
       return num
     }),
-  descending: zod
-    .string()
-    .optional()
+  descending: zod.string().optional(),
 })
 
 export const userScoresQuerystringSchema = zod.object({
@@ -87,9 +76,7 @@ export const userScoresQuerystringSchema = zod.object({
       if (isNaN(num)) throw new ServerError('err_invalid_input')
       return num
     }),
-  id: zod
-    .string()
-    .nonempty()
+  id: zod.string().nonempty(),
 })
 
 export const adminLogsQuerystringSchema = zod.object({
@@ -111,9 +98,7 @@ export const adminLogsQuerystringSchema = zod.object({
       if (isNaN(num)) throw new ServerError('err_invalid_input')
       return num
     }),
-  admin: zod
-    .string()
-    .optional(),
+  admin: zod.string().optional(),
   action: zod
     .string()
     .optional()
@@ -123,6 +108,7 @@ export const adminLogsQuerystringSchema = zod.object({
       if (isNaN(num)) throw new ServerError('err_invalid_input')
       return num
     }),
+  item: zod.string().optional(),
   startDate: zod.iso.datetime().optional(),
   endDate: zod.iso.datetime().optional(),
 })

@@ -13,12 +13,11 @@ const passwordZodObject = zod
   // In the end, any symbol is required
   .regex(/[^A-Za-z0-9]/)
 
-const hCaptchaZodObject = zod
-  .object({
-    captcha: zod.object({
-      response: zod.string().nonoptional(),
-    }),
-  })
+const hCaptchaZodObject = zod.object({
+  captcha: zod.object({
+    response: zod.string().nonoptional(),
+  }),
+})
 
 export const userLoginBodySchema = zod.object({
   username: zod.string().nonempty().min(3).max(32),
@@ -60,11 +59,12 @@ export const userRegisterBodySchema = zod.object({
 
   password: passwordZodObject,
   email: zod.email(),
-  h: hCaptchaZodObject
+  h: hCaptchaZodObject,
 })
 
 export const userUpdateBodySchema = zod.object({
   id: zod.string().optional(), // for admin queries
+  reason: zod.string().optional(), // for admin queries
   profilePhotoURL: zod.union([zod.url(), zod.string()]).optional(),
   bannerURL: zod.union([zod.url(), zod.string()]).optional(),
 })
@@ -72,11 +72,11 @@ export const userUpdateBodySchema = zod.object({
 export const adminUserBanBodySchema = zod.object({
   id: zod.string().nonoptional(),
   active: zod.boolean().nonoptional(),
-  reason: zod.string().nonempty()
+  reason: zod.string().nonempty(),
 })
 
 export const userPasswordResetBodySchema = zod.object({
   token: zod.string().min(10),
   password: passwordZodObject,
-  h: hCaptchaZodObject
+  h: hCaptchaZodObject,
 })

@@ -78,6 +78,16 @@ export interface IScore {
   __v: number
 }
 
+export interface IAdminLog {
+  __v: number
+  _id: string
+  action: number
+  admin: { _id: string; username: string }
+  createdAt: string
+  item: string
+  reason?: string
+}
+
 export interface IUserEntriesResponse extends IEntriesResponse {
   entries: IUser[]
 }
@@ -88,6 +98,10 @@ export interface ILeaderboardEntriesResponse extends IEntriesResponse {
 
 export interface IScoreEntriesResponse extends IEntriesResponse {
   entries: IScore[]
+}
+
+export interface IAdminLogEntriesResponse extends IEntriesResponse {
+  entries: IAdminLog[]
 }
 
 export const GameMode = {
@@ -119,4 +133,14 @@ export const Difficulty = {
   Hard: 3,
   Expert: 4,
   ExpertPlus: 5,
+} as const
+
+export const AdminAction = {
+  UserBan: 0,
+  UserUnban: 1,
+  SongAdd: 2,
+  SongUpdate: 3,
+  SongDelete: 4,
+  ScoreDelete: 5,
+  UserUpdate: 6,
 } as const

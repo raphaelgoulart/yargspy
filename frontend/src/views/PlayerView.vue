@@ -43,6 +43,7 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="w-full p-4 pb-2 sm:border rounded-md border-gray-800">
           <p class="mb-5 font-bold text-lg/5 text-white">General info</p>
+          <p class="mb-2" v-if="auth.user?.admin"><b>User ID: </b>{{ user._id }}</p>
           <p class="mb-2"><b>Joined: </b>{{ convertedDateTime(user.createdAt) }}</p>
           <p class="mb-2"><b>Last active: </b>{{ convertedDateTime(user.updatedAt) }}</p>
           <p v-if="scores" class="mb-2">
@@ -114,9 +115,16 @@
           v-model="editData.bannerURL"
         />
         <img
-          class="rounded-sm w-full h-16 mt-2 object-cover"
+          class="rounded-sm w-full h-16 my-2 object-cover"
           :src="editData.bannerURL"
           v-show="editData.bannerURL"
+        />
+        <FormTextarea
+          name="reason"
+          label="Reason"
+          v-model="editReason"
+          v-if="auth.user?._id != user?._id"
+          required
         />
       </form>
     </div>
@@ -205,6 +213,7 @@ const editData = ref({
 })
 const editLoading = ref(false)
 const editError = ref('')
+const editReason = ref('')
 
 const banOpen = ref(false)
 const banForm = ref()
@@ -286,11 +295,14 @@ function setLimit(i: number) {
 
 async function editProfile(ev: Event) {
   ev.preventDefault()
+  if (!editForm.value.reportValidity()) return
   editLoading.value = true
   editError.value = ''
   const params = structuredClone(toRaw(editData.value)) as Record<string, string | undefined>
-  if (auth.user && auth.user.admin && user.value?._id != auth.user._id)
+  if (auth.user && auth.user.admin && user.value?._id != auth.user._id) {
     params['id'] = user.value?._id // admin editing someone else
+    params['reason'] = editReason.value
+  }
   try {
     const result = await api.post('/user/update', params)
     updateUser(result.data.user)

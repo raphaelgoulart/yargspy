@@ -14,11 +14,12 @@ export interface IAdminLogs {
 // #region Handler
 
 const adminLogsHandler: ServerHandler<IAdminLogs> = async function (req, reply) {
-  const { page, limit, admin, action, startDate, endDate } = adminLogsQuerystringSchema.parse(req.query)
+  const { page, limit, admin, action, item, startDate, endDate } = adminLogsQuerystringSchema.parse(req.query)
   const skip = (page - 1) * limit
   const filter = {} as Record<string, any>
   if (admin !== undefined) filter['admin'] = admin
   if (Number(action) >= 0) filter['action'] = action
+  if (item !== undefined) filter['item'] = item
   if (startDate !== undefined || endDate !== undefined) {
     const date = {} as Record<string, any>
     if (startDate !== undefined) date['$gte'] = startDate

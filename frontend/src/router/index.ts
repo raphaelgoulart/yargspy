@@ -110,7 +110,20 @@ const router = createRouter({
       component: StandardView,
       children: [{ path: '', name: 'tospp', component: () => import('../views/ToSPPView.vue') }],
     },
-    // TODO: admin routes
+    // admin routes
+    {
+      path: '/admin',
+      component: StandardView,
+      meta: { requiresAdmin: true },
+      children: [
+        {
+          path: 'songAdd',
+          name: 'adminSongAdd',
+          component: () => import('../views/AdminSongAddView.vue'),
+        },
+        { path: 'logs', name: 'adminLogs', component: () => import('../views/AdminLogsView.vue') },
+      ],
+    },
   ],
 })
 

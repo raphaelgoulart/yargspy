@@ -1,5 +1,5 @@
 <template>
-  <header class="absolute inset-x-0 top-0 z-50">
+  <header class="absolute inset-x-0 top-0 z-1">
     <nav class="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
       <div class="flex pr-7.5">
         <RouterLink to="/" class="-m-1.5 p-1.5">
@@ -21,6 +21,57 @@
         <HeaderLink v-for="item in filteredNavigation" :key="item.name" :to="item.to">{{
           item.name
         }}</HeaderLink>
+        <!-- ADMIN ITEMS -->
+        <Popover class="relative" v-if="auth.user?.admin" v-slot="{ open }">
+          <PopoverButton
+            class="flex items-center gap-x-1 text-sm/6 font-semibold text-white hover:text-slate-300 hover:cursor-pointer focus:outline-none"
+          >
+            Admin
+            <ChevronDownIcon
+              :class="[open ? 'rotate-180' : '']"
+              class="size-5 flex-none text-gray-500"
+              aria-hidden="true"
+            />
+          </PopoverButton>
+
+          <Transition
+            enter-active-class="transition ease-out duration-200"
+            enter-from-class="opacity-0 translate-y-1"
+            enter-to-class="translate-y-0"
+            leave-active-class="transition ease-in duration-150"
+            leave-from-class="translate-y-0"
+            leave-to-class="opacity-0 translate-y-1"
+          >
+            <PopoverPanel
+              class="absolute left-1/2 z-10 mt-3 w-screen max-w-md -translate-x-1/2 overflow-hidden rounded-3xl bg-gray-800 outline-1 -outline-offset-1 outline-white/10"
+            >
+              <div class="p-4">
+                <div
+                  v-for="item in adminNavigation"
+                  :key="item.name"
+                  class="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-white/5"
+                >
+                  <div
+                    class="flex size-11 flex-none items-center justify-center rounded-lg bg-gray-700/50 group-hover:bg-gray-700"
+                  >
+                    <component
+                      :is="item.icon"
+                      class="size-6 text-gray-400 group-hover:text-white"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <div class="flex-auto">
+                    <RouterLink :to="item.to" class="block font-semibold text-white">
+                      {{ item.name }}
+                      <span class="absolute inset-0" />
+                    </RouterLink>
+                  </div>
+                </div>
+              </div>
+            </PopoverPanel>
+          </Transition>
+        </Popover>
+        <!-- -->
       </div>
       <div class="hidden lg:flex lg:flex-1 lg:justify-end">
         <div v-if="auth.user" class="flex gap-x-6">
@@ -64,9 +115,36 @@
                   item.name
                 }}</HeaderLink>
               </div>
+              <Disclosure as="div" class="-mx-3" v-slot="{ open }" v-if="auth.user?.admin">
+                <DisclosureButton
+                  class="flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-white hover:bg-white/5 hover:cursor-pointer"
+                >
+                  Admin
+                  <ChevronDownIcon
+                    :class="[open ? 'rotate-180' : '', 'size-5 flex-none']"
+                    aria-hidden="true"
+                  />
+                </DisclosureButton>
+                <DisclosurePanel class="mt-2 space-y-2">
+                  <RouterLink
+                    v-for="item in adminNavigation"
+                    :key="item.name"
+                    :to="item.to"
+                    @click="mobileMenuOpen = false"
+                    class="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-white hover:bg-white/5"
+                    >{{ item.name }}</RouterLink
+                  >
+                </DisclosurePanel>
+              </Disclosure>
             </div>
             <div class="py-6">
-              <HeaderLink to="/login" :mobile="true" v-if="!auth.user">Log in</HeaderLink>
+              <HeaderLink
+                @click="mobileMenuOpen = false"
+                to="/login"
+                :mobile="true"
+                v-if="!auth.user"
+                >Log in</HeaderLink
+              >
               <HeaderLink @click="logout" :mobile="true" v-else>Log out</HeaderLink>
             </div>
           </div>
@@ -94,8 +172,24 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Dialog, DialogPanel } from '@headlessui/vue'
-import { Bars3Icon, XMarkIcon, ArrowLongRightIcon } from '@heroicons/vue/24/outline'
+import {
+  Dialog,
+  DialogPanel,
+  Popover,
+  PopoverButton,
+  PopoverPanel,
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+} from '@headlessui/vue'
+import {
+  Bars3Icon,
+  XMarkIcon,
+  ArrowLongRightIcon,
+  ChevronDownIcon,
+  MusicalNoteIcon,
+  DocumentTextIcon,
+} from '@heroicons/vue/24/outline'
 import HeaderLink from './HeaderLink.vue'
 import { useAuthStore } from '@/stores/auth'
 import { toast } from 'vue-sonner'
@@ -111,6 +205,11 @@ const navigation = [
   { name: 'Leaderboards', to: '/leaderboard', logged: false },
   { name: 'Upload REPLAY File', to: '/upload', logged: true },
   { name: 'About / FAQ', to: '/about', logged: false },
+]
+
+const adminNavigation = [
+  { name: 'Add Song', to: '/admin/songAdd', icon: MusicalNoteIcon },
+  { name: 'Logs', to: '/admin/logs', icon: DocumentTextIcon },
 ]
 
 const auth = useAuthStore()
