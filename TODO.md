@@ -27,7 +27,6 @@
 ## Frontend
 
 - [ ] Admin routes
-  - [ ] logs
   - [ ] delete score
   - [ ] delete song
   - [ ] update song

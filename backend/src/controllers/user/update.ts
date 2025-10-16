@@ -4,6 +4,7 @@ import { ServerError, userUpdateBodySchema } from '../../app.exports'
 import { serverReply } from '../../core.exports'
 import type { ServerHandler, ServerErrorHandler, RouteRequest } from '../../lib.exports'
 import { User, type UserSchemaDocument } from '../../models/User'
+import { AdminAction, AdminLog } from '../../models/AdminLog'
 
 export interface IUserUpdate {
   body: ZodInfer<typeof userUpdateBodySchema>
@@ -13,17 +14,25 @@ export interface IUserUpdate {
 
 const userUpdateHandler: ServerHandler<IUserUpdate> = async function (req, reply) {
   const user = (req as RouteRequest<{ user: UserSchemaDocument }>).user
-  const { id, profilePhotoURL, bannerURL } = userUpdateBodySchema.parse(req.body)
+  const { id, reason, profilePhotoURL, bannerURL } = userUpdateBodySchema.parse(req.body)
   if (id) {
     // has id = admin editing someone else
     const isAdmin = user.admin
     if (!isAdmin) throw new ServerError('err_invalid_auth_admin')
+    if (!reason) throw new ServerError('err_invalid_query', null, { params: 'reason' })
     const userEdit = await User.findById(id)
     if (!userEdit) throw new ServerError('err_id_not_found', null, { id })
     if (profilePhotoURL !== undefined) userEdit.profilePhotoURL = profilePhotoURL
     if (bannerURL !== undefined) userEdit.bannerURL = bannerURL
     // TODO: more fields for admin-only editing? username? email?
     await userEdit.save()
+    // log admin action (this can be async)
+    new AdminLog({
+      admin: (req as RouteRequest<{ user: UserSchemaDocument }>).user,
+      action: AdminAction.UserUpdate,
+      item: userEdit,
+      reason: reason,
+    }).save()
     serverReply(reply, 'ok', {
       user: userEdit,
     })

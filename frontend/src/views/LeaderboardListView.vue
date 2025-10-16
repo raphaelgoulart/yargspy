@@ -239,10 +239,10 @@ async function fetchLeaderboards() {
       params.sort = sortMethod.value
       if (sortDesc.value) params.descending = true
     }
-    const users = await api.get('/song/entries', {
+    const songs = await api.get('/song/entries', {
       params: params,
     })
-    data.value = users.data
+    data.value = songs.data
   } catch (e) {
     if (axios.isAxiosError(e) && e.status! < 500) {
       error.value = `An error occurred: ${e.response?.data.message} (${e.response?.status})`

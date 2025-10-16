@@ -2,7 +2,7 @@ import { pipeline } from 'node:stream/promises'
 import { TokenError } from 'fast-jwt'
 import type { FilePath } from 'node-lib'
 import type { RouteRequest, ServerErrorHandler, ServerHandler, ServerRequestFileFieldObject } from '../../lib.exports'
-import { checkChartFilesIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, getServerFile, isDev, parsePlayerModifiersForScoreEntry, YARGReplayValidatorAPI } from '../../utils.exports'
+import { checkChartFilesIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, isDev, YARGReplayValidatorAPI } from '../../utils.exports'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
 import { type Difficulty, Instrument, Song, type SongSchemaDocument } from '../../models/Song'
@@ -102,7 +102,7 @@ const adminSongAddHandler: ServerHandler = async function (req, reply) {
     new AdminLog({
       // log action (this can be async)
       admin: (req as RouteRequest<{ user: UserSchemaDocument }>).user,
-      action: AdminAction.SongUpdate,
+      action: AdminAction.SongAdd,
       item: songEntry,
     }).save()
     serverReply(reply, 'ok', { song: songEntry })
