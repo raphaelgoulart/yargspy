@@ -530,6 +530,7 @@ async function editSong(ev: Event) {
     await api.post('/admin/songUpdate', editData.value)
     toast.success('Song updated succesfully!')
     editModalOpen.value = false
+    editData.value.reason = ''
     if (song.value) {
       // update values without re-fetching the entire thing
       song.value.name = editData.value.name
@@ -540,13 +541,13 @@ async function editSong(ev: Event) {
     }
   } catch (e) {
     if (axios.isAxiosError(e) && e.status! < 500) {
-      deleteError.value = e.response?.data.message
+      editError.value = e.response?.data.message
     } else {
       console.log(e)
-      deleteError.value = 'An unknown error has occurred.'
+      editError.value = 'An unknown error has occurred.'
     }
   } finally {
-    deleteLoading.value = false
+    editLoading.value = false
   }
 }
 
