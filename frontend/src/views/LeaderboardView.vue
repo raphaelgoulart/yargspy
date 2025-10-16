@@ -9,6 +9,14 @@
         <span class="align-middle ml-1">{{ error }}</span></TheAlert
       >
       <div v-if="song" class="pt-2">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2" v-if="auth.user && auth.user.admin">
+          <div><TheButton class="w-full" @click="editModalOpen = true">Edit song</TheButton></div>
+          <div>
+            <TheButton color="red" class="w-full" @click="deleteModalOpen = true"
+              >Delete song</TheButton
+            >
+          </div>
+        </div>
         <h2 class="text-4xl mb-2 font-semibold">{{ song.name }}</h2>
         <p class="text-2xl mb-2">
           by <StringColorParsed :value="song.artist" class="font-medium" /><span v-if="song.year"
@@ -192,6 +200,36 @@
       />
     </div>
   </div>
+  <!-- ADMIN MODALS -->
+  <TheModal :open="editModalOpen" title="Edit song" @close="editModalOpen = false"
+    ><br />TODO</TheModal
+  >
+  <TheModal :open="deleteModalOpen" title="DANGER!" @close="deleteModalOpen = false">
+    <div class="mt-2">
+      <form ref="deleteForm">
+        <p>
+          You are about to delete this song, as well as its associated scores and replay files,
+          <b>permanently. <br />THIS ACTION CANNOT BE UNDONE.</b>
+        </p>
+        <p>Are you sure you want to do this?</p>
+        <div class="mt-2">
+          <FormTextarea v-model="deleteReason" name="reason" label="Reason" required />
+        </div>
+        <div class="mt-4">
+          <TheButton type="submit" color="red" @click="deleteSong" :disabled="deleteLoading"
+            >Do it</TheButton
+          >
+        </div>
+        <LoadingSpinner v-if="deleteLoading" class="text-center mt-2" />
+        <TheAlert v-if="deleteError" color="red" class="text-center mt-2">
+          <div>
+            <ExclamationCircleIcon class="size-5 inline" />
+            <span class="align-middle ml-1">{{ deleteError }}</span>
+          </div>
+        </TheAlert>
+      </form>
+    </div>
+  </TheModal>
 </template>
 
 <script setup lang="ts">
@@ -203,7 +241,7 @@ import { albumArtFinder } from '@/plugins/albumArtFinder'
 import api from '@/plugins/axios'
 import axios from 'axios'
 import { computed, ref, toRaw } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Difficulty, type IScoreEntriesResponse, type ISong } from '@/plugins/types'
 import { getInstrument, getDifficulty, getModifier, getEngine } from '@/plugins/utils'
 import TheButton from '@/components/TheButton.vue'
@@ -215,6 +253,10 @@ import ScoreInstrument from '@/components/ScoreInstrument.vue'
 import ScoreBand from '@/components/ScoreBand.vue'
 import StringColorParsed from '@/components/StringColorParsed.vue'
 import defaultSongImg from '../assets/img/song.png'
+import { useAuthStore } from '@/stores/auth'
+import TheModal from '@/components/TheModal.vue'
+import FormTextarea from '@/components/FormTextarea.vue'
+import { toast } from 'vue-sonner'
 
 interface ISongScoresQuery {
   id: string
@@ -231,6 +273,7 @@ interface ISongScoresQuery {
 const bandString = '255'
 const imgSrc = ref(defaultSongImg)
 const route = useRoute()
+const router = useRouter()
 const allowedModifiersOpen = ref(false)
 
 const loading = ref(true)
@@ -264,6 +307,16 @@ const allowedModifiers = ref(structuredClone(allowedModifiersDefault))
 const allowedModifiersEdit = ref(structuredClone(allowedModifiersDefault))
 const allowSlowdowns = ref(false)
 const sortByNotesHit = ref(false)
+
+// admin-related vars
+const auth = useAuthStore()
+const editModalOpen = ref(false)
+const deleteModalOpen = ref(false)
+const deleteForm = ref()
+const deleteReason = ref('')
+const deleteLoading = ref(false)
+const deleteError = ref('')
+//
 
 const instrumentList = computed(() => {
   const result: Map<string, string> = new Map()
@@ -413,5 +466,31 @@ function setOther() {
   // those other values are already being set by v-model - we just need to reset the page and re-fetch scores
   page.value = 1
   fetchScores()
+}
+
+// ADMIN FUNCTIONS
+async function deleteSong(ev: Event) {
+  ev.preventDefault()
+  if (!deleteForm.value.reportValidity()) return
+  deleteError.value = ''
+  deleteLoading.value = true
+  try {
+    await api.post('/admin/songDelete', {
+      id: song.value!._id,
+      reason: deleteReason.value,
+    })
+    toast.success('Song deleted succesfully!')
+    deleteModalOpen.value = false
+    router.push('/leaderboard')
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.status! < 500) {
+      deleteError.value = e.response?.data.message
+    } else {
+      console.log(e)
+      deleteError.value = 'An unknown error has occurred.'
+    }
+  } finally {
+    deleteLoading.value = false
+  }
 }
 </script>
