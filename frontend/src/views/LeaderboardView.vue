@@ -202,8 +202,28 @@
   </div>
   <!-- ADMIN MODALS -->
   <TheModal :open="editModalOpen" title="Edit song" @close="editModalOpen = false"
-    ><br />TODO</TheModal
-  >
+    ><div class="mt-2">
+      <form ref="editForm">
+        <div class="mb-1 font-semibold">Song metadata</div>
+        <FormInput name="name" label="Song name" v-model="editData.name" />
+        <FormInput name="artist" label="Artist" v-model="editData.artist" />
+        <FormInput name="charter" label="Charter" v-model="editData.charter" />
+        <FormInput name="album" label="Album" v-model="editData.album" />
+        <FormInput name="year" label="Year" v-model="editData.year" />
+        <FormTextarea v-model="editData.reason" name="reason" label="Reason for editing" required />
+        <div class="mt-4">
+          <TheButton type="submit" @click="editSong" :disabled="editLoading">Save</TheButton>
+        </div>
+        <LoadingSpinner v-if="editLoading" class="text-center mt-2" />
+        <TheAlert v-if="editError" color="red" class="text-center mt-2">
+          <div>
+            <ExclamationCircleIcon class="size-5 inline" />
+            <span class="align-middle ml-1">{{ editError }}</span>
+          </div>
+        </TheAlert>
+      </form>
+    </div>
+  </TheModal>
   <TheModal :open="deleteModalOpen" title="DANGER!" @close="deleteModalOpen = false">
     <div class="mt-2">
       <form ref="deleteForm">
@@ -255,6 +275,7 @@ import StringColorParsed from '@/components/StringColorParsed.vue'
 import defaultSongImg from '../assets/img/song.png'
 import { useAuthStore } from '@/stores/auth'
 import TheModal from '@/components/TheModal.vue'
+import FormInput from '@/components/FormInput.vue'
 import FormTextarea from '@/components/FormTextarea.vue'
 import { toast } from 'vue-sonner'
 
@@ -268,6 +289,16 @@ interface ISongScoresQuery {
   sortByNotesHit?: boolean
   page: number
   limit: number
+}
+
+interface ISongEditData {
+  id: string
+  name: string
+  artist: string
+  charter: string
+  album: string
+  year: string
+  reason: string
 }
 
 const bandString = '255'
@@ -310,12 +341,24 @@ const sortByNotesHit = ref(false)
 
 // admin-related vars
 const auth = useAuthStore()
-const editModalOpen = ref(false)
 const deleteModalOpen = ref(false)
 const deleteForm = ref()
 const deleteReason = ref('')
 const deleteLoading = ref(false)
 const deleteError = ref('')
+const editModalOpen = ref(false)
+const editForm = ref()
+const editLoading = ref(false)
+const editError = ref('')
+const editData = ref({
+  id: '',
+  name: '',
+  artist: '',
+  charter: '',
+  album: '',
+  year: '',
+  reason: '',
+} as ISongEditData)
 //
 
 const instrumentList = computed(() => {
@@ -341,6 +384,15 @@ async function fetchSong() {
   try {
     const result = await api.get('song', { params: { id: route.params.id } })
     song.value = result.data.song
+    editData.value = {
+      id: result.data.song._id,
+      name: result.data.song.name,
+      artist: result.data.song.artist,
+      charter: result.data.song.charter,
+      album: result.data.song.album,
+      year: result.data.song.year,
+      reason: '',
+    }
   } catch (e) {
     if (axios.isAxiosError(e) && e.status! < 500) {
       error.value = `Error fetching song: ${e.response?.data.message} (${e.response?.status})`
@@ -469,6 +521,35 @@ function setOther() {
 }
 
 // ADMIN FUNCTIONS
+async function editSong(ev: Event) {
+  ev.preventDefault()
+  if (!editForm.value.reportValidity()) return
+  editError.value = ''
+  editLoading.value = true
+  try {
+    await api.post('/admin/songUpdate', editData.value)
+    toast.success('Song updated succesfully!')
+    editModalOpen.value = false
+    if (song.value) {
+      // update values without re-fetching the entire thing
+      song.value.name = editData.value.name
+      song.value.artist = editData.value.artist
+      song.value.charter = editData.value.charter
+      song.value.album = editData.value.album
+      song.value.year = editData.value.year
+    }
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.status! < 500) {
+      deleteError.value = e.response?.data.message
+    } else {
+      console.log(e)
+      deleteError.value = 'An unknown error has occurred.'
+    }
+  } finally {
+    deleteLoading.value = false
+  }
+}
+
 async function deleteSong(ev: Event) {
   ev.preventDefault()
   if (!deleteForm.value.reportValidity()) return
