@@ -1,6 +1,7 @@
 import { type Document, type Model, model, Schema } from 'mongoose'
 
 export const AdminAction = {
+  // DO NOT REORDER THIS, just add new items to end if needed
   UserBan: 0,
   UserUnban: 1,
   SongAdd: 2,

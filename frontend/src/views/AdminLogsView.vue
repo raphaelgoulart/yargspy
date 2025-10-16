@@ -1,6 +1,31 @@
 <template>
   <h1 class="text-center text-4xl font-bold mb-8">ADMIN ACTION LOGS</h1>
-  <div class="w-full my-6 px-2">TODO: log filtering</div>
+  <div class="w-full my-6 px-2">
+    <form @submit.prevent="fetchLogs()">
+      <div class="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-11 gap-4">
+        <div class="col-span-1 md:col-span-4 lg:col-span-2">
+          <label class="block text-sm/6 font-medium text-white mb-1">Action</label>
+          <FormDropdown :disabled="loading" :items="actionList" v-model="action" />
+        </div>
+        <div class="col-span-1 md:col-span-4 lg:col-span-2">
+          <label class="block text-sm/6 font-medium text-white mb-1">By...</label>
+          <FormDropdown :disabled="loading || adminLoading" :items="adminList" v-model="admin" />
+        </div>
+        <div class="col-span-1 md:col-span-4 lg:col-span-2">
+          <FormInput name="item" label="Item" v-model="item" placeholder="ObjectID of item..." />
+        </div>
+        <div class="col-span-1 md:col-span-5 lg:col-span-2">
+          <FormInput name="startDate" type="datetime-local" label="Start" v-model="startDate" />
+        </div>
+        <div class="col-span-1 md:col-span-5 lg:col-span-2">
+          <FormInput name="endDate" type="datetime-local" label="End" v-model="endDate" />
+        </div>
+        <div class="col-span-1 md:col-span-2 lg:col-span-1 flex items-end">
+          <TheButton>Filter</TheButton>
+        </div>
+      </div>
+    </form>
+  </div>
   <LoadingSpinner v-if="loading" class="text-center" />
   <TheAlert color="red" v-else-if="error" class="text-center"
     ><ExclamationCircleIcon class="size-5 inline" />
@@ -73,11 +98,24 @@ import { ExclamationTriangleIcon, ExclamationCircleIcon } from '@heroicons/vue/2
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import api from '@/plugins/axios'
 import axios from 'axios'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { type IAdminLogEntriesResponse, AdminAction } from '@/plugins/types'
 import { getAdminLogAction } from '@/plugins/utils'
 import { toast } from 'vue-sonner'
 import { useRouter } from 'vue-router'
+import FormInput from '@/components/FormInput.vue'
+import FormDropdown from '@/components/FormDropdown.vue'
+import TheButton from '@/components/TheButton.vue'
+
+interface IAdminLogsQuery {
+  page: number
+  limit: number
+  action?: number
+  admin?: string
+  item?: string
+  startDate?: string
+  endDate?: string
+}
 
 const data = ref(null as IAdminLogEntriesResponse | null)
 const loading = ref(true)
@@ -85,11 +123,39 @@ const error = ref('')
 
 const page = ref(1)
 const limit = ref(15)
+const action = ref('-1')
+const admin = ref('')
+const item = ref('')
+const startDate = ref('')
+const endDate = ref('')
+
+const adminLoading = ref(true)
+const admins = ref(null as { _id: string; username: string }[] | null)
+
+const actionList = computed(() => {
+  const result: Map<string, string> = new Map()
+  result.set('-1', 'All actions')
+  for (let i = 0; i <= AdminAction.UserUpdate; i++) {
+    result.set(i.toString(), getAdminLogAction(i))
+  }
+  return result
+})
+
+const adminList = computed(() => {
+  const result: Map<string, string> = new Map()
+  result.set('', 'Anyone')
+  for (const i in admins.value) {
+    const admin = admins.value[Number(i)]
+    result.set(admin!._id, admin!.username)
+  }
+  return result
+})
 
 const router = useRouter()
 
 onMounted(async () => {
   fetchLogs()
+  fetchAdmins()
 })
 async function fetchLogs() {
   loading.value = true
@@ -98,7 +164,12 @@ async function fetchLogs() {
     const params = {
       page: page.value,
       limit: limit.value,
-    }
+    } as IAdminLogsQuery
+    if (action.value != '-1') params.action = Number(action.value)
+    if (admin.value) params.admin = admin.value
+    if (item.value) params.item = item.value
+    if (startDate.value) params.startDate = new Date(startDate.value).toISOString()
+    if (endDate.value) params.endDate = new Date(endDate.value).toISOString()
     const result = await api.get('admin/logs', { params })
     data.value = result.data
   } catch (e) {
@@ -134,6 +205,22 @@ async function gotoUser(id: string) {
       console.log(e)
       toast.error('An unknown error has occurred.')
     }
+  }
+}
+
+async function fetchAdmins() {
+  try {
+    const result = await api.get('admin/admins')
+    admins.value = result.data.entries
+  } catch (e) {
+    if (axios.isAxiosError(e) && e.status! < 500) {
+      toast.error(`Error fetching admin list: ${e.response?.data.message} (${e.response?.status})`)
+    } else {
+      console.log(e)
+      toast.error('An unknown error has occurred while fetching the admin list.')
+    }
+  } finally {
+    adminLoading.value = false
   }
 }
 </script>
