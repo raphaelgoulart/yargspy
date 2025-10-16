@@ -43,6 +43,7 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="w-full p-4 pb-2 sm:border rounded-md border-gray-800">
           <p class="mb-5 font-bold text-lg/5 text-white">General info</p>
+          <p class="mb-2" v-if="auth.user?.admin"><b>User ID: </b>{{ user._id }}</p>
           <p class="mb-2"><b>Joined: </b>{{ convertedDateTime(user.createdAt) }}</p>
           <p class="mb-2"><b>Last active: </b>{{ convertedDateTime(user.updatedAt) }}</p>
           <p v-if="scores" class="mb-2">
