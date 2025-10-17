@@ -8,7 +8,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 const props = defineProps({
   to: {
-    type: String,
+    type: [String, Object],
   },
   mobile: {
     type: Boolean,
@@ -17,7 +17,7 @@ const props = defineProps({
 })
 const router = useRouter()
 
-function handleClick () {
+function handleClick() {
   if (props.to) router.push(props.to)
 }
 

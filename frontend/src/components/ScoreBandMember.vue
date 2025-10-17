@@ -18,11 +18,9 @@
       >
     </td>
     <td scope="col">
-      <ScorePercent
-        :n="score.percent!"
-        :notesHit="score.notesHit"
-        :maxCombo="score.maxCombo"
-      /><span class="hidden lg:inline text-xs">
+      <ScorePercent :n="score.percent!" :overhits="score.overhits" /><span
+        class="hidden lg:inline text-xs"
+      >
         ({{ score.notesHit?.toLocaleString() }}/{{ difficulty.notes.toLocaleString() }})</span
       >
     </td>

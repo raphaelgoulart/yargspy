@@ -268,7 +268,7 @@ namespace YARGReplayValidator.Core
         foreach (Difficulty diff in Enum.GetValues<Difficulty>())
         {
           if (!chart.ProKeys.TryGetDifficulty(diff, out var instrumentDifficulty)) continue;
-          var noteCount = instrumentDifficulty.Notes.Count;
+          var noteCount = instrumentDifficulty.GetTotalNoteCount();
           if (noteCount == 0) continue;
           var diffByte = (byte)diff;
           diffNoteStoragePK.Add(diffByte, noteCount);

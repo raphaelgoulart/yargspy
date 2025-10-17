@@ -27,13 +27,18 @@
       }}</span>
     </td>
     <td scope="col">
-      <ScorePercent :n="score.percent!" :notesHit="score.notesHit" :maxCombo="score.maxCombo" />
+      <ScorePercent :n="score.percent!" :overhits="score.overhits" />
     </td>
     <td scope="col">
       {{ convertedDateTime(score.createdAt, true) }}
     </td>
     <td scope="col" class="pr-3 text-right">
       <div class="flex justify-end items-center gap-1">
+        <TrashIcon
+          v-if="auth.user && auth.user.admin"
+          @click="$emit('delete')"
+          class="w-5 text-red-500 hover:cursor-pointer transition-transform duration-200 hover:scale-120"
+        />
         <a
           :href="getDownloadLink(score.replayPath)"
           :download="getDownloadFileName(score, username, score.song.name, score.song.artist)"
@@ -118,12 +123,20 @@ import ScorePercent from './ScorePercent.vue'
 import ScoreStars from './ScoreStars.vue'
 import ScoreModifiers from './ScoreModifiers.vue'
 import StringColorParsed from './StringColorParsed.vue'
-import { ArrowDownTrayIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/vue/20/solid'
+import {
+  ArrowDownTrayIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  TrashIcon,
+} from '@heroicons/vue/20/solid'
 import { isGuitar, isDrums, isKeys } from '@/plugins/utils'
+import { useAuthStore } from '@/stores/auth'
 
 const open = ref(false)
+defineEmits(['delete'])
 defineProps({
   score: { type: Object as PropType<IScore>, required: true },
   username: { type: String, required: true },
 })
+const auth = useAuthStore()
 </script>

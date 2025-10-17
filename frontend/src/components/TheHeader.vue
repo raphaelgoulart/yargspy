@@ -77,7 +77,9 @@
         <div v-if="auth.user" class="flex gap-x-6">
           <span class="text-sm/6">
             Welcome,
-            <HeaderLink :to="'player/' + auth.user.username">{{ auth.user.username }}</HeaderLink>
+            <HeaderLink :to="{ name: 'player', params: { username: auth.user.username } }">{{
+              auth.user.username
+            }}</HeaderLink>
           </span>
           <HeaderLink @click="logout"> Log out </HeaderLink>
         </div>

@@ -154,6 +154,7 @@
                 :songName="song!.name"
                 :songArtist="song!.artist"
                 :instruments="instruments"
+                @delete="deleteScore(score)"
               />
             </tbody>
           </table>
@@ -183,6 +184,7 @@
                 :songName="song!.name"
                 :songArtist="song!.artist"
                 :difficulty="instruments[Number(instrument)]![Number(difficulty)]!"
+                @delete="deleteScore(score)"
               />
             </tbody>
           </table>
@@ -250,6 +252,15 @@
       </form>
     </div>
   </TheModal>
+  <ScoreDeleteModal
+    :open="deleteScoreOpen"
+    :score="deleteScoreData"
+    :username="deleteScoreData?.uploader.username"
+    :songName="song?.name"
+    :songArtist="song?.artist"
+    @close="deleteScoreOpen = false"
+    @delete="setPage(1)"
+  />
 </template>
 
 <script setup lang="ts">
@@ -262,7 +273,7 @@ import api from '@/plugins/axios'
 import axios from 'axios'
 import { computed, ref, toRaw } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Difficulty, type IScoreEntriesResponse, type ISong } from '@/plugins/types'
+import { Difficulty, type IScore, type IScoreEntriesResponse, type ISong } from '@/plugins/types'
 import { getInstrument, getDifficulty, getModifier, getEngine } from '@/plugins/utils'
 import TheButton from '@/components/TheButton.vue'
 import FormCheckbox from '@/components/FormCheckbox.vue'
@@ -278,6 +289,7 @@ import TheModal from '@/components/TheModal.vue'
 import FormInput from '@/components/FormInput.vue'
 import FormTextarea from '@/components/FormTextarea.vue'
 import { toast } from 'vue-sonner'
+import ScoreDeleteModal from '@/components/ScoreDeleteModal.vue'
 
 interface ISongScoresQuery {
   id: string
@@ -359,6 +371,8 @@ const editData = ref({
   year: '',
   reason: '',
 } as ISongEditData)
+const deleteScoreOpen = ref(false)
+const deleteScoreData = ref(undefined as IScore | undefined)
 //
 
 const instrumentList = computed(() => {
@@ -574,5 +588,10 @@ async function deleteSong(ev: Event) {
   } finally {
     deleteLoading.value = false
   }
+}
+
+function deleteScore(score: IScore) {
+  deleteScoreData.value = score
+  deleteScoreOpen.value = true
 }
 </script>
