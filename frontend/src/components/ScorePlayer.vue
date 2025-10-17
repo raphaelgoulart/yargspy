@@ -133,6 +133,7 @@ import { isGuitar, isDrums, isKeys } from '@/plugins/utils'
 import { useAuthStore } from '@/stores/auth'
 
 const open = ref(false)
+defineEmits(['delete'])
 defineProps({
   score: { type: Object as PropType<IScore>, required: true },
   username: { type: String, required: true },

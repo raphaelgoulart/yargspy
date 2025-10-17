@@ -75,6 +75,7 @@
                   :key="score._id"
                   :score="score"
                   :username="user.username"
+                  @delete="deleteScore(score)"
                 />
               </tbody>
             </table>
@@ -170,6 +171,15 @@
       </form>
     </div>
   </TheModal>
+  <ScoreDeleteModal
+    :open="deleteScoreOpen"
+    :score="deleteScoreData"
+    :username="user?.username"
+    :songName="deleteScoreData?.song.name"
+    :songArtist="deleteScoreData?.song.artist"
+    @close="deleteScoreOpen = false"
+    @delete="setPage(1)"
+  />
 </template>
 
 <script setup lang="ts">
@@ -180,7 +190,7 @@ import TheButton from '@/components/TheButton.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import ScorePlayer from '@/components/ScorePlayer.vue'
 import api from '@/plugins/axios'
-import type { IUser, IScoreEntriesResponse } from '@/plugins/types'
+import type { IUser, IScoreEntriesResponse, IScore } from '@/plugins/types'
 import { useAuthStore } from '@/stores/auth'
 import { ExclamationCircleIcon, ExclamationTriangleIcon } from '@heroicons/vue/20/solid'
 import axios from 'axios'
@@ -193,6 +203,7 @@ import FormInput from '@/components/FormInput.vue'
 import { toast } from 'vue-sonner'
 import TheModal from '@/components/TheModal.vue'
 import FormTextarea from '@/components/FormTextarea.vue'
+import ScoreDeleteModal from '@/components/ScoreDeleteModal.vue'
 
 const loading = ref(true)
 const scoreLoading = ref(true)
@@ -221,6 +232,9 @@ const banLoading = ref(false)
 const banError = ref('')
 const banLabel = computed(() => (user.value?.active ? 'Ban user' : 'Unban user'))
 const banReason = ref('')
+
+const deleteScoreOpen = ref(false)
+const deleteScoreData = ref(undefined as IScore | undefined)
 
 interface IPlayerScoresQuery {
   id: string
@@ -344,6 +358,11 @@ async function banUser(ev: Event) {
   } finally {
     banLoading.value = false
   }
+}
+
+function deleteScore(score: IScore) {
+  deleteScoreData.value = score
+  deleteScoreOpen.value = true
 }
 </script>
 

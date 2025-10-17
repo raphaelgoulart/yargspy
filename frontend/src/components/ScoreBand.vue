@@ -121,6 +121,7 @@ import ScoreBandMember from './ScoreBandMember.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const open = ref(false)
+defineEmits(['delete'])
 defineProps({
   score: { type: Object as PropType<IScore>, required: true },
   i: { type: Number, required: true },
