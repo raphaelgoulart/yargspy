@@ -16,7 +16,7 @@
       class="font-medium"
       :title="score.modifiers.length ? 'This player used at least one modifier' : ''"
     >
-      <CountryFlag :code="score.uploader.country" :size="1" />
+      <CountryFlag :code="score.uploader.country" :size="1" class="mr-1" />
       <RouterLink :to="{ name: 'player', params: { username: score.uploader.username } }">{{
         score.uploader.username
       }}</RouterLink
@@ -26,11 +26,9 @@
       <ScoreStars :stars="score.stars" />
     </td>
     <td scope="col">
-      <ScorePercent
-        :n="score.percent!"
-        :notesHit="score.notesHit"
-        :maxCombo="score.maxCombo"
-      /><span class="hidden lg:inline text-xs">
+      <ScorePercent :n="score.percent!" :overhits="score.overhits" /><span
+        class="hidden lg:inline text-xs"
+      >
         ({{ score.notesHit?.toLocaleString() }}/{{ difficulty.notes.toLocaleString() }})</span
       >
     </td>
@@ -48,6 +46,11 @@
     </td>
     <td scope="col" class="pr-3 text-right">
       <div class="flex justify-end items-center gap-1">
+        <TrashIcon
+          v-if="auth.user && auth.user.admin"
+          @click="$emit('delete')"
+          class="w-5 text-red-500 hover:cursor-pointer transition-transform duration-200 hover:scale-120"
+        />
         <a
           :href="getDownloadLink(score.replayPath)"
           :download="getDownloadFileName(score, score.uploader.username, songName, songArtist)"
@@ -128,12 +131,18 @@ import {
   isDrums,
   isKeys,
 } from '@/plugins/utils'
-import { ChevronUpIcon, ChevronDownIcon, ArrowDownTrayIcon } from '@heroicons/vue/20/solid'
+import {
+  ChevronUpIcon,
+  ChevronDownIcon,
+  ArrowDownTrayIcon,
+  TrashIcon,
+} from '@heroicons/vue/20/solid'
 import ScorePercent from './ScorePercent.vue'
 import ScoreStars from './ScoreStars.vue'
 import ScoreModifiers from './ScoreModifiers.vue'
 import { RouterLink } from 'vue-router'
 import CountryFlag from './CountryFlag.vue'
+import { useAuthStore } from '@/stores/auth'
 
 const open = ref(false)
 defineProps({
@@ -143,4 +152,5 @@ defineProps({
   songArtist: { type: String, required: true },
   difficulty: { type: Object, required: true },
 })
+const auth = useAuthStore()
 </script>

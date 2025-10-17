@@ -39,6 +39,11 @@
     </td>
     <td scope="col" class="pr-3 text-right">
       <div class="flex justify-end items-center gap-1">
+        <TrashIcon
+          v-if="auth.user && auth.user.admin"
+          @click="$emit('delete')"
+          class="w-5 text-red-500 hover:cursor-pointer transition-transform duration-200 hover:scale-120"
+        />
         <a
           :href="getDownloadLink(score.replayPath)"
           :download="getDownloadFileName(score, score.uploader.username, songName, songArtist)"
@@ -104,10 +109,16 @@ import {
   getVersion,
   percent,
 } from '@/plugins/utils'
-import { ChevronUpIcon, ChevronDownIcon, ArrowDownTrayIcon } from '@heroicons/vue/20/solid'
+import {
+  ChevronUpIcon,
+  ChevronDownIcon,
+  ArrowDownTrayIcon,
+  TrashIcon,
+} from '@heroicons/vue/20/solid'
 import ScoreStars from './ScoreStars.vue'
 import CountryFlag from './CountryFlag.vue'
 import ScoreBandMember from './ScoreBandMember.vue'
+import { useAuthStore } from '@/stores/auth'
 
 const open = ref(false)
 defineProps({
@@ -117,4 +128,5 @@ defineProps({
   songArtist: { type: String, required: true },
   instruments: { type: Object, required: true },
 })
+const auth = useAuthStore()
 </script>
