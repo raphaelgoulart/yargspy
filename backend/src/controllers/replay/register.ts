@@ -63,7 +63,11 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
     const { reqType } = Object.fromEntries(bodyMap.entries()) as IReplayRegisterBody
 
-    if (!reqType) throw new ServerError('err_replay_register_no_reqtype')
+    if (!reqType) {
+      console.log(bodyMap)
+      console.log(reqType)
+      throw new ServerError('err_replay_register_no_reqtype')
+    }
 
     // Must have a file in the request and one of these files must be the replay file
     if (fileFields.size === 0 || !fileFields.has('replayFile')) throw new ServerError('err_replay_no_replay_uploaded')
