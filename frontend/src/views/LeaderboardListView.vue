@@ -143,6 +143,7 @@
         :artist="leaderboard.artist"
         :charter="leaderboard.charter"
         :album="leaderboard.album"
+        :playerCount="leaderboard.playerCount"
       />
     </div>
     <ThePagination
@@ -195,10 +196,10 @@ const error = ref('')
 const searchMethods = ['Song name', 'Artist', 'Charter']
 const searchMethod = ref(0)
 const searchMethodInput = ref(0)
-const sortMethods = ["Don't sort", 'Song name', 'Artist', 'Charter']
-const sortMethod = ref(0)
-const sortMethodInput = ref(0)
-const sortDesc = ref(false)
+const sortMethods = ["Don't sort", 'Player count', 'Song name', 'Artist', 'Charter']
+const sortMethod = ref(1)
+const sortMethodInput = ref(1)
+const sortDesc = ref(true)
 const search = ref('')
 const searchInput = ref('')
 
@@ -243,6 +244,7 @@ async function fetchLeaderboards() {
       params: params,
     })
     data.value = songs.data
+    console.log(songs.data)
   } catch (e) {
     if (axios.isAxiosError(e) && e.status! < 500) {
       error.value = `An error occurred: ${e.response?.data.message} (${e.response?.status})`

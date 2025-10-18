@@ -12,9 +12,10 @@ export interface ISongEntries {
 }
 
 export const Sort = {
-  Name: 1,
-  Artist: 2,
-  Charter: 3,
+  PlayerCount: 1,
+  Name: 2,
+  Artist: 3,
+  Charter: 4,
 } as const
 
 // #region Handler
@@ -29,6 +30,9 @@ const SongEntriesHandler: ServerHandler<ISongEntries> = async function (req, rep
   let sortingString: string | undefined
   if (sort) {
     switch (sort) {
+      case Sort.PlayerCount:
+        sortingString = 'playerCount'
+        break
       case Sort.Name:
         sortingString = 'name'
         break
@@ -63,6 +67,7 @@ const SongEntriesHandler: ServerHandler<ISongEntries> = async function (req, rep
       charter: song.charter,
       album: song.album,
       year: song.year,
+      playerCount: song.playerCount,
     })),
   })
 }

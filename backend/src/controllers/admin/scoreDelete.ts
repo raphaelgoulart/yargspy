@@ -6,6 +6,7 @@ import { Score } from '../../models/Score'
 import { AdminAction, AdminLog } from '../../models/AdminLog'
 import type { UserSchemaDocument } from '../../models/User'
 import { getServerFile, isDev } from '../../utils.exports'
+import { Song } from '../../models/Song'
 
 export interface IAdminScoreDelete {
   body: {
@@ -33,8 +34,10 @@ const adminScoreDeleteHandler: ServerHandler<IAdminScoreDelete> = async function
   } else {
     // TODO: on prod, delete file in S3
   }
-  // (DB) delete scores associated to that replay file
+  // (DB) delete scores associated to that replay file, and update song player count
+  const song = await Song.findById(score.song)
   const result = await Score.deleteMany({ replayPath: replayPath })
+  if (song) song.updateSongPlayerCount() // this can be async
   // log admin action (this can be async)
   new AdminLog({
     admin: (req as RouteRequest<{ user: UserSchemaDocument }>).user,

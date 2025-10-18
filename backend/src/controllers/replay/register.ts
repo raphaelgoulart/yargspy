@@ -289,6 +289,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     //serverReply(reply, 'success_replay_register', { playerScoreIDs: playerScores.map((score) => score._id), bandScoreID: bandScore._id })
 
     user.setCountryAndSave(req) // take opportunity to update the user's country flag (this can be async)
+    songEntry.updateSongPlayerCount() // this can be async too
     serverReply(reply, 'success_replay_register', { song: songEntry._id })
   } catch (err) {
     await deleteAllTempFiles()

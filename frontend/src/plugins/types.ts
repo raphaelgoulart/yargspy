@@ -28,6 +28,7 @@ export interface ISong {
       starPowerPhrases: number
     },
   ]
+  playerCount: number
 }
 
 export interface IUser {

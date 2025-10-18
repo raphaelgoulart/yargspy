@@ -1,4 +1,5 @@
 import { type Document, type Model, model, Schema } from 'mongoose'
+import { Score } from './Score'
 
 // #region Enums
 
@@ -66,9 +67,12 @@ export interface SongSchemaInput {
     notes: number
     starPowerPhrases: number
   }[]
+  playerCount: number
 }
 // Methods here
-export interface SongSchemaDocument extends SongSchemaInput, Document {}
+export interface SongSchemaDocument extends SongSchemaInput, Document {
+  updateSongPlayerCount(): Promise<void>
+}
 
 // Statics here
 export interface SongSchemaModel extends Model<SongSchemaDocument> {
@@ -129,11 +133,28 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
         },
       },
     ],
+    playerCount: { type: Number, default: 0 },
   },
   {
     statics: {
       async findByHash(hash: string) {
         return await this.findOne({ chartFileHash: hash })
+      },
+    },
+    methods: {
+      async updateSongPlayerCount() {
+        try {
+          const uniqueUsers = await Score.distinct('uploader', {
+            song: this._id,
+            hidden: false,
+            instrument: Instrument.Band,
+          })
+
+          this.playerCount = uniqueUsers.length
+          this.save()
+        } catch (error) {
+          console.error(`Error updating player count for song ${this._id}:`, error)
+        }
       },
     },
   }
