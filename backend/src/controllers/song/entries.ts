@@ -4,6 +4,7 @@ import { ServerError, songEntriesQuerystringSchema } from '../../app.exports'
 import { serverReply } from '../../core.exports'
 import type { ServerHandler, ServerErrorHandler } from '../../lib.exports'
 import { Song } from '../../models/Song'
+import type { SortOrder } from 'mongoose'
 
 export interface ISongEntries {
   query: {
@@ -27,8 +28,9 @@ const SongEntriesHandler: ServerHandler<ISongEntries> = async function (req, rep
   if (name) filter['name'] = { $regex: name, $options: 'i' }
   if (artist) filter['artist'] = { $regex: artist, $options: 'i' }
   if (charter) filter['charter'] = { $regex: charter, $options: 'i' }
-  let sortingString: string | undefined
+  let sorting: { [key: string]: SortOrder } | undefined
   if (sort) {
+    let sortingString: string | undefined
     switch (sort) {
       case Sort.PlayerCount:
         sortingString = 'playerCount'
@@ -45,12 +47,16 @@ const SongEntriesHandler: ServerHandler<ISongEntries> = async function (req, rep
       default:
         break
     }
-    if (sortingString) sortingString = (descending ? '-' : '') + sortingString
+    if (sortingString) {
+      sorting = {}
+      sorting[sortingString] = descending ? -1 : 1
+      sorting['_id'] = 1
+    }
   }
 
   const [allSongs, totalEntries] = await Promise.all([
     // .collation() is needed for case-insensitive sorting
-    Song.find(filter).collation({ locale: 'en' }).sort(sortingString).skip(skip).limit(limit),
+    Song.find(filter).collation({ locale: 'en' }).sort(sorting).skip(skip).limit(limit),
     Song.countDocuments(filter),
   ])
   const totalPages = Math.ceil(totalEntries / limit)

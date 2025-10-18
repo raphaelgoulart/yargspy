@@ -303,6 +303,7 @@ function setPage(i: number) {
 }
 
 function setLimit(i: number) {
+  page.value = 1
   limit.value = i
   fetchScores()
 }

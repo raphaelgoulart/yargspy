@@ -3,7 +3,7 @@
     <div
       class="w-full rounded shadow-lg flex border bg-gray-800 border-gray-700 h-28 transition-scale duration-200 hover:scale-103 hover:bg-gray-700"
     >
-      <img class="w-28 object-cover" :src="imgSrc" :alt="album ?? 'Album Cover'" />
+      <img class="w-28 object-cover rounded-l" :src="imgSrc" :alt="album ?? 'Album Cover'" />
       <div class="px-6 flex flex-col my-auto text-left">
         <span class="font-bold text-lg/5">{{ name }}</span>
         <p class="text-sm my-1 text-slate-300"><StringColorParsed :value="artist" /></p>
