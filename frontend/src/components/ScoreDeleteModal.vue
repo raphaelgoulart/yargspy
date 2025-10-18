@@ -90,6 +90,7 @@ async function deleteScore(ev: Event) {
       reason: deleteReason.value,
     })
     toast.success('Score deleted succesfully!')
+    deleteReason.value = ''
     emit('delete')
     emit('close')
   } catch (e) {

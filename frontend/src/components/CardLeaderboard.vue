@@ -1,13 +1,20 @@
 <template>
   <RouterLink :to="to">
     <div
-      class="w-full rounded overflow-hidden shadow-lg flex border bg-gray-800 border-gray-700 h-28 transition-scale duration-200 hover:scale-103 hover:bg-gray-700"
+      class="w-full rounded shadow-lg flex border bg-gray-800 border-gray-700 h-28 transition-scale duration-200 hover:scale-103 hover:bg-gray-700"
     >
       <img class="w-28 object-cover" :src="imgSrc" :alt="album ?? 'Album Cover'" />
       <div class="px-6 flex flex-col my-auto text-left">
         <span class="font-bold text-lg/5">{{ name }}</span>
         <p class="text-sm my-1 text-slate-300"><StringColorParsed :value="artist" /></p>
         <p v-if="charter" class="text-xs text-slate-300"><StringColorParsed :value="charter" /></p>
+      </div>
+      <div class="flex-1">
+        <div
+          class="h-max w-max bg-blue-500 px-2 rounded-sm ml-auto text-right relative bottom-1 left-1"
+        >
+          {{ playerCount?.toLocaleString() ?? 0 }}
+        </div>
       </div>
     </div>
   </RouterLink>
@@ -37,6 +44,7 @@ const props = defineProps({
     required: true,
   },
   album: String,
+  playerCount: Number,
 })
 
 const to = { name: 'leaderboard', params: { id: props.id } }

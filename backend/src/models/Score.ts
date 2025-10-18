@@ -1,5 +1,5 @@
 import { type Document, model, type Model, Schema } from 'mongoose'
-import { Difficulty, Instrument } from './Song'
+import { Difficulty, Instrument, Song } from './Song'
 
 // #region Enums
 
@@ -247,5 +247,27 @@ const scoreSchema = new Schema<ScoreSchemaInput, ScoreSchemaModel>(
     },
   }
 )
+
+scoreSchema.post('updateMany', async function () {
+  const updatePayload = this.getUpdate()
+  let isHiddenFieldAffected = false
+
+  if (updatePayload && '$set' in updatePayload) {
+    isHiddenFieldAffected = (updatePayload.$set as { hidden?: any })?.hidden !== undefined
+  }
+  if (!isHiddenFieldAffected) return
+
+  const filter = this.getQuery()
+  const affectedSongIds = await this.model.distinct('song', filter)
+
+  if (affectedSongIds.length > 0) {
+    await Promise.all(
+      affectedSongIds.map(async (songId) => {
+        const song = await Song.findById(songId)
+        song?.updateSongPlayerCount()
+      })
+    )
+  }
+})
 
 export const Score = model<ScoreSchemaInput, ScoreSchemaModel>('Score', scoreSchema)

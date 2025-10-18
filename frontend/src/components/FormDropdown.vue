@@ -7,10 +7,7 @@
       >
         <div class="flex justify-between">
           {{ items.get(model!)
-          }}<ChevronDownIcon
-            class="h-5 w-5 text-gray-400 inline-block mx-1.5"
-            aria-hidden="true"
-          />
+          }}<ChevronDownIcon class="h-5 w-5 text-gray-400 inline-block mx-1.5" aria-hidden="true" />
         </div>
       </ListboxButton>
       <Transition
@@ -22,7 +19,7 @@
         leave-to-class="opacity-0"
       >
         <ListboxOptions
-          class="absolute z-1 text-left w-full mt-1 rounded-md bg-gray-800 py-1 text-base text-sm border border-gray-700"
+          class="absolute z-3 text-left w-full mt-1 rounded-md bg-gray-800 py-1 text-base text-sm border border-gray-700"
         >
           <ListboxOption
             v-slot="{ active, selected, disabled }"
@@ -38,7 +35,11 @@
                 'relative cursor-default select-none py-1 pl-3.5 pr-2',
               ]"
             >
-              <span :class="disabled ? 'text-gray-500' : selected ? 'text-white font-bold' : 'text-slate-300'">
+              <span
+                :class="
+                  disabled ? 'text-gray-500' : selected ? 'text-white font-bold' : 'text-slate-300'
+                "
+              >
                 {{ label }}</span
               >
             </li>
@@ -56,9 +57,8 @@ import { type PropType } from 'vue'
 
 const model = defineModel<string>()
 defineProps({
-  items: {type: Object as PropType<Map<string,string>>, required: true},
-  disabled: {type: Boolean, default: false},
-  availableItems: {type: Object as PropType<Record<string,boolean>>}
+  items: { type: Object as PropType<Map<string, string>>, required: true },
+  disabled: { type: Boolean, default: false },
+  availableItems: { type: Object as PropType<Record<string, boolean>> },
 })
-
 </script>
