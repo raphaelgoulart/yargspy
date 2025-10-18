@@ -23,7 +23,3 @@
 - [ ] finish [Server API Documentation](docs/serverapi.md)
 - [ ] CI/CD
 - [ ] Figure out how `songs_updates` affect replay files and how to handle that
-
-## Frontend
-
-- [ ] Admin route - delete score

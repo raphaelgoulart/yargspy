@@ -3,7 +3,8 @@
   <div class="flex justify-center">
     <TheAlert class="w-full sm:w-128 justify-center"
       ><ExclamationCircleIcon class="size-5 inline" /><span class="align-middle ml-1"
-        >Only replay files from the latest <b>Stable</b> version are supported.</span
+        >Only replay files from the latest <b>Stable</b> version are supported.<br />Only built-in
+        engine presets (default, casual, precision) are supported.</span
       ></TheAlert
     >
   </div>
