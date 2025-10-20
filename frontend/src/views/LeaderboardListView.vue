@@ -261,6 +261,7 @@ function setSearch() {
   search.value = searchInput.value
   searchMethod.value = searchMethodInput.value
   sortMethod.value = sortMethodInput.value
+  page.value = 1
   fetchLeaderboards()
 }
 
