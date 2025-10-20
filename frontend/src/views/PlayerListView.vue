@@ -108,6 +108,7 @@ async function fetchPlayers() {
 
 function setUsername(s: string) {
   username.value = s
+  page.value = 1
   fetchPlayers()
 }
 
