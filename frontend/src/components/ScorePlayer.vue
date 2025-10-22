@@ -4,8 +4,8 @@
       <RouterLink
         :to="{ name: 'leaderboard', params: { id: score.song._id } }"
         class="font-semibold"
-        >{{ score.song.name }}</RouterLink
-      >
+        ><StringColorParsed :value="score.song.name"
+      /></RouterLink>
       <span v-if="score.songSpeed != 1"> ({{ percent(score.songSpeed) }})</span><br />
       <span class="text-xs"
         ><StringColorParsed :value="score.song.artist" />

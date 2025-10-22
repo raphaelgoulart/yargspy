@@ -101,6 +101,7 @@
           label="Profile Picture URL"
           placeholder="https://..."
           v-model="editData.profilePhotoURL"
+          @update:modelValue="checkDiscordURL"
         />
         <div class="flex my-2">
           <img
@@ -114,6 +115,7 @@
           label="Banner URL"
           placeholder="https://..."
           v-model="editData.bannerURL"
+          @update:modelValue="checkDiscordURL"
         />
         <img
           class="rounded-sm w-full h-16 my-2 object-cover"
@@ -130,7 +132,9 @@
       </form>
     </div>
     <div class="mt-4">
-      <TheButton type="submit" @click="editProfile" :disabled="editLoading">Save</TheButton>
+      <TheButton type="submit" @click="editProfile" :disabled="editLoading || !checkDiscordURL()"
+        >Save</TheButton
+      >
     </div>
     <LoadingSpinner v-if="editLoading" class="text-center mt-2" />
     <TheAlert v-if="editError" color="red" class="text-center mt-2">
@@ -310,7 +314,7 @@ function setLimit(i: number) {
 
 async function editProfile(ev: Event) {
   ev.preventDefault()
-  if (!editForm.value.reportValidity()) return
+  if (!editForm.value.reportValidity() || !checkDiscordURL()) return
   editLoading.value = true
   editError.value = ''
   const params = structuredClone(toRaw(editData.value)) as Record<string, string | undefined>
@@ -364,6 +368,20 @@ async function banUser(ev: Event) {
 function deleteScore(score: IScore) {
   deleteScoreData.value = score
   deleteScoreOpen.value = true
+}
+
+function checkDiscordURL() {
+  if (
+    editData.value.profilePhotoURL?.includes('cdn.discordapp.') ||
+    editData.value.profilePhotoURL?.includes('media.discordapp.') ||
+    editData.value.bannerURL?.includes('cdn.discordapp.') ||
+    editData.value.bannerURL?.includes('media.discordapp.')
+  ) {
+    editError.value = 'Discord links only work temporarily, and therefore are not supported.'
+    return false
+  }
+  editError.value = ''
+  return true
 }
 </script>
 
