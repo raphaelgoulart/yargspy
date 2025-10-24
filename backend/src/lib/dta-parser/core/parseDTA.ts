@@ -149,8 +149,7 @@ export const parseDTA = (songContent: string): RB3CompatibleDTAFile | PartialDTA
           for (const trackChannels of tracksCount) {
             if (trackChannels) tracksCountDifference += trackChannels
           }
-          if (allTracksCount - tracksCountDifference > 2) tracksCount[5] = allTracksCount - tracksCountDifference
-          else tracksCount[5] = allTracksCount - tracksCountDifference
+          tracksCount[5] = allTracksCount - tracksCountDifference
         }
       }
 
@@ -207,6 +206,7 @@ export const parseDTA = (songContent: string): RB3CompatibleDTAFile | PartialDTA
       else if (key === 'crowd_channels') {
         if (tracksCount.length === 7) tracksCount[6] = 2
         else tracksCount.push(2)
+        if (tracksCount.length > 5) tracksCount[5] -= 2 // Fix track count difference if it has been processed already
       }
       // Parse preview
       else if (key === 'preview') {
