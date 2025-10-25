@@ -206,7 +206,7 @@ export const parseDTA = (songContent: string): RB3CompatibleDTAFile | PartialDTA
       else if (key === 'crowd_channels') {
         if (tracksCount.length === 7) tracksCount[6] = 2
         else tracksCount.push(2)
-        if (tracksCount.length > 5) tracksCount[5] -= 2 // Fix track count difference if it has been processed already
+        if (tracksCount.length > 6 && tracksCount[5] > 2) tracksCount[5] -= 2
       }
       // Parse preview
       else if (key === 'preview') {
