@@ -353,17 +353,16 @@ export class YARGReplayValidatorAPI {
     let command = `${prefix}"./${validatorPath.fullname}" "${replayFile.path}" "${chartFile.path}" -m ${readMode}`
 
     // Input parameters from Song model
-    if (song.isRb3con) command += ' -c true'
-    if (song.proDrums !== undefined) command += ` -p ${booleanToString(song.proDrums)}`
-    if (song.fiveLaneDrums !== undefined) command += ` -g ${booleanToString(song.fiveLaneDrums)}`
+    if (song.isRb3con) command += ' -c'
+    if (song.proDrums) command += ` -p`
+    if (song.fiveLaneDrums) command += ` -g`
     if (song.sustainCutoffThreshold !== undefined) command += ` -s ${song.sustainCutoffThreshold.toString()}`
     if (song.multiplierNote !== undefined) command += ` -n ${song.multiplierNote.toString()}`
     if (song.hopoFrequency !== undefined) command += ` -h ${song.hopoFrequency.toString()}`
 
     // Other input params
-    if (eighthNoteHopo !== undefined) command += ` -e ${booleanToString(eighthNoteHopo)}`
+    if (eighthNoteHopo) command += ` -e`
     if (song.hopoFrequency === undefined && hopoFreq !== undefined) command += ` -f ${hopoFreq.toString()}`
-
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
     if (stderr) throw new ServerError('err_validator_unknown', isDev() ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnReplayInfo()' } : {})
 
@@ -382,14 +381,14 @@ export class YARGReplayValidatorAPI {
     let command = `${prefix}"./${validatorPath.fullname}" _ "${chartFile.path}" -m ${readMode}`
 
     // Input parameters from Song model
-    if (song.isRb3con) command += ' -c true'
-    if (song.proDrums !== undefined) command += ` -p ${booleanToString(song.proDrums)}`
-    if (song.fiveLaneDrums !== undefined) command += ` -g ${booleanToString(song.fiveLaneDrums)}`
+    if (song.isRb3con) command += ' -c'
+    if (song.proDrums) command += ` -p`
+    if (song.fiveLaneDrums) command += ` -g`
     if (song.sustainCutoffThreshold !== undefined) command += ` -s ${song.sustainCutoffThreshold.toString()}`
     if (song.multiplierNote !== undefined) command += ` -n ${song.multiplierNote.toString()}`
 
     // Other input params
-    if (eighthNoteHopo !== undefined) command += ` -e ${booleanToString(eighthNoteHopo)}`
+    if (eighthNoteHopo) command += ` -e`
     if (hopoFreq !== undefined) command += ` -f ${hopoFreq.toString()}`
 
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })

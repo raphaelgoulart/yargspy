@@ -105,6 +105,8 @@ async function upload(ev: Event) {
       } else if (e.response?.data.code == 'err_validator_unknown') {
         error.value = e.response?.data.error
       } else {
+        if (e.response?.data.code == 'err_replay_register_no_reqtype')
+          console.log(Object.fromEntries(e.config?.data))
         error.value = e.response?.data.message
       }
     } else {
