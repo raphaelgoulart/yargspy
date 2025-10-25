@@ -262,7 +262,7 @@ export class DTAParser {
       if (!isNaN(Number(song.song_id))) newSongs.push(song)
       else {
         patchedSongsID.push(song.id)
-        newSongs.push({ ...song, song_id: Math.abs(genNumericSongID(song.song_id)), original_id: song.song_id.toString() })
+        newSongs.push({ ...song, song_id: Math.abs(genNumericSongID(song.song_id ?? song.id)), original_id: song.song_id ? song.song_id.toString() : song.id.toString() })
       }
     }
 
