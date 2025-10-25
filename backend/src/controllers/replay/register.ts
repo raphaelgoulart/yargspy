@@ -30,6 +30,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     const parts = req.parts({ limits: { parts: 4, fileSize: 5242880 } })
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
     const bodyMap = new Map<keyof IReplayRegisterBody, any>()
+    const filePromises: Promise<void>[] = []
 
     // The file streams must have a handler so the streamed data can reach somewhere,
     // otherwise the request will freeze here and won't send any response
@@ -45,27 +46,35 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
           else if (part.filename.endsWith('.dta')) filePath = dtaTemp
           else throw new ServerError('err_invalid_input')
 
-          await pipeline(part.file, await filePath.createWriteStream())
+          // This must be done separately; awaiting I/O causes race conditions which might cause other fields to be occasionally missed
+          const pipelinePromise = (async () => {
+            await pipeline(part.file, await filePath.createWriteStream())
 
-          fileFields.set(part.fieldname, {
-            filePath: filePath,
-            key: part.fieldname,
-            fileName: part.filename,
-            encoding: part.encoding,
-            mimeType: part.mimetype,
-          })
-        } else throw new ServerError('err_invalid_input')
+            fileFields.set(part.fieldname, {
+              filePath: filePath,
+              key: part.fieldname,
+              fileName: part.filename,
+              encoding: part.encoding,
+              mimeType: part.mimetype,
+            })
+          })()
+
+          filePromises.push(pipelinePromise)
+        } else {
+          part.file.resume()
+          throw new ServerError('err_invalid_input')
+        }
       } else {
         if (part.fieldname === 'reqType' && (part.value === 'complete' || part.value === 'replayOnly')) bodyMap.set(part.fieldname, part.value)
         else throw new ServerError('err_invalid_input')
       }
     }
 
+    await Promise.all(filePromises) // actually process the files read in the for loop above
+
     const { reqType } = Object.fromEntries(bodyMap.entries()) as IReplayRegisterBody
 
     if (!reqType) {
-      console.log(bodyMap)
-      console.log(reqType)
       throw new ServerError('err_replay_register_no_reqtype')
     }
 
