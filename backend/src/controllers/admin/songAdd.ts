@@ -23,6 +23,8 @@ const adminSongAddHandler: ServerHandler = async function (req, reply) {
     const parts = req.parts({ limits: { parts: 2 } })
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
 
+    const filePromises: Promise<void>[] = []
+
     for await (const part of parts) {
       if (part.type === 'file') {
         if (part.fieldname === 'chartFile' || part.fieldname === 'songDataFile') {
@@ -34,20 +36,29 @@ const adminSongAddHandler: ServerHandler = async function (req, reply) {
           else if (part.filename.endsWith('.dta')) filePath = dtaTemp
           else throw new ServerError('err_invalid_input')
 
-          await pipeline(part.file, await filePath.createWriteStream())
+          const pipelinePromise = (async () => {
+            await pipeline(part.file, await filePath.createWriteStream())
 
-          fileFields.set(part.fieldname, {
-            filePath: filePath,
-            key: part.fieldname,
-            fileName: part.filename,
-            encoding: part.encoding,
-            mimeType: part.mimetype,
-          })
-        } else throw new ServerError('err_invalid_input')
+            fileFields.set(part.fieldname, {
+              filePath: filePath,
+              key: part.fieldname,
+              fileName: part.filename,
+              encoding: part.encoding,
+              mimeType: part.mimetype,
+            })
+          })()
+
+          filePromises.push(pipelinePromise)
+        } else {
+          part.file.resume()
+          throw new ServerError('err_invalid_input')
+        }
       } else {
         throw new ServerError('err_invalid_input')
       }
     }
+
+    await Promise.all(filePromises)
 
     const {
       chartFile: { filePath: chartFilePath },

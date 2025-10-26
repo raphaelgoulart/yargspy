@@ -144,6 +144,7 @@ export const codeMap = {
   success_replay_and_song_register: [201, 'Your score and song was registered successfully'],
   err_replay_no_valid_players: [400, 'Provided YARG REPLAY file only contains players that played using custom engines unsupported by the server, score registering has been aborted'],
   err_replay_no_notes_hit: [400, 'No player has hit any notes in this YARG REPLAY file'],
+  err_replay_coop_unsupported: [400, "Co-op replays are not supported at the present moment, since it isn't possible to differentiate play-with-replay runs from actual co-op runs yet. We apologize for the inconvenience."],
   err_validator_unknown: [400, 'An unknown error occurred, please try again later'],
 
   // admin/userBan
