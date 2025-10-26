@@ -9,6 +9,15 @@
     >
   </div>
   <div class="flex justify-center">
+    <TheAlert class="w-full sm:w-128 justify-center" color="yellow"
+      ><ExclamationTriangleIcon class="size-5 inline" /><span class="align-middle ml-1"
+        ><b>Co-op replays are not supported at the present moment, </b>since it isn't possible to
+        differentiate play-with-replay runs from actual co-op runs yet. We apologize for the
+        inconvenience.</span
+      ></TheAlert
+    >
+  </div>
+  <div class="flex justify-center">
     <div class="w-full sm:w-128 p-4 pb-2 sm:border rounded-md border-gray-800">
       <form ref="form" class="mb-2">
         <div class="mb-2">

@@ -147,6 +147,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     const replayInfo = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, isSongEntryFound, songEntry, eighthNoteHopo, hopoFreq)
 
     if (replayInfo.replayInfo.bandScore == 0) throw new ServerError('err_replay_no_notes_hit')
+    if (replayInfo.replayData.length > 1) throw new ServerError('err_replay_coop_unsupported')
 
     if (!isSongEntryFound) {
       // Add remaining song info to song object (i.e. hopo_threshold, instruments diffs and notes etc.) then save to DB
