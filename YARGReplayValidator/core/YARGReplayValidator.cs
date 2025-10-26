@@ -65,7 +65,7 @@ namespace YARGReplayValidator.Core
       if (sustainCutoffThreshold is not null) parseSettings.SustainCutoffThreshold = (long)sustainCutoffThreshold;
       if (multiplierNote is not null) parseSettings.StarPowerNote = (int)multiplierNote;
       if (hopoThreshold is not null) parseSettings.HopoThreshold = (long)hopoThreshold;
-      else if ((eighthNoteHopo || hopofreq is not null) && chartPath is not null)
+      if ((hopoThreshold is null && (eighthNoteHopo || hopofreq is not null) || (!isChart && sustainCutoffThreshold is null)) && chartPath is not null)
       {
         if (!File.Exists(chartPath))
         {
@@ -73,11 +73,14 @@ namespace YARGReplayValidator.Core
         }
         var chart = SongChart.FromFile(parseSettings, chartPath);
         var resolution = chart.Resolution;
+        if (!isChart && sustainCutoffThreshold is null) {
+          parseSettings.SustainCutoffThreshold = resolution / 3;
+        }
         if (eighthNoteHopo)
         {
           parseSettings.HopoThreshold = resolution / 2;
         }
-        else
+        else if (hopofreq is not null)
         {
           long denominator = hopofreq switch
           {
@@ -95,7 +98,7 @@ namespace YARGReplayValidator.Core
       return parseSettings;
     }
 
-    public static Dictionary<string, object> ReadReplay(string replayFilePath, ReadMode readMode, string? chartPath = null, ParseSettings? parseSettings = null)
+    public static Dictionary<string, object> ReadReplay(string replayFilePath, ReadMode readMode, ParseSettings parseSettings, string? chartPath = null)
     {
       ReplayInfo replayInfo;
       ReplayData replayData;
@@ -103,11 +106,11 @@ namespace YARGReplayValidator.Core
       SongChart? chart = null;
       if (readMode != ReadMode.ReturnSongHash)
       {
-        if (chartPath is null || parseSettings is null)
+        if (chartPath is null)
         {
           throw new Exception("Missing MIDI path/parse settings.");
         }
-        chart = SongChart.FromFile((ParseSettings)parseSettings, chartPath);
+        chart = SongChart.FromFile(in parseSettings, chartPath);
       }
 
       if (readMode != ReadMode.MidiOnly)
@@ -286,7 +289,7 @@ namespace YARGReplayValidator.Core
             { "StarPowerCount", starPowerStorage }
         };
         output.Add("ChartData", chartDataStorage);
-        output.Add("HopoFrequency", parseSettings!.Value.HopoThreshold); // needed because DB stores hopo_frequency, but .ini might contain eighthNoteHopo/hopofreq instead
+        output.Add("HopoFrequency", parseSettings.HopoThreshold); // needed because DB stores hopo_frequency, but .ini might contain eighthNoteHopo/hopofreq instead
       }
       return output;
     }
