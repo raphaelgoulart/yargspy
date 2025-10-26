@@ -111,8 +111,8 @@ async function upload(ev: Event) {
     if (axios.isAxiosError(e) && e.status! < 500) {
       if (e.response?.data.code == 'err_replay_songdata_required') {
         songDataRequired.value = true
-      } else if (e.response?.data.code == 'err_validator_unknown') {
-        error.value = e.response?.data.error
+      } else if (e.response?.data.code == 'err_validator_unknown' && e.response?.data.error) {
+        error.value = e.response.data.error
       } else {
         if (e.response?.data.code == 'err_replay_register_no_reqtype')
           console.log(Object.fromEntries(e.config?.data))

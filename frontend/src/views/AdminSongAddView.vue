@@ -77,8 +77,8 @@ async function upload(ev: Event) {
     router.push('/leaderboard/' + result.data.song._id)
   } catch (e) {
     if (axios.isAxiosError(e) && e.status! < 500) {
-      if (e.response?.data.code == 'err_validator_unknown') {
-        error.value = e.response?.data.error
+      if (e.response?.data.code == 'err_validator_unknown' && e.response?.data.error) {
+        error.value = e.response.data.error
       } else {
         error.value = e.response?.data.message
       }

@@ -144,7 +144,7 @@ namespace YARGReplayValidator.Core
           }
           else
           {
-            throw new Exception("REPLAY file band score and simulated band score don't match.");
+            throw new Exception($"REPLAY file band score and simulated band score don't match. (simulated: {bandScore}, metadata: {replayInfo.BandScore})");
           }
         }
         output.Add("ReplayInfo", replayInfo);

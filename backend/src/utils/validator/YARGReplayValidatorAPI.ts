@@ -363,8 +363,9 @@ export class YARGReplayValidatorAPI {
     // Other input params
     if (eighthNoteHopo) command += ` -e`
     if (song.hopoFrequency === undefined && hopoFreq !== undefined) command += ` -f ${hopoFreq.toString()}`
+    console.log(command)
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
-    if (stderr) throw new ServerError('err_validator_unknown', isDev() ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnReplayInfo()' } : {})
+    if (stderr) throw new ServerError('err_validator_unknown', isDev() || !stderr.includes('does not exist.') ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnReplayInfo()' } : {})
 
     return this.formatReplayInfoResults(this.camelCaseKeyTransform<YARGReplayValidatorResults>(JSON.parse(stdout)))
   }
@@ -392,7 +393,7 @@ export class YARGReplayValidatorAPI {
     if (hopoFreq !== undefined) command += ` -f ${hopoFreq.toString()}`
 
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
-    if (stderr) throw new ServerError('err_validator_unknown', isDev() ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnSongInfo()' } : {})
+    if (stderr) throw new ServerError('err_validator_unknown', isDev() || !stderr.includes('does not exist.') ? { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnSongInfo()' } : {})
 
     return this.camelCaseKeyTransform<FormattedYARGSongResults>(JSON.parse(stdout))
   }
