@@ -1,4 +1,3 @@
-import { pipeline } from 'node:stream/promises'
 import { TokenError } from 'fast-jwt'
 import type { FilePath } from 'node-lib'
 import type { RouteRequest, ServerErrorHandler, ServerHandler, ServerRequestFileFieldObject } from '../../lib.exports'
@@ -8,10 +7,11 @@ import { serverReply } from '../../core.exports'
 import { type Difficulty, Instrument, Song, type SongSchemaDocument } from '../../models/Song'
 import { AdminAction, AdminLog } from '../../models/AdminLog'
 import type { UserSchemaDocument } from '../../models/User'
+import type { MultipartFile } from '@fastify/multipart'
 
-export interface IAdminSongAddFileFieldsObject {
-  chartFile: ServerRequestFileFieldObject
-  songDataFile: ServerRequestFileFieldObject
+export interface IAdminSongAddFileBody {
+  chartFile: MultipartFile
+  songDataFile: MultipartFile
 }
 
 // #region Handler
@@ -20,50 +20,48 @@ const adminSongAddHandler: ServerHandler = async function (req, reply) {
   const { chartTemp, dtaTemp, iniTemp, midiTemp, replayTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
 
   try {
-    const parts = req.parts({ limits: { parts: 2 } })
+    const body = req.body as IAdminSongAddFileBody
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
 
     const filePromises: Promise<void>[] = []
 
-    for await (const part of parts) {
-      if (part.type === 'file') {
-        if (part.fieldname === 'chartFile' || part.fieldname === 'songDataFile') {
-          let filePath: FilePath
+    const processFile = async (part: MultipartFile | undefined, fieldName: string): Promise<void> => {
+      // Check if the file part exists
+      if (!part) {
+        return
+      }
 
-          if (part.filename.endsWith('.mid')) filePath = midiTemp
-          else if (part.filename.endsWith('.ini')) filePath = iniTemp
-          else if (part.filename.endsWith('.chart')) filePath = chartTemp
-          else if (part.filename.endsWith('.dta')) filePath = dtaTemp
-          else throw new ServerError('err_invalid_input')
-
-          const pipelinePromise = (async () => {
-            await pipeline(part.file, await filePath.createWriteStream())
-
-            fileFields.set(part.fieldname, {
-              filePath: filePath,
-              key: part.fieldname,
-              fileName: part.filename,
-              encoding: part.encoding,
-              mimeType: part.mimetype,
-            })
-          })()
-
-          filePromises.push(pipelinePromise)
-        } else {
-          part.file.resume()
-          throw new ServerError('err_invalid_input')
-        }
-      } else {
+      let filePath: FilePath
+      if (part.filename.endsWith('.mid')) filePath = midiTemp
+      else if (part.filename.endsWith('.ini')) filePath = iniTemp
+      else if (part.filename.endsWith('.chart')) filePath = chartTemp
+      else if (part.filename.endsWith('.dta')) filePath = dtaTemp
+      else {
         throw new ServerError('err_invalid_input')
       }
+
+      const buffer = await part.toBuffer()
+      await filePath.write(buffer)
+
+      fileFields.set(fieldName, {
+        filePath: filePath,
+        key: fieldName,
+        fileName: part.filename,
+        encoding: part.encoding,
+        mimeType: part.mimetype,
+      })
     }
+
+    filePromises.push(processFile(body.chartFile, 'chartFile'))
+    filePromises.push(processFile(body.songDataFile, 'songDataFile'))
 
     await Promise.all(filePromises)
 
-    const {
-      chartFile: { filePath: chartFilePath },
-      songDataFile: { filePath: songDataPath },
-    } = Object.fromEntries(fileFields.entries()) as unknown as IAdminSongAddFileFieldsObject
+    const chartFileField = fileFields.get('chartFile')
+    const songDataFileField = fileFields.get('songDataFile')
+
+    const chartFilePath = chartFileField!.filePath
+    const songDataPath = songDataFileField!.filePath
 
     if (!chartFilePath || !songDataPath) throw new ServerError('err_song_songdata_required')
     const songHash = await chartFilePath.generateHash('sha1')

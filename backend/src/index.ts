@@ -24,7 +24,9 @@ const serverStart = async () => {
   await app.register(mongoDBConnectPlugin, { mongoDBURI })
   await app.register(fastifyCors)
   await app.register(fastifyAuth)
-  await app.register(fastifyMultipart)
+  await app.register(fastifyMultipart, {
+    attachFieldsToBody: true,
+  })
   await app.register(fastifyStatic, { root: getServerRoot().gotoDir('files/replay').path, prefix: '/file/replay' })
 
   initServerRoutes(app)

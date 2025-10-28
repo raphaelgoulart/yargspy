@@ -34,6 +34,13 @@ export default function AdminRoute(app: FastifyInstance) {
   app.route({
     method: ['POST', 'HEAD'],
     url: '/admin/songAdd',
+    config: {
+      multipart: {
+        limits: {
+          parts: 2,
+        },
+      },
+    },
     logLevel: 'warn',
     preHandler: app.auth([verifyUserJWT, verifyAdmin], { relation: 'and' }),
     ...adminSongAddController,
