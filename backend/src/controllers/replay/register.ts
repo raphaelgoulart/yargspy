@@ -1,7 +1,7 @@
 import { pipeline } from 'node:stream/promises'
 import { TokenError } from 'fast-jwt'
 import type { FilePath } from 'node-lib'
-import type { RouteRequest, ServerErrorHandler, ServerHandler, ServerRequest, ServerRequestFileFieldObject } from '../../lib.exports'
+import type { RouteRequest, ServerErrorHandler, ServerHandler, ServerRequestFileFieldObject } from '../../lib.exports'
 import { checkChartFilesIntegrity, checkReplayFileIntegrity, createReplayRegisterTempPaths, createSongEntryInput, getChartFilePathFromSongEntry, getServerFile, isDev, parsePlayerModifiersForScoreEntry, YARGReplayValidatorAPI } from '../../utils.exports'
 import { ServerError } from '../../app.exports'
 import { serverReply } from '../../core.exports'
@@ -9,10 +9,7 @@ import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocumen
 import { type Difficulty, Instrument, Song, type SongSchemaDocument } from '../../models/Song'
 import type { UserSchemaDocument } from '../../models/User'
 import type { Schema } from 'mongoose'
-
-export interface IReplayRegisterBody {
-  reqType?: 'replayOnly' | 'complete'
-}
+import type { MultipartFields, MultipartValue } from '@fastify/multipart'
 
 export interface IReplayRegisterFileFieldsObject {
   replayFile: ServerRequestFileFieldObject
@@ -27,59 +24,56 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
   const playerScores: ScoreSchemaDocument[] = []
 
   try {
-    const parts = req.parts({ limits: { parts: 4, fileSize: 5242880 } })
+    const filesIterator = req.files({ limits: { parts: 4, fileSize: 5242880 } })
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
-    const bodyMap = new Map<keyof IReplayRegisterBody, any>()
     const filePromises: Promise<void>[] = []
+    let fields: MultipartFields | undefined
 
     // The file streams must have a handler so the streamed data can reach somewhere,
     // otherwise the request will freeze here and won't send any response
-    for await (const part of parts) {
-      if (part.type === 'file') {
-        if (part.fieldname === 'replayFile' || part.fieldname === 'chartFile' || part.fieldname === 'songDataFile') {
-          let filePath: FilePath
+    for await (const part of filesIterator) {
+      if (part.fieldname === 'replayFile' || part.fieldname === 'chartFile' || part.fieldname === 'songDataFile') {
+        let filePath: FilePath
+        fields = part.fields
 
-          if (part.filename.endsWith('.replay')) filePath = replayTemp
-          else if (part.filename.endsWith('.mid')) filePath = midiTemp
-          else if (part.filename.endsWith('.ini')) filePath = iniTemp
-          else if (part.filename.endsWith('.chart')) filePath = chartTemp
-          else if (part.filename.endsWith('.dta')) filePath = dtaTemp
-          else throw new ServerError('err_invalid_input')
-
-          // This must be done separately; awaiting I/O causes race conditions which might cause other fields to be occasionally missed
-          const pipelinePromise = (async () => {
-            await pipeline(part.file, await filePath.createWriteStream())
-
-            fileFields.set(part.fieldname, {
-              filePath: filePath,
-              key: part.fieldname,
-              fileName: part.filename,
-              encoding: part.encoding,
-              mimeType: part.mimetype,
-            })
-          })()
-
-          filePromises.push(pipelinePromise)
-        } else {
-          part.file.resume()
-          throw new ServerError('err_invalid_input')
-        }
-      } else {
-        if (part.fieldname === 'reqType' && (part.value === 'complete' || part.value === 'replayOnly')) bodyMap.set(part.fieldname, part.value)
+        if (part.filename.endsWith('.replay')) filePath = replayTemp
+        else if (part.filename.endsWith('.mid')) filePath = midiTemp
+        else if (part.filename.endsWith('.ini')) filePath = iniTemp
+        else if (part.filename.endsWith('.chart')) filePath = chartTemp
+        else if (part.filename.endsWith('.dta')) filePath = dtaTemp
         else throw new ServerError('err_invalid_input')
+
+        // This must be done separately; awaiting I/O causes race conditions which might cause other fields to be occasionally missed
+        const pipelinePromise = (async () => {
+          await pipeline(part.file, await filePath.createWriteStream())
+
+          fileFields.set(part.fieldname, {
+            filePath: filePath,
+            key: part.fieldname,
+            fileName: part.filename,
+            encoding: part.encoding,
+            mimeType: part.mimetype,
+          })
+        })()
+
+        filePromises.push(pipelinePromise)
+      } else {
+        part.file.resume()
+        throw new ServerError('err_invalid_input')
       }
     }
 
     await Promise.all(filePromises) // actually process the files read in the for loop above
 
-    const { reqType } = Object.fromEntries(bodyMap.entries()) as IReplayRegisterBody
-
-    if (!reqType) {
-      throw new ServerError('err_replay_register_no_reqtype')
-    }
-
     // Must have a file in the request and one of these files must be the replay file
     if (fileFields.size === 0 || !fileFields.has('replayFile')) throw new ServerError('err_replay_no_replay_uploaded')
+
+    const reqTypeField = fields?.reqType as MultipartValue | undefined
+    const reqType = reqTypeField?.value as string | undefined
+
+    if (!reqType || (reqType !== 'complete' && reqType !== 'replayOnly')) {
+      throw new ServerError('err_replay_register_no_reqtype')
+    }
 
     const isReqReplayOnly = reqType === 'replayOnly'
 
