@@ -418,7 +418,8 @@ async function fetchSong() {
     loading.value = false
     if (song.value) {
       fetchScores()
-      if (song.value.artist && song.value.album) fetchAlbumArt(song.value.artist, song.value.album)
+      if (song.value.artist && song.value.album)
+        fetchAlbumArt(song.value.name, song.value.artist, song.value.charter, song.value.album)
       // prepare dropdowns...
       for (const i in song.value.availableInstruments) {
         const inst = song.value.availableInstruments[Number(i)]
@@ -467,10 +468,10 @@ async function fetchScores() {
     scoreLoading.value = false
   }
 }
-async function fetchAlbumArt(artist: string, album: string) {
-  const result = await albumArtFinder(artist, album)
-  if (result && result.data) {
-    if (result.data.album.image[4]['#text']) imgSrc.value = result.data.album.image[4]['#text']
+async function fetchAlbumArt(name: string, artist: string, charter: string, album: string) {
+  const result = await albumArtFinder(name, artist, charter, album)
+  if (result) {
+    imgSrc.value = result
   }
 }
 

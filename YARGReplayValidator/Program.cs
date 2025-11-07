@@ -28,7 +28,7 @@ static void InitYARGReplayValidator(ArgParseOptions options)
 
     var parseSettings = YARGReplayValidatorCore.GetParseSettings(isChart, isRB3CON, proDrums, fiveLaneDrums, sustainCutoffThreshold, multiplierNote, hopoThreshold, eighthNoteHopo, hopofreq, options.ChartFilePath);
 
-    var result = YARGReplayValidatorCore.ReadReplay(options.ReplayFilePath, readMode, options.ChartFilePath, parseSettings);
+    var result = YARGReplayValidatorCore.ReadReplay(options.ReplayFilePath, readMode, parseSettings, options.ChartFilePath);
     Console.WriteLine(JsonConvert.SerializeObject(result));
     Environment.Exit(0);
   }

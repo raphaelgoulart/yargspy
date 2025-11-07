@@ -51,9 +51,9 @@ const to = { name: 'leaderboard', params: { id: props.id } }
 const imgSrc = ref(defaultSongImg)
 
 onMounted(async () => {
-  const result = await albumArtFinder(props.artist, props.album)
-  if (result && result.data) {
-    if (result.data.album.image[2]['#text']) imgSrc.value = result.data.album.image[2]['#text']
+  const result = await albumArtFinder(props.name, props.artist, props.charter, props.album)
+  if (result) {
+    imgSrc.value = result
   }
 })
 </script>

@@ -20,40 +20,36 @@ const adminSongAddHandler: ServerHandler = async function (req, reply) {
   const { chartTemp, dtaTemp, iniTemp, midiTemp, replayTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
 
   try {
-    const parts = req.parts({ limits: { parts: 2 } })
+    const filesIterator = req.files({ limits: { parts: 2 } })
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
 
     const filePromises: Promise<void>[] = []
 
-    for await (const part of parts) {
-      if (part.type === 'file') {
-        if (part.fieldname === 'chartFile' || part.fieldname === 'songDataFile') {
-          let filePath: FilePath
+    for await (const part of filesIterator) {
+      if (part.fieldname === 'chartFile' || part.fieldname === 'songDataFile') {
+        let filePath: FilePath
 
-          if (part.filename.endsWith('.mid')) filePath = midiTemp
-          else if (part.filename.endsWith('.ini')) filePath = iniTemp
-          else if (part.filename.endsWith('.chart')) filePath = chartTemp
-          else if (part.filename.endsWith('.dta')) filePath = dtaTemp
-          else throw new ServerError('err_invalid_input')
+        if (part.filename.endsWith('.mid')) filePath = midiTemp
+        else if (part.filename.endsWith('.ini')) filePath = iniTemp
+        else if (part.filename.endsWith('.chart')) filePath = chartTemp
+        else if (part.filename.endsWith('.dta')) filePath = dtaTemp
+        else throw new ServerError('err_invalid_input')
 
-          const pipelinePromise = (async () => {
-            await pipeline(part.file, await filePath.createWriteStream())
+        const pipelinePromise = (async () => {
+          await pipeline(part.file, await filePath.createWriteStream())
 
-            fileFields.set(part.fieldname, {
-              filePath: filePath,
-              key: part.fieldname,
-              fileName: part.filename,
-              encoding: part.encoding,
-              mimeType: part.mimetype,
-            })
-          })()
+          fileFields.set(part.fieldname, {
+            filePath: filePath,
+            key: part.fieldname,
+            fileName: part.filename,
+            encoding: part.encoding,
+            mimeType: part.mimetype,
+          })
+        })()
 
-          filePromises.push(pipelinePromise)
-        } else {
-          part.file.resume()
-          throw new ServerError('err_invalid_input')
-        }
+        filePromises.push(pipelinePromise)
       } else {
+        part.file.resume()
         throw new ServerError('err_invalid_input')
       }
     }
