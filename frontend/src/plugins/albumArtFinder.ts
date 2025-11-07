@@ -5,6 +5,7 @@ export async function albumArtFinder(
   artist: string,
   charter?: string,
   album?: string,
+  large = false,
 ) {
   const regex = /(<color="?#?\w+"?>)|(<\/color>)/g
   name = name.replace(regex, '')
@@ -32,6 +33,7 @@ export async function albumArtFinder(
     },
   })
   if (result && result.data) {
-    if (result.data.album.image[2]['#text']) return result.data.album.image[2]['#text']
+    const index = large ? 4 : 2
+    if (result.data.album.image[index]['#text']) return result.data.album.image[index]['#text']
   }
 }
