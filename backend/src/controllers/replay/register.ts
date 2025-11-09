@@ -24,7 +24,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
   const playerScores: ScoreSchemaDocument[] = []
 
   try {
-    const filesIterator = req.files({ limits: { parts: 4, fileSize: 5242880 } })
+    const filesIterator = req.files({ limits: { parts: 4, fileSize: 33554432 } }) // 32mb
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
     const filePromises: Promise<void>[] = []
     let fields: MultipartFields | undefined
