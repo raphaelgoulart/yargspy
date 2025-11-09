@@ -20,7 +20,7 @@ const adminSongAddHandler: ServerHandler = async function (req, reply) {
   const { chartTemp, dtaTemp, iniTemp, midiTemp, replayTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
 
   try {
-    const filesIterator = req.files({ limits: { parts: 2 } })
+    const filesIterator = req.files({ limits: { parts: 2, fileSize: 2097152 } })
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
 
     const filePromises: Promise<void>[] = []
