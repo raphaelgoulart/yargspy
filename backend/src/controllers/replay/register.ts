@@ -122,12 +122,14 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
         console.log(chartFilePath) // TODO: DEBUG REMOVE LATER
         console.log(completeFieldsObj) // TODO: DEBUG REMOVE LATER
         console.log(fileFields) // TODO: DEBUG REMOVE LATER
+        console.log(fields) // TODO: DEBUG REMOVE LATER
         throw new ServerError('err_replay_songdata_required')
       }
       if (!songDataPath) {
         console.log(songDataPath) // TODO: DEBUG REMOVE LATER
         console.log(completeFieldsObj) // TODO: DEBUG REMOVE LATER
         console.log(fileFields) // TODO: DEBUG REMOVE LATER
+        console.log(fields) // TODO: DEBUG REMOVE LATER
         throw new ServerError('err_replay_songdata_required')
       }
       if (songHash !== (await chartFilePath.generateHash('sha1'))) throw new ServerError('err_replay_invalid_midi_file')
