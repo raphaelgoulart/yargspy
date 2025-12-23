@@ -45,9 +45,9 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
         else throw new ServerError('err_invalid_input')
 
         // This must be done separately; awaiting I/O causes race conditions which might cause other fields to be occasionally missed
-        const pipelinePromise = (async () => {
-          await pipeline(part.file, await filePath.createWriteStream())
+        const writeStream = await filePath.createWriteStream()
 
+        const pipelinePromise = pipeline(part.file, writeStream).then(() => {
           fileFields.set(part.fieldname, {
             filePath: filePath,
             key: part.fieldname,
@@ -55,7 +55,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
             encoding: part.encoding,
             mimeType: part.mimetype,
           })
-        })()
+        })
 
         filePromises.push(pipelinePromise)
       } else {
