@@ -24,7 +24,8 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
   const playerScores: ScoreSchemaDocument[] = []
 
   try {
-    const filesIterator = req.files({ limits: { parts: 4, fileSize: 33554432 } }) // 32mb
+    // parts limit should ideally be 4, but some clients send "noisy" data which fastify/multipart wrongly detects as new parts and makes some data be missed
+    const filesIterator = req.files({ limits: { parts: 20, fileSize: 33554432 } }) // 32mb
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
     const filePromises: Promise<void>[] = []
     let fields: MultipartFields | undefined
