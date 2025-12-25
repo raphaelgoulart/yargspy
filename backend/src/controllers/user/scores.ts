@@ -20,10 +20,7 @@ const userScoresHandler: ServerHandler<IUserScores> = async function (req, reply
   const skip = (page - 1) * limit
   const filter = { uploader: id, hidden: false, instrument: { $ne: Instrument.Band } }
 
-  const [allScores, totalEntries] = await Promise.all([
-    Score.find(filter).sort('-createdAt').skip(skip).limit(limit).populate('song', '_id name artist charter').lean(),
-    Score.countDocuments(filter)
-  ]);
+  const [allScores, totalEntries] = await Promise.all([Score.find(filter).sort('-createdAt').skip(skip).limit(limit).populate('song', '_id name artist charter chartFileHash').lean(), Score.countDocuments(filter)])
   const totalPages = Math.ceil(totalEntries / limit)
 
   serverReply(reply, 'ok', {
@@ -31,7 +28,7 @@ const userScoresHandler: ServerHandler<IUserScores> = async function (req, reply
     totalPages,
     page,
     limit,
-    entries: allScores
+    entries: allScores,
   })
 }
 

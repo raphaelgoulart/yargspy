@@ -24,7 +24,8 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
   const playerScores: ScoreSchemaDocument[] = []
 
   try {
-    const filesIterator = req.files({ limits: { parts: 4, fileSize: 5242880 } })
+    // parts limit should ideally be 4, but some clients send "noisy" data which fastify/multipart wrongly detects as new parts and makes some data be missed
+    const filesIterator = req.files({ limits: { parts: 20, fileSize: 33554432 } }) // 32mb
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
     const filePromises: Promise<void>[] = []
     let fields: MultipartFields | undefined
@@ -43,10 +44,12 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
         else if (part.filename.endsWith('.dta')) filePath = dtaTemp
         else throw new ServerError('err_invalid_input')
 
-        // This must be done separately; awaiting I/O causes race conditions which might cause other fields to be occasionally missed
-        const pipelinePromise = (async () => {
-          await pipeline(part.file, await filePath.createWriteStream())
+        // Pause stream to avoid race condition
+        part.file.pause()
+        const writeStream = await filePath.createWriteStream()
 
+        // note: pipeline auto-resumes the paused stream
+        const pipelinePromise = pipeline(part.file, writeStream).then(() => {
           fileFields.set(part.fieldname, {
             filePath: filePath,
             key: part.fieldname,
@@ -54,7 +57,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
             encoding: part.encoding,
             mimeType: part.mimetype,
           })
-        })()
+        })
 
         filePromises.push(pipelinePromise)
       } else {
@@ -117,8 +120,21 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     if (!isSongEntryFound) {
       // If song isn't in database already...
       // Narrowing down: For this path, chart and song data are required and must return an error if now provided
-      if (!chartFilePath) throw new ServerError('err_replay_songdata_required')
-      if (!songDataPath) throw new ServerError('err_replay_songdata_required')
+      if (!chartFilePath) {
+        console.log(chartFilePath) // TODO: DEBUG REMOVE LATER
+        console.log(completeFieldsObj) // TODO: DEBUG REMOVE LATER
+        console.log(fileFields) // TODO: DEBUG REMOVE LATER
+        console.log(fields) // TODO: DEBUG REMOVE LATER
+        throw new ServerError('err_replay_songdata_required')
+      }
+      if (!songDataPath) {
+        console.log(songDataPath) // TODO: DEBUG REMOVE LATER
+        console.log(completeFieldsObj) // TODO: DEBUG REMOVE LATER
+        console.log(fileFields) // TODO: DEBUG REMOVE LATER
+        console.log(fields) // TODO: DEBUG REMOVE LATER
+        throw new ServerError('err_replay_songdata_required')
+      }
+      if (songHash !== (await chartFilePath.generateHash('sha1'))) throw new ServerError('err_replay_invalid_midi_file')
 
       const { eighthNoteHopo: e, hopoFreq: f, ...newSongEntryOptions } = await createSongEntryInput(chartFilePath, songHash, songDataPath)
       songEntry = new Song(newSongEntryOptions)
@@ -185,7 +201,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       uploader: user._id,
       replayPath: replayFilePath.name,
       replayFileHash: scoreHash,
-      version: GameVersion.v0_13_1, // hardcoded: change on each stable update
+      version: GameVersion.v0_13_2, // hardcoded: change on each stable update
       songSpeed: replayInfo.replayInfo.songSpeed,
       instrument: Instrument.Band,
       score: replayInfo.replayInfo.bandScore,

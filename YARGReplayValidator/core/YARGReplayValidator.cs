@@ -55,7 +55,6 @@ namespace YARGReplayValidator.Core
     public static ParseSettings GetParseSettings(bool isChart, bool isRB3CON = false, bool proDrums = true, bool fiveLaneDrums = false, long? sustainCutoffThreshold = null, int? multiplierNote = null, long? hopoThreshold = null, bool eighthNoteHopo = false, int? hopofreq = null, string? chartPath = null)
     {
       var parseSettings = isChart ? ParseSettings.Default_Chart : ParseSettings.Default_Midi;
-      parseSettings.DrumsType = DrumsType.FourLane;
       //
       parseSettings.ChordHopoCancellation = !isChart;
       parseSettings.NoteSnapThreshold = isRB3CON ? 10 : 0;
