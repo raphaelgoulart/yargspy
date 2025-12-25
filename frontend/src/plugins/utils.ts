@@ -137,6 +137,8 @@ export function getVersion(index: number) {
   switch (index) {
     case 0:
       return '0.13.1'
+    case 1:
+      return '0.13.2'
   }
   return 'Unknown'
 }
