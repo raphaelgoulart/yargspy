@@ -172,7 +172,7 @@ export const parseDTA = (songContent: string): RB3CompatibleDTAFile | PartialDTA
       // This is strings that's captured on "allStrings" variable
       else if (key === 'name' || key === 'artist' || key === 'album_name' || key === 'pack_name' || key === 'author' || key === 'loading_phrase' || key === 'strings_author' || key === 'keys_author') {
         if (!allStrings[stringIndex]) {
-          map.set(key, values[0])
+          map.set(key, values.join(' '))
           stringIndex++
         } else {
           map.set(key, slashQToQuote(allStrings[stringIndex]))
