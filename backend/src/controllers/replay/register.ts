@@ -44,21 +44,17 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
         else if (part.filename.endsWith('.dta')) filePath = dtaTemp
         else throw new ServerError('err_invalid_input')
 
-        // Pause stream to avoid race condition
-        part.file.pause()
-        const writeStream = await filePath.createWriteStream()
-
-        // note: pipeline auto-resumes the paused stream
-        const pipelinePromise = pipeline(part.file, writeStream).then(() => {
-          fileFields.set(part.fieldname, {
-            filePath: filePath,
-            key: part.fieldname,
-            fileName: part.filename,
-            encoding: part.encoding,
-            mimeType: part.mimetype,
-          })
+        // has to be sync to avoid race conditions with the underlying busboy parser
+        const writeStream = filePath.createWriteStreamSync()
+        fileFields.set(part.fieldname, {
+          filePath: filePath,
+          key: part.fieldname,
+          fileName: part.filename,
+          encoding: part.encoding,
+          mimeType: part.mimetype,
         })
 
+        const pipelinePromise = pipeline(part.file, writeStream)
         filePromises.push(pipelinePromise)
       } else {
         part.file.resume()
