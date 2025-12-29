@@ -9,7 +9,6 @@ import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocumen
 import { type Difficulty, Instrument, Song, type SongSchemaDocument } from '../../models/Song'
 import type { UserSchemaDocument } from '../../models/User'
 import type { Schema } from 'mongoose'
-import type { MultipartFields, MultipartValue } from '@fastify/multipart'
 
 export interface IReplayRegisterFileFieldsObject {
   replayFile: ServerRequestFileFieldObject
@@ -25,40 +24,44 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
   try {
     // parts limit should ideally be 4, but some clients send "noisy" data which fastify/multipart wrongly detects as new parts and makes some data be missed
-    const filesIterator = req.files({ limits: { parts: 20, fileSize: 33554432 } }) // 32mb
+    const parts = req.parts({ limits: { parts: 100, fileSize: 33554432 } }) // 32mb
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
     const filePromises: Promise<void>[] = []
-    let fields: MultipartFields | undefined
+    const formFields: Record<string, String> = {}
 
     // The file streams must have a handler so the streamed data can reach somewhere,
     // otherwise the request will freeze here and won't send any response
-    for await (const part of filesIterator) {
-      if (part.fieldname === 'replayFile' || part.fieldname === 'chartFile' || part.fieldname === 'songDataFile') {
-        let filePath: FilePath
-        fields = part.fields
+    for await (const part of parts) {
+      if (part.type === 'file') {
+        if (part.fieldname === 'replayFile' || part.fieldname === 'chartFile' || part.fieldname === 'songDataFile') {
+          let filePath: FilePath
+          const lowerFilename = part.filename.toLowerCase()
 
-        if (part.filename.endsWith('.replay')) filePath = replayTemp
-        else if (part.filename.endsWith('.mid')) filePath = midiTemp
-        else if (part.filename.endsWith('.ini')) filePath = iniTemp
-        else if (part.filename.endsWith('.chart')) filePath = chartTemp
-        else if (part.filename.endsWith('.dta')) filePath = dtaTemp
-        else throw new ServerError('err_invalid_input')
+          if (lowerFilename.endsWith('.replay')) filePath = replayTemp
+          else if (lowerFilename.endsWith('.mid') || lowerFilename.endsWith('.midi')) filePath = midiTemp
+          else if (lowerFilename.endsWith('.ini')) filePath = iniTemp
+          else if (lowerFilename.endsWith('.chart')) filePath = chartTemp
+          else if (lowerFilename.endsWith('.dta')) filePath = dtaTemp
+          else throw new ServerError('err_invalid_input')
 
-        // has to be sync to avoid race conditions with the underlying busboy parser
-        const writeStream = filePath.createWriteStreamSync()
-        fileFields.set(part.fieldname, {
-          filePath: filePath,
-          key: part.fieldname,
-          fileName: part.filename,
-          encoding: part.encoding,
-          mimeType: part.mimetype,
-        })
+          // has to be sync to avoid race conditions with the underlying busboy parser
+          const writeStream = filePath.createWriteStreamSync()
+          fileFields.set(part.fieldname, {
+            filePath: filePath,
+            key: part.fieldname,
+            fileName: part.filename,
+            encoding: part.encoding,
+            mimeType: part.mimetype,
+          })
 
-        const pipelinePromise = pipeline(part.file, writeStream)
-        filePromises.push(pipelinePromise)
+          const pipelinePromise = pipeline(part.file, writeStream)
+          filePromises.push(pipelinePromise)
+        } else {
+          part.file.resume()
+          throw new ServerError('err_invalid_input')
+        }
       } else {
-        part.file.resume()
-        throw new ServerError('err_invalid_input')
+        formFields[part.fieldname] = part.value as string
       }
     }
 
@@ -67,8 +70,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     // Must have a file in the request and one of these files must be the replay file
     if (fileFields.size === 0 || !fileFields.has('replayFile')) throw new ServerError('err_replay_no_replay_uploaded')
 
-    const reqTypeField = fields?.reqType as MultipartValue | undefined
-    const reqType = reqTypeField?.value as string | undefined
+    const reqType = formFields['reqType'] as string | undefined
 
     if (!reqType || (reqType !== 'complete' && reqType !== 'replayOnly')) {
       throw new ServerError('err_replay_register_no_reqtype')
@@ -120,14 +122,14 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
         console.log(chartFilePath) // TODO: DEBUG REMOVE LATER
         console.log(completeFieldsObj) // TODO: DEBUG REMOVE LATER
         console.log(fileFields) // TODO: DEBUG REMOVE LATER
-        console.log(fields) // TODO: DEBUG REMOVE LATER
+        console.log(formFields) // TODO: DEBUG REMOVE LATER
         throw new ServerError('err_replay_songdata_required')
       }
       if (!songDataPath) {
         console.log(songDataPath) // TODO: DEBUG REMOVE LATER
         console.log(completeFieldsObj) // TODO: DEBUG REMOVE LATER
         console.log(fileFields) // TODO: DEBUG REMOVE LATER
-        console.log(fields) // TODO: DEBUG REMOVE LATER
+        console.log(formFields) // TODO: DEBUG REMOVE LATER
         throw new ServerError('err_replay_songdata_required')
       }
       if (songHash !== (await chartFilePath.generateHash('sha1'))) throw new ServerError('err_replay_invalid_midi_file')
