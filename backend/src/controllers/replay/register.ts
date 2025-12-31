@@ -9,6 +9,7 @@ import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocumen
 import { type Difficulty, Instrument, Song, type SongSchemaDocument } from '../../models/Song'
 import type { UserSchemaDocument } from '../../models/User'
 import type { Schema } from 'mongoose'
+import type { MultipartFields, MultipartValue } from '@fastify/multipart'
 
 export interface IReplayRegisterFileFieldsObject {
   replayFile: ServerRequestFileFieldObject
@@ -24,10 +25,9 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
   try {
     // parts limit should ideally be 4, but some clients send "noisy" data which fastify/multipart wrongly detects as new parts and makes some data be missed
-    const parts = req.parts({ limits: { parts: 100, fileSize: 33554432 } }) // 32mb
+    const parts = req.parts({ limits: { parts: 1000, fileSize: 33554432 } }) // 32mb
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
-    const filePromises: Promise<void>[] = []
-    const formFields: Record<string, String> = {}
+    let fields: MultipartFields | undefined
 
     // The file streams must have a handler so the streamed data can reach somewhere,
     // otherwise the request will freeze here and won't send any response
@@ -42,9 +42,11 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
           else if (lowerFilename.endsWith('.ini')) filePath = iniTemp
           else if (lowerFilename.endsWith('.chart')) filePath = chartTemp
           else if (lowerFilename.endsWith('.dta')) filePath = dtaTemp
-          else throw new ServerError('err_invalid_input')
+          else {
+            part.file.resume()
+            throw new ServerError('err_invalid_input')
+          }
 
-          // has to be sync to avoid race conditions with the underlying busboy parser
           const writeStream = filePath.createWriteStreamSync()
           fileFields.set(part.fieldname, {
             filePath: filePath,
@@ -54,23 +56,20 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
             mimeType: part.mimetype,
           })
 
-          const pipelinePromise = pipeline(part.file, writeStream)
-          filePromises.push(pipelinePromise)
+          await pipeline(part.file, writeStream)
         } else {
           part.file.resume()
           throw new ServerError('err_invalid_input')
         }
-      } else {
-        formFields[part.fieldname] = part.value as string
       }
+      fields = part.fields // ideally I should be fetching text parts via an else statement, but fastify/multipart will (rarely) miss those if I do it that way, this way it just works
     }
-
-    await Promise.all(filePromises) // actually process the files read in the for loop above
 
     // Must have a file in the request and one of these files must be the replay file
     if (fileFields.size === 0 || !fileFields.has('replayFile')) throw new ServerError('err_replay_no_replay_uploaded')
 
-    const reqType = formFields['reqType'] as string | undefined
+    const reqTypeField = fields?.reqType as MultipartValue | undefined
+    const reqType = reqTypeField?.value as string | undefined
 
     if (!reqType || (reqType !== 'complete' && reqType !== 'replayOnly')) {
       throw new ServerError('err_replay_register_no_reqtype')
@@ -122,14 +121,14 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
         console.log(chartFilePath) // TODO: DEBUG REMOVE LATER
         console.log(completeFieldsObj) // TODO: DEBUG REMOVE LATER
         console.log(fileFields) // TODO: DEBUG REMOVE LATER
-        console.log(formFields) // TODO: DEBUG REMOVE LATER
+        console.log(fields) // TODO: DEBUG REMOVE LATER
         throw new ServerError('err_replay_songdata_required')
       }
       if (!songDataPath) {
         console.log(songDataPath) // TODO: DEBUG REMOVE LATER
         console.log(completeFieldsObj) // TODO: DEBUG REMOVE LATER
         console.log(fileFields) // TODO: DEBUG REMOVE LATER
-        console.log(formFields) // TODO: DEBUG REMOVE LATER
+        console.log(fields) // TODO: DEBUG REMOVE LATER
         throw new ServerError('err_replay_songdata_required')
       }
       if (songHash !== (await chartFilePath.generateHash('sha1'))) throw new ServerError('err_replay_invalid_midi_file')
@@ -269,10 +268,10 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       if (playerData.ghostsHit !== undefined) playerScore.ghostNotesHit = playerData.ghostsHit
       if (playerData.accentsHit !== undefined) playerScore.accentNotesHit = playerData.accentsHit
 
-      playerScores.push(playerScore.toJSON())
+      playerScores.push(playerScore)
       await playerScore.save()
 
-      childrenScores.push(playerScore._id as Schema.Types.ObjectId)
+      childrenScores.push(playerScore.id as Schema.Types.ObjectId)
 
       // Add modifiers to band score if there are any
       // (making sure there are no repeats if multiple players used the same modifier)
