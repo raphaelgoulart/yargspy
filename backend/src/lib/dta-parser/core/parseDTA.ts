@@ -171,9 +171,14 @@ export const parseDTA = (songContent: string): RB3CompatibleDTAFile | PartialDTA
       if (key === 'name' && (valuesJoin.startsWith('songs/') || valuesJoin.startsWith('"songs/'))) map.set('songname', valuesJoin.split('/')[1])
       // This is strings that's captured on "allStrings" variable
       else if (key === 'name' || key === 'artist' || key === 'album_name' || key === 'pack_name' || key === 'author' || key === 'loading_phrase' || key === 'strings_author' || key === 'keys_author') {
-        map.set(key, slashQToQuote(allStrings[stringIndex]))
-        stringIndex++
-        if (!valuesJoin.endsWith('"')) unfinishedString = true
+        if (!allStrings[stringIndex]) {
+          map.set(key, values.join(' '))
+          stringIndex++
+        } else {
+          map.set(key, slashQToQuote(allStrings[stringIndex]))
+          stringIndex++
+          if (!valuesJoin.endsWith('"')) unfinishedString = true
+        }
       }
       // Parse general boolean values
       else if (key === 'master' || key === 'album_art' || key === 'fake' || key === 'alternate_path') map.set(key, valuesJoin.toLowerCase() === '1' || valuesJoin.toLowerCase() === 'true' ? true : false)

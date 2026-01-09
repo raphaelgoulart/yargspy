@@ -35,18 +35,17 @@ const adminSongAddHandler: ServerHandler = async function (req, reply) {
         else if (part.filename.endsWith('.dta')) filePath = dtaTemp
         else throw new ServerError('err_invalid_input')
 
-        const pipelinePromise = (async () => {
-          await pipeline(part.file, await filePath.createWriteStream())
+        // has to be sync to avoid race conditions with the underlying busboy parser
+        const writeStream = filePath.createWriteStreamSync()
+        fileFields.set(part.fieldname, {
+          filePath: filePath,
+          key: part.fieldname,
+          fileName: part.filename,
+          encoding: part.encoding,
+          mimeType: part.mimetype,
+        })
 
-          fileFields.set(part.fieldname, {
-            filePath: filePath,
-            key: part.fieldname,
-            fileName: part.filename,
-            encoding: part.encoding,
-            mimeType: part.mimetype,
-          })
-        })()
-
+        const pipelinePromise = pipeline(part.file, writeStream)
         filePromises.push(pipelinePromise)
       } else {
         part.file.resume()
