@@ -68,12 +68,20 @@
                 :disabled="scoreLoading"
                 >{{ getModifier(Number(i)) }}</FormCheckbox
               >
-              <TheButton
-                :disabled="scoreLoading"
-                @click="setAllowedModifiers()"
-                class="text-center w-full mt-1 mb-2"
-                >Save</TheButton
-              >
+              <div class="flex space-x-4">
+                <TheButton
+                  :disabled="scoreLoading"
+                  @click="setAllowedModifiers()"
+                  class="text-center w-1/2 mt-1 mb-2"
+                  >Save</TheButton
+                >
+                <TheButton
+                  :disabled="scoreLoading"
+                  @click="saveAsDefault()"
+                  class="text-center w-1/2 mt-1 mb-2 bg-green-600 hover:bg-green-700"
+                  >Save as Default</TheButton
+                >
+              </div>
             </div>
           </Transition>
         </div>
@@ -348,6 +356,12 @@ const allowedModifiersDefault: { [key: number]: boolean } = {
 }
 const allowedModifiers = ref(structuredClone(allowedModifiersDefault))
 const allowedModifiersEdit = ref(structuredClone(allowedModifiersDefault))
+const savedModifiers = localStorage.getItem('yargspy_default_modifiers')
+if (savedModifiers) {
+  const parsedModifiers = JSON.parse(savedModifiers)
+  allowedModifiers.value = parsedModifiers
+  allowedModifiersEdit.value = structuredClone(parsedModifiers)
+}
 const allowSlowdowns = ref(false)
 const sortByNotesHit = ref(false)
 
@@ -511,6 +525,14 @@ function setDifficulty(value: string) {
 
 function setAllowedModifiers() {
   // consolidate edited data into original object
+  allowedModifiers.value = structuredClone(toRaw(allowedModifiersEdit.value))
+  page.value = 1
+  fetchScores()
+}
+
+function saveAsDefault() {
+  const currentSelection = allowedModifiersEdit.value
+  localStorage.setItem('yargspy_default_modifiers', JSON.stringify(currentSelection))
   allowedModifiers.value = structuredClone(toRaw(allowedModifiersEdit.value))
   page.value = 1
   fetchScores()
