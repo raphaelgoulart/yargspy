@@ -189,6 +189,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     }
 
     const user = (req as RouteRequest<{ user: UserSchemaDocument }>).user
+    const currentGameVersion = GameVersion.v0_14 // hardcoded: change on each stable update
 
     // Create band score (don't save yet)
     const bandScore = new Score({
@@ -196,7 +197,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       uploader: user._id,
       replayPath: replayFilePath.name,
       replayFileHash: scoreHash,
-      version: GameVersion.v0_14, // hardcoded: change on each stable update
+      version: currentGameVersion,
       songSpeed: replayInfo.replayInfo.songSpeed,
       instrument: Instrument.Band,
       score: replayInfo.replayInfo.bandScore,
@@ -233,7 +234,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
         uploader: user._id,
         replayPath: replayFilePath.name,
         replayFileHash: scoreHash,
-        version: GameVersion.v0_13_1,
+        version: currentGameVersion,
         songSpeed: replayInfo.replayInfo.songSpeed,
         instrument: playerInstrument,
         gamemode: Number(playerProfile.gameMode) as (typeof GameMode)[keyof typeof GameMode],
