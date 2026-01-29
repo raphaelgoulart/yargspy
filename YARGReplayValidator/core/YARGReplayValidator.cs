@@ -296,13 +296,13 @@ namespace YARGReplayValidator.Core
     public static EngineValue GetEngineValue(ReplayFrame frame, ReplayInfo replayInfo)
     {
       var starMultiplierThreshold = frame.EngineParameters.StarMultiplierThresholds;
-      BaseEngineParameters defaultEngine = EnginePreset.Default.ProKeys.Create(starMultiplierThreshold);
-      BaseEngineParameters casualEngine = EnginePreset.Casual.ProKeys.Create(starMultiplierThreshold);
-      BaseEngineParameters precisionEngine = EnginePreset.Precision.ProKeys.Create(starMultiplierThreshold);
+      Instrument[] bass = [Instrument.FiveFretBass, Instrument.SixFretBass, Instrument.ProBass_17Fret, Instrument.ProBass_22Fret];
+      bool isBass = bass.Contains(frame.Profile.CurrentInstrument);
+      BaseEngineParameters defaultEngine = EnginePreset.Default.ProKeys.Create(starMultiplierThreshold, isBass);
+      BaseEngineParameters casualEngine = EnginePreset.Casual.ProKeys.Create(starMultiplierThreshold, isBass);
+      BaseEngineParameters precisionEngine = EnginePreset.Precision.ProKeys.Create(starMultiplierThreshold, isBass);
       if (frame.EngineParameters is GuitarEngineParameters)
       {
-        Instrument[] bass = [Instrument.FiveFretBass, Instrument.SixFretBass, Instrument.ProBass_17Fret, Instrument.ProBass_22Fret];
-        bool isBass = bass.Contains(frame.Profile.CurrentInstrument);
         defaultEngine = EnginePreset.Default.FiveFretGuitar.Create(starMultiplierThreshold, isBass);
         casualEngine = EnginePreset.Casual.FiveFretGuitar.Create(starMultiplierThreshold, isBass);
         precisionEngine = EnginePreset.Precision.FiveFretGuitar.Create(starMultiplierThreshold, isBass);
