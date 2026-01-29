@@ -32,11 +32,11 @@ export const GameMode = {
   // 5-9: Drums
   FourLaneDrums: 5,
   FiveLaneDrums: 6,
-  // EliteDrums = 7,
+  EliteDrums: 7,
 
   // 10-14: Pro instruments
   ProGuitar: 10,
-  ProKeys: 11,
+  ProKeys: 11, // Includes Pro and Five-Lane
 
   // 15-19: Vocals
   Vocals: 15,
@@ -48,6 +48,7 @@ export const GameMode = {
 export const GameVersion = {
   v0_13_1: 0,
   v0_13_2: 1,
+  v0_14: 2,
 }
 
 //#region Types

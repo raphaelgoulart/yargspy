@@ -196,7 +196,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       uploader: user._id,
       replayPath: replayFilePath.name,
       replayFileHash: scoreHash,
-      version: GameVersion.v0_13_2, // hardcoded: change on each stable update
+      version: GameVersion.v0_14, // hardcoded: change on each stable update
       songSpeed: replayInfo.replayInfo.songSpeed,
       instrument: Instrument.Band,
       score: replayInfo.replayInfo.bandScore,
