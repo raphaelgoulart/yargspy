@@ -17,7 +17,7 @@ export interface IAdminSongAddFileFieldsObject {
 // #region Handler
 
 const adminSongAddHandler: ServerHandler = async function (req, reply) {
-  const { chartTemp, dtaTemp, iniTemp, midiTemp, replayTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
+  const { chartTemp, dtaTemp, iniTemp, midiTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
 
   try {
     const filesIterator = req.files({ limits: { parts: 2, fileSize: 2097152 } })

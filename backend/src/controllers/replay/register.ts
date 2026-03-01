@@ -9,18 +9,20 @@ import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocumen
 import { type Difficulty, Instrument, Song, type SongSchemaDocument } from '../../models/Song'
 import type { UserSchemaDocument } from '../../models/User'
 import type { Schema } from 'mongoose'
-import type { MultipartFields, MultipartValue } from '@fastify/multipart'
+import type { MultipartValue } from '@fastify/multipart'
 
 export interface IReplayRegisterFileFieldsObject {
   replayFile: ServerRequestFileFieldObject
   chartFile?: ServerRequestFileFieldObject
   songDataFile?: ServerRequestFileFieldObject
+  updateFile?: ServerRequestFileFieldObject
+  upgradeFile?: ServerRequestFileFieldObject
 }
 
 // #region Handler
 
 const replayRegisterHandler: ServerHandler = async function (req, reply) {
-  const { chartTemp, dtaTemp, iniTemp, midiTemp, replayTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
+  const { chartTemp, dtaTemp, iniTemp, midiTemp, replayTemp, updateTemp, upgradeTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
   const playerScores: ScoreSchemaDocument[] = []
 
   try {
@@ -31,15 +33,17 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     // The file streams must have a handler so the streamed data can reach somewhere,
     // otherwise the request will freeze here and won't send any response
     for await (const part of parts) {
-      if (part.fieldname === 'replayFile' || part.fieldname === 'chartFile' || part.fieldname === 'songDataFile') {
+      if (part.fieldname === 'replayFile' || part.fieldname === 'chartFile' || part.fieldname === 'songDataFile' || part.fieldname === 'updateFile' || part.fieldname === 'upgradeFile') {
         let filePath: FilePath
         const lowerFilename = part.filename.toLowerCase()
 
-        if (lowerFilename.endsWith('.replay')) filePath = replayTemp
-        else if (lowerFilename.endsWith('.mid') || lowerFilename.endsWith('.midi')) filePath = midiTemp
-        else if (lowerFilename.endsWith('.ini')) filePath = iniTemp
-        else if (lowerFilename.endsWith('.chart')) filePath = chartTemp
-        else if (lowerFilename.endsWith('.dta')) filePath = dtaTemp
+        if (part.fieldname === 'replayFile' && lowerFilename.endsWith('.replay')) filePath = replayTemp
+        else if (part.fieldname === 'chartFile' && (lowerFilename.endsWith('.mid') || lowerFilename.endsWith('.midi'))) filePath = midiTemp
+        else if (part.fieldname === 'chartFile' && lowerFilename.endsWith('.chart')) filePath = chartTemp
+        else if (part.fieldname === 'songDataFile' && lowerFilename.endsWith('.ini')) filePath = iniTemp
+        else if (part.fieldname === 'songDataFile' && lowerFilename.endsWith('.dta')) filePath = dtaTemp
+        else if (part.fieldname === 'updateFile' && (lowerFilename.endsWith('.mid') || lowerFilename.endsWith('.midi'))) filePath = updateTemp
+        else if (part.fieldname === 'upgradeFile' && (lowerFilename.endsWith('.mid') || lowerFilename.endsWith('.midi'))) filePath = upgradeTemp
         else {
           part.file.resume()
           continue
@@ -74,6 +78,11 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     }
 
     const isReqReplayOnly = reqType === 'replayOnly'
+
+    // TODO: IMPLEMENT SONGS_UPDATES / SONGS_UPGRADES
+    if (fileFields.has('updateFile') || fileFields.has('upgradeFile')) {
+      throw new ServerError('err_not_implemented', null, { feature: 'songs_updates/songs_upgrades' })
+    }
 
     const {
       replayFile: { filePath: replayFilePath },

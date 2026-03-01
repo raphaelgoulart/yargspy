@@ -90,6 +90,7 @@ export const codeMap = {
   err_invalid_query: [400, 'Missing parameters on query: {{params}}'],
   err_captcha: [400, 'Captcha validation failed, please try again'],
   err_id_not_found: [404, 'Element with id {{id}} not found.'],
+  err_not_implemented: [501, '{{feature}} not implemented yet.'],
   err_unknown: [500, 'An unknown error occurred, please try again later'],
   ok: [200, 'Request completed by the server'],
 
