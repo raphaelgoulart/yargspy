@@ -17,22 +17,25 @@ export interface IAdminSongAddFileFieldsObject {
 // #region Handler
 
 const adminSongAddHandler: ServerHandler = async function (req, reply) {
-  const { chartTemp, dtaTemp, iniTemp, midiTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
+  const { chartTemp, dtaTemp, iniTemp, midiTemp, updateTemp, upgradeTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
 
   try {
-    const filesIterator = req.files({ limits: { parts: 2, fileSize: 2097152 } })
+    const filesIterator = req.files({ limits: { parts: 4, fileSize: 2097152 } })
     const fileFields = new Map<string, ServerRequestFileFieldObject>()
 
     const filePromises: Promise<void>[] = []
 
     for await (const part of filesIterator) {
-      if (part.fieldname === 'chartFile' || part.fieldname === 'songDataFile') {
+      if (part.fieldname === 'chartFile' || part.fieldname === 'songDataFile' || part.fieldname === 'updateFile' || part.fieldname === 'upgradeFile') {
         let filePath: FilePath
+        const lowerFilename = part.filename.toLowerCase()
 
-        if (part.filename.endsWith('.mid')) filePath = midiTemp
-        else if (part.filename.endsWith('.ini')) filePath = iniTemp
-        else if (part.filename.endsWith('.chart')) filePath = chartTemp
-        else if (part.filename.endsWith('.dta')) filePath = dtaTemp
+        if (part.fieldname === 'chartFile' && (lowerFilename.endsWith('.mid') || lowerFilename.endsWith('.midi'))) filePath = midiTemp
+        else if (part.fieldname === 'chartFile' && lowerFilename.endsWith('.chart')) filePath = chartTemp
+        else if (part.fieldname === 'songDataFile' && lowerFilename.endsWith('.ini')) filePath = iniTemp
+        else if (part.fieldname === 'songDataFile' && lowerFilename.endsWith('.dta')) filePath = dtaTemp
+        else if (part.fieldname === 'updateFile' && (lowerFilename.endsWith('.mid') || lowerFilename.endsWith('.midi'))) filePath = updateTemp
+        else if (part.fieldname === 'upgradeFile' && (lowerFilename.endsWith('.mid') || lowerFilename.endsWith('.midi'))) filePath = upgradeTemp
         else throw new ServerError('err_invalid_input')
 
         // has to be sync to avoid race conditions with the underlying busboy parser
@@ -54,6 +57,11 @@ const adminSongAddHandler: ServerHandler = async function (req, reply) {
     }
 
     await Promise.all(filePromises)
+
+    // TODO: IMPLEMENT SONGS_UPDATES / SONGS_UPGRADES
+    if (fileFields.has('updateFile') || fileFields.has('upgradeFile')) {
+      throw new ServerError('err_not_implemented', null, { feature: 'songs_updates/songs_upgrades' })
+    }
 
     const {
       chartFile: { filePath: chartFilePath },
