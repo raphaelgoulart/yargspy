@@ -36,10 +36,27 @@
       capacity.</FaqItem
     >
     <FaqItem q="Will there be a custom version of the game, like what ScoreSpy was to Clone Hero?"
-      >This is part of long-term plans, and the way the groundwork is laid out right now should make
-      it pretty feasible, but I'll certainly need help with implementing it in the game side.<br />ScoreSpy
-      actually started with screenshot submissions; the current version would be the YARG equivalent
-      of that.</FaqItem
+      >Yes; there is a mod for YARG Stable developed by
+      <a href="https://github.com/gingerphoenix10">gingerphoenix10</a>, which can be applied on top
+      of an existing installation, or downlodaded separately.
+      <ul>
+        <li>
+          •
+          <a
+            href="https://github.com/gingerphoenix10/YARGSpy-Client/releases/latest"
+            target="_blank"
+            >Mod only</a
+          >
+        </li>
+        <li>
+          •
+          <a
+            href="https://github.com/gingerphoenix10/YARGSpy-Launcher/releases/latest"
+            target="_blank"
+            >Standalone version</a
+          >
+        </li>
+      </ul></FaqItem
     >
     <FaqItem q="Will custom engine presets ever be supported?"
       >Short answer: <b>no.</b><br />Long answer: it would unfairly favor easier custom engines, any
