@@ -35,7 +35,7 @@
       entire player base, and I'd probably need assistance if I were to maintain this in an official
       capacity.</FaqItem
     >
-    <FaqItem q="Will there be a custom version of the game, like what ScoreSpy was to Clone Hero?"
+    <FaqItem q="Is there a custom version of the game, like what ScoreSpy was to Clone Hero?"
       >Yes; there is a mod for YARG Stable developed by
       <a href="https://github.com/gingerphoenix10">gingerphoenix10</a>, which can be applied on top
       of an existing installation, or downlodaded separately.
