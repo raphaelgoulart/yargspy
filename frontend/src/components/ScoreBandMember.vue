@@ -21,7 +21,9 @@
       <ScorePercent :n="score.percent!" :overhits="score.overhits" /><span
         class="hidden lg:inline text-xs"
       >
-        ({{ score.notesHit?.toLocaleString() }}/{{ difficulty.notes.toLocaleString() }})</span
+        ({{ score.notesHit?.toLocaleString() }}/{{
+          getNoteCount(score.gamemode!, difficulty.notes, difficulty.notes5LK).toLocaleString()
+        }})</span
       >
     </td>
     <td scope="col">
@@ -90,7 +92,15 @@
 <script setup lang="ts">
 import type { IScore } from '@/plugins/types'
 import { ref, type PropType } from 'vue'
-import { getDifficulty, getInstrument, getEngine, isGuitar, isDrums, isKeys } from '@/plugins/utils'
+import {
+  getDifficulty,
+  getInstrument,
+  getEngine,
+  isGuitar,
+  isDrums,
+  isKeys,
+  getNoteCount,
+} from '@/plugins/utils'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/vue/20/solid'
 import ScoreStars from './ScoreStars.vue'
 import ScorePercent from './ScorePercent.vue'

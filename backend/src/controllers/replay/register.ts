@@ -9,18 +9,20 @@ import { Engine, GameMode, GameVersion, Modifier, Score, type ScoreSchemaDocumen
 import { type Difficulty, Instrument, Song, type SongSchemaDocument } from '../../models/Song'
 import type { UserSchemaDocument } from '../../models/User'
 import type { Schema } from 'mongoose'
-import type { MultipartFields, MultipartValue } from '@fastify/multipart'
+import type { MultipartValue } from '@fastify/multipart'
 
 export interface IReplayRegisterFileFieldsObject {
   replayFile: ServerRequestFileFieldObject
   chartFile?: ServerRequestFileFieldObject
   songDataFile?: ServerRequestFileFieldObject
+  updateFile?: ServerRequestFileFieldObject
+  upgradeFile?: ServerRequestFileFieldObject
 }
 
 // #region Handler
 
 const replayRegisterHandler: ServerHandler = async function (req, reply) {
-  const { chartTemp, dtaTemp, iniTemp, midiTemp, replayTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
+  const { chartTemp, dtaTemp, iniTemp, midiTemp, replayTemp, updateTemp, upgradeTemp, deleteAllTempFiles } = createReplayRegisterTempPaths()
   const playerScores: ScoreSchemaDocument[] = []
 
   try {
@@ -31,15 +33,17 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     // The file streams must have a handler so the streamed data can reach somewhere,
     // otherwise the request will freeze here and won't send any response
     for await (const part of parts) {
-      if (part.fieldname === 'replayFile' || part.fieldname === 'chartFile' || part.fieldname === 'songDataFile') {
+      if (part.fieldname === 'replayFile' || part.fieldname === 'chartFile' || part.fieldname === 'songDataFile' || part.fieldname === 'updateFile' || part.fieldname === 'upgradeFile') {
         let filePath: FilePath
         const lowerFilename = part.filename.toLowerCase()
 
-        if (lowerFilename.endsWith('.replay')) filePath = replayTemp
-        else if (lowerFilename.endsWith('.mid') || lowerFilename.endsWith('.midi')) filePath = midiTemp
-        else if (lowerFilename.endsWith('.ini')) filePath = iniTemp
-        else if (lowerFilename.endsWith('.chart')) filePath = chartTemp
-        else if (lowerFilename.endsWith('.dta')) filePath = dtaTemp
+        if (part.fieldname === 'replayFile' && lowerFilename.endsWith('.replay')) filePath = replayTemp
+        else if (part.fieldname === 'chartFile' && (lowerFilename.endsWith('.mid') || lowerFilename.endsWith('.midi'))) filePath = midiTemp
+        else if (part.fieldname === 'chartFile' && lowerFilename.endsWith('.chart')) filePath = chartTemp
+        else if (part.fieldname === 'songDataFile' && lowerFilename.endsWith('.ini')) filePath = iniTemp
+        else if (part.fieldname === 'songDataFile' && lowerFilename.endsWith('.dta')) filePath = dtaTemp
+        else if (part.fieldname === 'updateFile' && (lowerFilename.endsWith('.mid') || lowerFilename.endsWith('.midi'))) filePath = updateTemp
+        else if (part.fieldname === 'upgradeFile' && (lowerFilename.endsWith('.mid') || lowerFilename.endsWith('.midi'))) filePath = upgradeTemp
         else {
           part.file.resume()
           continue
@@ -74,6 +78,11 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     }
 
     const isReqReplayOnly = reqType === 'replayOnly'
+
+    // TODO: IMPLEMENT SONGS_UPDATES / SONGS_UPGRADES
+    if (fileFields.has('updateFile') || fileFields.has('upgradeFile')) {
+      throw new ServerError('err_not_implemented', null, { feature: 'songs_updates/songs_upgrades' })
+    }
 
     const {
       replayFile: { filePath: replayFilePath },
@@ -152,7 +161,6 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     const replayInfo = await YARGReplayValidatorAPI.returnReplayInfo(replayFilePath, chartFilePath, isSongEntryFound, songEntry, eighthNoteHopo, hopoFreq)
 
     if (replayInfo.replayInfo.bandScore == 0) throw new ServerError('err_replay_no_notes_hit')
-    if (replayInfo.replayData.length > 1) throw new ServerError('err_replay_coop_unsupported')
 
     if (!isSongEntryFound) {
       // Add remaining song info to song object (i.e. hopo_threshold, instruments diffs and notes etc.) then save to DB
@@ -165,11 +173,13 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
         const partDiffObjKeys = Object.keys(replayInfo.chartData.noteCount[instrumentValue])
 
         for (const partDifficultyValue of partDiffObjKeys) {
+          let noteArray = replayInfo.chartData.noteCount[instrumentValue][partDifficultyValue] as number[]
           availableInstruments.push({
             instrument: Number(instrumentValue) as (typeof Instrument)[keyof typeof Instrument],
             difficulty: Number(partDifficultyValue) as (typeof Difficulty)[keyof typeof Difficulty],
-            notes: replayInfo.chartData.noteCount[instrumentValue][partDifficultyValue],
-            starPowerPhrases: replayInfo.chartData.starPowerCount[instrumentValue][partDifficultyValue],
+            notes: noteArray[0], // chord-based noteCount for 5L
+            notes5LK: noteArray[1] ?? undefined, // note-based noteCount for 5L, undefined for other instrument types
+            starPowerPhrases: replayInfo.chartData.starPowerCount[instrumentValue][partDifficultyValue] as number,
           })
         }
       }
@@ -189,7 +199,7 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
     }
 
     const user = (req as RouteRequest<{ user: UserSchemaDocument }>).user
-    const currentGameVersion = GameVersion.v0_14 // hardcoded: change on each stable update
+    const currentGameVersion = GameVersion.v0_15 // hardcoded: change on each stable update
 
     // Create band score (don't save yet)
     const bandScore = new Score({
@@ -214,17 +224,17 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
 
     for (const playerObj of replayInfo.replayData) {
       const playerData = playerObj.stats
+      const playerStats = replayInfo.replayInfo.stats[i]
+      i++
       if (playerData.totalScore === 0) continue // don't save "non-players"
 
       const engine: (typeof Engine)[keyof typeof Engine] | -1 = Number(playerObj.engine) as (typeof Engine)[keyof typeof Engine] | -1
-      if (engine === -1) {
-        // TODO: can we return additional info warning that some players were ignored due to custom engines being unsupported?
+      const playerProfile = playerObj.profile
+      if (engine === -1 || playerProfile.isBot || playerStats.isReplayPlayer) {
+        // TODO: can we return additional info with player rejection reason?
         bandScoreValid = false
         continue
       }
-
-      const playerStats = replayInfo.replayInfo.stats[i]
-      const playerProfile = playerObj.profile
 
       const playerInstrument = Number(playerProfile.currentInstrument) as (typeof Instrument)[keyof typeof Instrument]
       const playerModifiers = playerProfile.currentModifiers === 0 ? undefined : parsePlayerModifiersForScoreEntry(playerProfile.currentModifiers)
@@ -282,7 +292,6 @@ const replayRegisterHandler: ServerHandler = async function (req, reply) {
       }
 
       validPlayers++
-      i++
     }
 
     if (validPlayers === 0) throw new ServerError('err_replay_no_valid_players')

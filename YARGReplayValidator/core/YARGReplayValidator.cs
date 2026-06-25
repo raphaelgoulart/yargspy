@@ -121,6 +121,9 @@ namespace YARGReplayValidator.Core
         {
           throw new Exception($"Failed to load replay. Read Result: {result}.");
         }
+        if (replayInfo.ReplayVersion != ReplayIO.REPLAY_VERSIONS.CURRENT) {
+          throw new Exception("Invalid replay version, only latest Stable version is accepted.");
+        }
         if (replayData.Frames.Length == 0)
         {
           throw new Exception("Replay doesn't contain any players.");
@@ -129,11 +132,6 @@ namespace YARGReplayValidator.Core
         {
           output.Add("SongChecksum", replayInfo.SongChecksum);
           return output;
-        }
-        // check if replay contains bots (it shouldn't)
-        foreach (var frame in replayData.Frames)
-        {
-          if (frame.Profile.IsBot) throw new Exception("Provided REPLAY file can\'t have BOT players.");
         }
         // validate replay
         var results = ReplayAnalyzer.AnalyzeReplay(chart!, replayInfo, replayData);
@@ -166,21 +164,22 @@ namespace YARGReplayValidator.Core
       }
       if (readMode == ReadMode.MidiOnly || readMode == ReadMode.ReplayAndMidi)
       {
-        Dictionary<byte, Dictionary<byte, long>> noteStorage = [];
+        Dictionary<byte, Dictionary<byte, long[]>> noteStorage = [];
         Dictionary<byte, Dictionary<byte, long>> starPowerStorage = [];
         // fetch chart data
         // TODO: lots of repeat code, refactor later
         foreach (var track in chart!.FiveFretTracks)
         {
-          Dictionary<byte, long> diffNoteStorage = [];
+          Dictionary<byte, long[]> diffNoteStorage = [];
           Dictionary<byte, long> diffStarPowerStorage = [];
           foreach (Difficulty diff in Enum.GetValues<Difficulty>())
           {
             if (!track.TryGetDifficulty(diff, out var instrumentDifficulty)) continue;
             var noteCount = instrumentDifficulty.Notes.Count;
             if (noteCount == 0) continue;
+            var keysNoteCount = instrumentDifficulty.GetTotalNoteCount(); // in 5Lk, chords are separate notes
             var diffByte = (byte)diff;
-            diffNoteStorage.Add(diffByte, noteCount);
+            diffNoteStorage.Add(diffByte, [noteCount, keysNoteCount]);
             diffStarPowerStorage.Add(diffByte, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
           }
           if (diffNoteStorage.Count == 0) continue;
@@ -189,7 +188,7 @@ namespace YARGReplayValidator.Core
         }
         foreach (var track in chart!.SixFretTracks)
         {
-          Dictionary<byte, long> diffNoteStorage = [];
+          Dictionary<byte, long[]> diffNoteStorage = [];
           Dictionary<byte, long> diffStarPowerStorage = [];
           foreach (Difficulty diff in Enum.GetValues<Difficulty>())
           {
@@ -197,7 +196,7 @@ namespace YARGReplayValidator.Core
             var noteCount = instrumentDifficulty.Notes.Count;
             if (noteCount == 0) continue;
             var diffByte = (byte)diff;
-            diffNoteStorage.Add(diffByte, noteCount);
+            diffNoteStorage.Add(diffByte, [noteCount]);
             diffStarPowerStorage.Add(diffByte, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
           }
           if (diffNoteStorage.Count == 0) continue;
@@ -206,16 +205,16 @@ namespace YARGReplayValidator.Core
         }
         foreach (var track in chart!.DrumsTracks)
         {
-          Dictionary<byte, long> diffNoteStorage = [];
+          Dictionary<byte, long[]> diffNoteStorage = [];
           Dictionary<byte, long> diffStarPowerStorage = [];
           foreach (Difficulty diff in Enum.GetValues<Difficulty>())
           {
             if (!track.TryGetDifficulty(diff, out var instrumentDifficulty)) continue;
             var noteCount = instrumentDifficulty.GetTotalNoteCount(); // chords are separate notes
             if (noteCount == 0) continue;
-            if (diff == Difficulty.ExpertPlus && noteCount == diffNoteStorage[(byte)Difficulty.Expert]) continue; // do not add X+ unless needed
+            if (diff == Difficulty.ExpertPlus && noteCount == diffNoteStorage[(byte)Difficulty.Expert][0]) continue; // do not add X+ unless needed
             var diffByte = (byte)diff;
-            diffNoteStorage.Add(diffByte, noteCount);
+            diffNoteStorage.Add(diffByte, [noteCount]);
             diffStarPowerStorage.Add(diffByte, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
           }
           if (diffNoteStorage.Count == 0) continue;
@@ -224,7 +223,7 @@ namespace YARGReplayValidator.Core
         }
         foreach (var track in chart!.ProGuitarTracks)
         {
-          Dictionary<byte, long> diffNoteStorage = [];
+          Dictionary<byte, long[]> diffNoteStorage = [];
           Dictionary<byte, long> diffStarPowerStorage = [];
           foreach (Difficulty diff in Enum.GetValues<Difficulty>())
           {
@@ -232,7 +231,7 @@ namespace YARGReplayValidator.Core
             var noteCount = instrumentDifficulty.Notes.Count;
             if (noteCount == 0) continue;
             var diffByte = (byte)diff;
-            diffNoteStorage.Add(diffByte, noteCount);
+            diffNoteStorage.Add(diffByte, [noteCount]);
             diffStarPowerStorage.Add(diffByte, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
           }
           if (diffNoteStorage.Count == 0) continue;
@@ -241,7 +240,7 @@ namespace YARGReplayValidator.Core
         }
         foreach (var track in chart!.VocalsTracks)
         {
-          Dictionary<byte, long> diffNoteStorage = [];
+          Dictionary<byte, long[]> diffNoteStorage = [];
           Dictionary<byte, long> diffStarPowerStorage = [];
           int phraseCount = 0;
           int starPowerCount = 0;
@@ -258,14 +257,14 @@ namespace YARGReplayValidator.Core
           {
             if (diff == Difficulty.ExpertPlus) continue;
             var diffByte = (byte)diff;
-            diffNoteStorage.Add(diffByte, phraseCount);
+            diffNoteStorage.Add(diffByte, [phraseCount]);
             diffStarPowerStorage.Add(diffByte, starPowerCount);
           }
           if (diffNoteStorage.Count == 0) continue;
           noteStorage.Add((byte)track.Instrument, diffNoteStorage);
           starPowerStorage.Add((byte)track.Instrument, diffStarPowerStorage);
         }
-        Dictionary<byte, long> diffNoteStoragePK = [];
+        Dictionary<byte, long[]> diffNoteStoragePK = [];
         Dictionary<byte, long> diffStarPowerStoragePK = [];
         foreach (Difficulty diff in Enum.GetValues<Difficulty>())
         {
@@ -273,7 +272,7 @@ namespace YARGReplayValidator.Core
           var noteCount = instrumentDifficulty.GetTotalNoteCount();
           if (noteCount == 0) continue;
           var diffByte = (byte)diff;
-          diffNoteStoragePK.Add(diffByte, noteCount);
+          diffNoteStoragePK.Add(diffByte, [noteCount]);
           diffStarPowerStoragePK.Add(diffByte, instrumentDifficulty.Phrases.Where(phrase => phrase.Type == PhraseType.StarPower).Count());
         }
         if (diffNoteStoragePK.Count > 0)
@@ -295,29 +294,30 @@ namespace YARGReplayValidator.Core
 
     public static EngineValue GetEngineValue(ReplayFrame frame, ReplayInfo replayInfo)
     {
-      var starMultiplierThreshold = frame.EngineParameters.StarMultiplierThresholds;
+      var starMultiplierThresholds = frame.EngineParameters.StarMultiplierThresholds;
+      var soloBonusStarMultiplierThresholds = frame.EngineParameters.SoloBonusStarMultiplierThresholds;
       Instrument[] bass = [Instrument.FiveFretBass, Instrument.SixFretBass, Instrument.ProBass_17Fret, Instrument.ProBass_22Fret];
       bool isBass = bass.Contains(frame.Profile.CurrentInstrument);
-      BaseEngineParameters defaultEngine = EnginePreset.Default.ProKeys.Create(starMultiplierThreshold, isBass);
-      BaseEngineParameters casualEngine = EnginePreset.Casual.ProKeys.Create(starMultiplierThreshold, isBass);
-      BaseEngineParameters precisionEngine = EnginePreset.Precision.ProKeys.Create(starMultiplierThreshold, isBass);
+      BaseEngineParameters defaultEngine = EnginePreset.Default.ProKeys.Create(starMultiplierThresholds, soloBonusStarMultiplierThresholds, isBass);
+      BaseEngineParameters casualEngine = EnginePreset.Casual.ProKeys.Create(starMultiplierThresholds, soloBonusStarMultiplierThresholds, isBass);
+      BaseEngineParameters precisionEngine = EnginePreset.Precision.ProKeys.Create(starMultiplierThresholds, soloBonusStarMultiplierThresholds, isBass);
       if (frame.EngineParameters is GuitarEngineParameters)
       {
-        defaultEngine = EnginePreset.Default.FiveFretGuitar.Create(starMultiplierThreshold, isBass);
-        casualEngine = EnginePreset.Casual.FiveFretGuitar.Create(starMultiplierThreshold, isBass);
-        precisionEngine = EnginePreset.Precision.FiveFretGuitar.Create(starMultiplierThreshold, isBass);
+        defaultEngine = EnginePreset.Default.FiveFretGuitar.Create(starMultiplierThresholds, soloBonusStarMultiplierThresholds, isBass);
+        casualEngine = EnginePreset.Casual.FiveFretGuitar.Create(starMultiplierThresholds, soloBonusStarMultiplierThresholds, isBass);
+        precisionEngine = EnginePreset.Precision.FiveFretGuitar.Create(starMultiplierThresholds, soloBonusStarMultiplierThresholds, isBass);
       }
       else if (frame.EngineParameters is DrumsEngineParameters drumsEngineParameters)
       {
-        defaultEngine = EnginePreset.Default.Drums.Create(starMultiplierThreshold, drumsEngineParameters.Mode);
-        casualEngine = EnginePreset.Casual.Drums.Create(starMultiplierThreshold, drumsEngineParameters.Mode);
-        precisionEngine = EnginePreset.Precision.Drums.Create(starMultiplierThreshold, drumsEngineParameters.Mode);
+        defaultEngine = EnginePreset.Default.Drums.Create(starMultiplierThresholds, soloBonusStarMultiplierThresholds, drumsEngineParameters.Mode);
+        casualEngine = EnginePreset.Casual.Drums.Create(starMultiplierThresholds, soloBonusStarMultiplierThresholds, drumsEngineParameters.Mode);
+        precisionEngine = EnginePreset.Precision.Drums.Create(starMultiplierThresholds, soloBonusStarMultiplierThresholds, drumsEngineParameters.Mode);
       }
       else if (frame.EngineParameters is VocalsEngineParameters vocalsEngineParameters)
       {
-        defaultEngine = EnginePreset.Default.Vocals.Create(starMultiplierThreshold, frame.Profile.CurrentDifficulty, (float)vocalsEngineParameters.ApproximateVocalFps, vocalsEngineParameters.SingToActivateStarPower);
-        casualEngine = EnginePreset.Casual.Vocals.Create(starMultiplierThreshold, frame.Profile.CurrentDifficulty, (float)vocalsEngineParameters.ApproximateVocalFps, vocalsEngineParameters.SingToActivateStarPower);
-        precisionEngine = EnginePreset.Precision.Vocals.Create(starMultiplierThreshold, frame.Profile.CurrentDifficulty, (float)vocalsEngineParameters.ApproximateVocalFps, vocalsEngineParameters.SingToActivateStarPower);
+        defaultEngine = EnginePreset.Default.Vocals.Create(starMultiplierThresholds, soloBonusStarMultiplierThresholds, frame.Profile.CurrentDifficulty, (float)vocalsEngineParameters.ApproximateVocalFps, vocalsEngineParameters.SingToActivateStarPower);
+        casualEngine = EnginePreset.Casual.Vocals.Create(starMultiplierThresholds, soloBonusStarMultiplierThresholds, frame.Profile.CurrentDifficulty, (float)vocalsEngineParameters.ApproximateVocalFps, vocalsEngineParameters.SingToActivateStarPower);
+        precisionEngine = EnginePreset.Precision.Vocals.Create(starMultiplierThresholds, soloBonusStarMultiplierThresholds, frame.Profile.CurrentDifficulty, (float)vocalsEngineParameters.ApproximateVocalFps, vocalsEngineParameters.SingToActivateStarPower);
       }
       defaultEngine.SongSpeed = replayInfo.SongSpeed;
       casualEngine.SongSpeed = replayInfo.SongSpeed;

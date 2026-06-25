@@ -244,7 +244,6 @@ async function fetchLeaderboards() {
       params: params,
     })
     data.value = songs.data
-    console.log(songs.data)
   } catch (e) {
     if (axios.isAxiosError(e) && e.status! < 500) {
       error.value = `An error occurred: ${e.response?.data.message} (${e.response?.status})`

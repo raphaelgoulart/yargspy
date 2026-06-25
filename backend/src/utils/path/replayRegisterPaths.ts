@@ -9,6 +9,8 @@ export const createReplayRegisterTempPaths = () => {
   const chartTemp = temp.gotoFile(`${uid}.chart`)
   const iniTemp = temp.gotoFile(`${uid}.ini`)
   const dtaTemp = temp.gotoFile(`${uid}.dta`)
+  const updateTemp = temp.gotoFile(`${uid}.update.mid`)
+  const upgradeTemp = temp.gotoFile(`${uid}.upgrade.mid`)
 
   const deleteAllTempFiles = async () => {
     if (replayTemp.exists) await replayTemp.delete()
@@ -16,8 +18,10 @@ export const createReplayRegisterTempPaths = () => {
     if (chartTemp.exists) await chartTemp.delete()
     if (iniTemp.exists) await iniTemp.delete()
     if (dtaTemp.exists) await dtaTemp.delete()
+    if (updateTemp.exists) await updateTemp.delete()
+    if (upgradeTemp.exists) await upgradeTemp.delete()
   }
-  return { replayTemp, midiTemp, chartTemp, iniTemp, dtaTemp, deleteAllTempFiles }
+  return { replayTemp, midiTemp, chartTemp, iniTemp, dtaTemp, updateTemp, upgradeTemp, deleteAllTempFiles }
 }
 
 export const createReplayRegisterPaths = () => {
