@@ -322,7 +322,7 @@ export class YARGReplayValidatorAPI {
     const prefix = process.platform === 'win32' ? '' : `${dotnetExecutable} `
     const command = `${prefix}"${validatorPath.fullname}" "${replayFile.path}" -m ${this.readMode.returnSongHash}`
     const { stdout, stderr } = await execAsync(command, { cwd: validatorPath.root, windowsHide: true })
-    if (stderr) throw new ServerError('err_validator_unknown', { error: stderr, errorOrigin: 'YARGReplayValidatorAPI.returnSongHash()' })
+    if (stderr) throw new ServerError('err_validator_unknown', { error: this.formatErrorStringFromValidator(stderr), errorOrigin: 'YARGReplayValidatorAPI.returnSongHash()' })
 
     return this.camelCaseKeyTransform<YARGReplayValidatorHashResults>(JSON.parse(stdout))
   }

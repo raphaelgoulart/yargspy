@@ -18,7 +18,7 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
 
 const adminBackfillHandler: ServerHandler = async function (req, reply) {
   const CONCURRENCY = 50 // process this many songs in parallel per chunk – tune as needed
-  const allSongs = await Song.find({}).lean() // plain objects are enough
+  const allSongs = await Song.find({})
 
   const bulkOps: any[] = []
 
