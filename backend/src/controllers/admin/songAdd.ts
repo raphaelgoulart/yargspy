@@ -93,11 +93,13 @@ const adminSongAddHandler: ServerHandler = async function (req, reply) {
       const partDiffObjKeys = Object.keys(songInfo.chartData.noteCount[instrumentValue])
 
       for (const partDifficultyValue of partDiffObjKeys) {
+        let noteArray = songInfo.chartData.noteCount[instrumentValue][partDifficultyValue] as number[]
         availableInstruments.push({
           instrument: Number(instrumentValue) as (typeof Instrument)[keyof typeof Instrument],
           difficulty: Number(partDifficultyValue) as (typeof Difficulty)[keyof typeof Difficulty],
-          notes: songInfo.chartData.noteCount[instrumentValue][partDifficultyValue],
-          starPowerPhrases: songInfo.chartData.starPowerCount[instrumentValue][partDifficultyValue],
+          notes: noteArray[0], // chord-based noteCount for 5L
+          notes5LK: noteArray[1] ?? undefined, // note-based noteCount for 5L, undefined for other instrument types
+          starPowerPhrases: songInfo.chartData.starPowerCount[instrumentValue][partDifficultyValue] as number,
         })
       }
     }

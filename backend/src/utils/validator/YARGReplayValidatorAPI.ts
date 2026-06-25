@@ -5,7 +5,7 @@ import { booleanToString, getValidatorPath, isDev } from '../../utils.exports'
 
 export type ReplayCountObject = {
   [key in (typeof Instrument)[keyof typeof Instrument] as string]: {
-    [key in (typeof Difficulty)[keyof typeof Difficulty] as string]: number
+    [key in (typeof Difficulty)[keyof typeof Difficulty] as string]: number | number[]
   }
 }
 
@@ -49,6 +49,7 @@ export interface YARGReplayValidatorResults {
         numOverdriveActivations: number
         averageMultiplier: number
         numPauses: number
+        isReplayPlayer: boolean
       }
     }
   }
@@ -169,6 +170,7 @@ export interface FormattedYARGReplayResults {
       numOverdriveActivations: number
       averageMultiplier: number
       numPauses: number
+      isReplayPlayer: boolean
     }[]
   }
   replayData: {

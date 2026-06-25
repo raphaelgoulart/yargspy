@@ -65,6 +65,7 @@ export interface SongSchemaInput {
     instrument: (typeof Instrument)[keyof typeof Instrument]
     difficulty: (typeof Difficulty)[keyof typeof Difficulty]
     notes: number
+    notes5LK?: number
     starPowerPhrases: number
   }[]
   playerCount: number
@@ -126,6 +127,9 @@ const songSchema = new Schema<SongSchemaInput, SongSchemaModel>(
         notes: {
           type: Number,
           required: true,
+        },
+        notes5LK: {
+          type: Number,
         },
         starPowerPhrases: {
           type: Number,

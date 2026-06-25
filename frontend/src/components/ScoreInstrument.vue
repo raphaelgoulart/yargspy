@@ -29,7 +29,9 @@
       <ScorePercent :n="score.percent!" :overhits="score.overhits" /><span
         class="hidden lg:inline text-xs"
       >
-        ({{ score.notesHit?.toLocaleString() }}/{{ difficulty.notes.toLocaleString() }})</span
+        ({{ score.notesHit?.toLocaleString() }}/{{
+          getNoteCount(score.gamemode!, difficulty.notes, difficulty.notes5LK).toLocaleString()
+        }})</span
       >
     </td>
     <td scope="col">
@@ -130,6 +132,7 @@ import {
   isGuitar,
   isDrums,
   isKeys,
+  getNoteCount,
 } from '@/plugins/utils'
 import {
   ChevronUpIcon,

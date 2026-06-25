@@ -437,7 +437,11 @@ async function fetchSong() {
       // prepare dropdowns...
       for (const i in song.value.availableInstruments) {
         const inst = song.value.availableInstruments[Number(i)]
-        const obj = { notes: inst!.notes, starPowerPhrases: inst!.starPowerPhrases }
+        const obj = {
+          notes: inst!.notes,
+          notes5LK: inst!.notes5LK,
+          starPowerPhrases: inst!.starPowerPhrases,
+        }
         if (!(inst!.instrument in instruments.value)) {
           instruments.value[inst!.instrument] = {}
         }

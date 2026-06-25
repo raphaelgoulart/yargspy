@@ -141,6 +141,8 @@ export function getVersion(index: number) {
       return '0.13.2'
     case 2:
       return '0.14'
+    case 3:
+      return '0.15'
   }
   return 'Unknown'
 }
@@ -183,4 +185,8 @@ export function getNumberWithOrdinal(n: number): string {
   const v = n % 100
   const suffix = s[(v - 20) % 10] || s[v] || s[0]
   return n.toString() + suffix
+}
+export function getNoteCount(gameMode: number, notes: number, notes5LK?: number): number {
+  if (isKeys(gameMode) && notes5LK) return notes5LK
+  return notes
 }

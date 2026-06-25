@@ -25,6 +25,7 @@ export interface ISong {
       difficulty: number
       instrument: number
       notes: number
+      notes5LK: number
       starPowerPhrases: number
     },
   ]
