@@ -67,9 +67,11 @@ const adminBackfillHandler: ServerHandler = async function (req, reply) {
 
   // one efficient write
   if (bulkOps.length) {
+    console.log('Writing...')
     await Song.bulkWrite(bulkOps)
   }
 
+  console.log('Done!')
   serverReply(reply, 'ok', {
     processed: bulkOps.length,
   })
