@@ -2,4 +2,4 @@ singleQuote: true
 semi: false
 printWidth: 8000
 trailingComma: es5
-tabWidth: 2
+tabWidth: 4
