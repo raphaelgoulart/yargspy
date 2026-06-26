@@ -9,73 +9,75 @@ import type { PipelineStage } from 'mongoose'
 
 export interface ISongLeaderboard {
     body: {
-        id?: string,
-        instrument?: (typeof Instrument)[keyof typeof Instrument],
-        difficulty?: (typeof Difficulty)[keyof typeof Difficulty],
-        engine?: (typeof Engine)[keyof typeof Engine],
-        allowedModifiers?: Array<(typeof Modifier)[keyof typeof Modifier]>,
-        allowSlowdowns?: boolean,
-        sortByNotesHit?: boolean,
-        page?: number,
+        id?: string
+        instrument?: (typeof Instrument)[keyof typeof Instrument]
+        difficulty?: (typeof Difficulty)[keyof typeof Difficulty]
+        engine?: (typeof Engine)[keyof typeof Engine]
+        allowedModifiers?: Array<(typeof Modifier)[keyof typeof Modifier]>
+        allowSlowdowns?: boolean
+        sortByAccuracy?: boolean
+        page?: number
         limit?: number
     }
 }
 
 export interface ISongLeaderboardQuery {
-    song: ObjectId,
-    instrument: (typeof Instrument)[keyof typeof Instrument],
+    song: ObjectId
+    instrument: (typeof Instrument)[keyof typeof Instrument]
     // Ensure no "modifier" exists outside of the allowed set
     modifiers: {
         $not: {
             $elemMatch: { $nin: Array<(typeof Modifier)[keyof typeof Modifier]> }
         }
-    },
-    hidden: boolean,
-    difficulty?: (typeof Difficulty)[keyof typeof Difficulty],
-    engine?: (typeof Engine)[keyof typeof Engine],
+    }
+    hidden: boolean
+    difficulty?: (typeof Difficulty)[keyof typeof Difficulty]
+    engine?: (typeof Engine)[keyof typeof Engine]
     songSpeed?: { $gte: number }
 }
 
 const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (req, reply) {
-    if (!req.body.id) throw new ServerError('err_invalid_query', null, { params: "id" })
+    if (!req.body.id) throw new ServerError('err_invalid_query', null, { params: 'id' })
     // Each leaderboard pertains to a song
     const songId = req.body.id
     // Each instrument ("Band" counts as an instrument) has its own leaderboard
-    const instrument = req.body.instrument ?? Instrument.Band;
+    const instrument = req.body.instrument ?? Instrument.Band
     // Each difficulty has its own leaderboard, EXCEPT FOR BAND - this value should be unused in the query if instrument is 255
-    const difficulty = req.body.difficulty ?? Difficulty.Expert;
+    const difficulty = req.body.difficulty ?? Difficulty.Expert
     // Each non-custom engine has its own leaderboard , EXCEPT FOR BAND - this value should be unused in the query if instrument is 255
-    const engine = req.body.engine ?? Engine.Default;
+    const engine = req.body.engine ?? Engine.Default
     // Modifiers can be filtered in or out by the user; by default we only allow the ones that make the song as difficult or harder
-    const allowedModifiers = req.body.allowedModifiers ?? [Modifier.AllStrums, Modifier.TapsToHopos, Modifier.NoteShuffle, Modifier.NoDynamics, Modifier.NoVocalPercussion, Modifier.RangeCompress];
+    const allowedModifiers = req.body.allowedModifiers ?? [Modifier.AllStrums, Modifier.TapsToHopos, Modifier.NoteShuffle, Modifier.NoDynamics, Modifier.NoVocalPercussion, Modifier.RangeCompress]
     // Songs below 100% speed are hidden by default
-    const allowSlowdowns = req.body.allowSlowdowns ?? false;
+    const allowSlowdowns = req.body.allowSlowdowns ?? false
     // Sorting can be done in two ways: Score-based (default) or Notes hit
-    const sortByNotesHit = req.body.sortByNotesHit ?? false;
+    const sortByAccuracy = req.body.sortByAccuracy ?? false
     // Pagination data
-    const page = req.body.page ?? 1;
-    const limit = req.body.limit ?? 25;
+    const page = req.body.page ?? 1
+    const limit = req.body.limit ?? 25
 
     // Query
-    let mongoQuery: ISongLeaderboardQuery = { // Using native mongo query instead of mongoose for perf gains with aggregate
+    let mongoQuery: ISongLeaderboardQuery = {
+        // Using native mongo query instead of mongoose for perf gains with aggregate
         song: new ObjectId(songId),
         instrument: instrument,
         // Ensure no "modifier" exists outside of the allowed set
         modifiers: {
             $not: {
-                $elemMatch: { $nin: allowedModifiers }
-            }
+                $elemMatch: { $nin: allowedModifiers },
+            },
         },
-        hidden: false
+        hidden: false,
     }
-    if (instrument != Instrument.Band) { // Only use these values if it's not a band (255) score
+    if (instrument != Instrument.Band) {
+        // Only use these values if it's not a band (255) score
         mongoQuery.difficulty = difficulty
         mongoQuery.engine = engine
     }
     if (!allowSlowdowns) mongoQuery.songSpeed = { $gte: 1 }
 
     // Sorting method
-    const sortingMethod: Record<string, 1 | -1> = instrument != Instrument.Band && sortByNotesHit ? {'notesHit': -1, 'maxCombo': -1, 'songSpeed': -1, 'createdAt': 1} : {'score': -1, 'songSpeed': -1, 'createdAt': 1}
+    const sortingMethod: Record<string, 1 | -1> = instrument != Instrument.Band && sortByAccuracy ? { percent: -1, maxCombo: -1, songSpeed: -1, createdAt: 1 } : { score: -1, songSpeed: -1, createdAt: 1 }
 
     // Aggregate so only the top score of each user is returned, instead of _all_ scores
     const pipeline: PipelineStage[] = [
@@ -83,11 +85,11 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
         { $sort: sortingMethod }, // apply sort order to fetch highest score
         {
             $group: {
-                _id: "$uploader",               // group by uploader
-                topScore: { $first: "$$ROOT" }, // take the first (thanks to sort order)
-            }
+                _id: '$uploader', // group by uploader
+                topScore: { $first: '$$ROOT' }, // take the first (thanks to sort order)
+            },
         },
-        { $replaceRoot: { newRoot: "$topScore" } }, // flatten back
+        { $replaceRoot: { newRoot: '$topScore' } }, // flatten back
         { $sort: sortingMethod }, // re-sort since $group loses the order
         // Facet to get both paginated results and total count in one pass
         {
@@ -98,30 +100,30 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
                     // JOIN uploader data
                     {
                         $lookup: {
-                            from: "users",
-                            localField: "uploader",
-                            foreignField: "_id",
-                            as: "uploaderInfo"
-                        }
+                            from: 'users',
+                            localField: 'uploader',
+                            foreignField: '_id',
+                            as: 'uploaderInfo',
+                        },
                     },
-                    { $unwind: "$uploaderInfo" },
+                    { $unwind: '$uploaderInfo' },
                     {
                         $addFields: {
                             uploader: {
-                                username: "$uploaderInfo.username",
-                                country: "$uploaderInfo.country",
-                            }
-                        }
+                                username: '$uploaderInfo.username',
+                                country: '$uploaderInfo.country',
+                            },
+                        },
                     },
                     { $project: { uploaderInfo: 0 } },
                     // JOIN children scores
                     // (TODO: do we want this right now? or do we separate it into a replay-specific endpoint, so it's only called if the user clicks to see the children scores of a band score?)
                     {
                         $lookup: {
-                            from: "scores",
-                            localField: "childrenScores",
-                            foreignField: "_id",
-                            as: "childrenScores",
+                            from: 'scores',
+                            localField: 'childrenScores',
+                            foreignField: '_id',
+                            as: 'childrenScores',
                             // As of right now, one user uploads a band score and all children scores are associated with this same user.
                             // Which means we don't need to fetch uploader info for children scores since they're the same as the band score.
                             // However, this might change in the future with i.e. online play. So, just uncomment the pipeline below to fetch uploader data for children scores.
@@ -146,26 +148,24 @@ const songLeaderboardHandler: ServerHandler<ISongLeaderboard> = async function (
                                 },
                                 { $project: { uploaderInfo: 0 } }
                             ]*/
-                        }
-                    }
+                        },
+                    },
                 ],
-                totalEntries: [
-                    { $count: "count" }
-                ]
-            }
-        }
-    ];
-    
-    const result = await Score.aggregate(pipeline); // Note: returns lean JSON instead of Mongoose model object. Not a problem, though
-    const scores = result[0].paginatedResults;
-    const totalEntries = result[0].totalEntries[0]?.count ?? 0;
-    
+                totalEntries: [{ $count: 'count' }],
+            },
+        },
+    ]
+
+    const result = await Score.aggregate(pipeline) // Note: returns lean JSON instead of Mongoose model object. Not a problem, though
+    const scores = result[0].paginatedResults
+    const totalEntries = result[0].totalEntries[0]?.count ?? 0
+
     serverReply(reply, 'ok', {
         totalEntries,
         totalPages: Math.ceil(totalEntries / limit),
         page,
         limit,
-        entries: scores
+        entries: scores,
     })
 }
 

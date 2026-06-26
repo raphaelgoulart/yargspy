@@ -102,12 +102,17 @@
         </ul>
       </div>
 
-      <div class="flex justify-between p-2">
-        <div>
+      <div
+        class="flex justify-between mb-2"
+        v-if="instrument != bandString"
+        :disabled="scoreLoading"
+      >
+        <!-- REMOVE v-if and :disabled IF "Allow Slowdowns" EVER RETURNS -->
+        <!--<div>
           <FormCheckbox v-model="allowSlowdowns" @update:model-value="setOther()"
             >Allow Slowdowns</FormCheckbox
           >
-        </div>
+        </div>-->
         <fieldset v-if="instrument != bandString" :disabled="scoreLoading">
           <div class="flex items-center gap-x-3">
             <legend class="text-sm/6">Sort by:</legend>
@@ -120,7 +125,7 @@
             />
             <FormRadio
               name="sortBy"
-              label="Notes hit"
+              label="Accuracy"
               value="1"
               @update:modelValue="setSort(true)"
             />
@@ -306,7 +311,7 @@ interface ISongScoresQuery {
   engine?: number
   allowedModifiers?: Array<number>
   allowSlowdowns: boolean
-  sortByNotesHit?: boolean
+  sortByAccuracy?: boolean
   page: number
   limit: number
 }
@@ -363,7 +368,7 @@ if (savedModifiers) {
   allowedModifiersEdit.value = structuredClone(parsedModifiers)
 }
 const allowSlowdowns = ref(false)
-const sortByNotesHit = ref(false)
+const sortByAccuracy = ref(false)
 
 // admin-related vars
 const auth = useAuthStore()
@@ -471,7 +476,7 @@ async function fetchScores() {
     if (instrument.value != bandString) {
       params.difficulty = Number(difficulty.value)
       params.engine = engine.value
-      params.sortByNotesHit = sortByNotesHit.value
+      params.sortByAccuracy = sortByAccuracy.value
     }
     const result = await api.post('song/leaderboard', params)
     scores.value = result.data as IScoreEntriesResponse
@@ -550,17 +555,17 @@ function setEngine(i: number) {
 }
 
 function setSort(value: boolean) {
-  if (sortByNotesHit.value == value) return
-  sortByNotesHit.value = value
+  if (sortByAccuracy.value == value) return
+  sortByAccuracy.value = value
   page.value = 1
   fetchScores()
 }
 
-function setOther() {
+/*function setOther() {
   // those other values are already being set by v-model - we just need to reset the page and re-fetch scores
   page.value = 1
   fetchScores()
-}
+}*/
 
 // ADMIN FUNCTIONS
 async function editSong(ev: Event) {
