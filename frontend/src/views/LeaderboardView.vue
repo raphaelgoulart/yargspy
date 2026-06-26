@@ -120,13 +120,14 @@
               name="sortBy"
               label="Score"
               value=""
-              checked
+              :checked="!sortByAccuracy"
               @update:modelValue="setSort(false)"
             />
             <FormRadio
               name="sortBy"
               label="Accuracy"
               value="1"
+              :checked="sortByAccuracy"
               @update:modelValue="setSort(true)"
             />
           </div>
@@ -368,7 +369,7 @@ if (savedModifiers) {
   allowedModifiersEdit.value = structuredClone(parsedModifiers)
 }
 const allowSlowdowns = ref(false)
-const sortByAccuracy = ref(false)
+const sortByAccuracy = ref(localStorage.getItem('sortByAccuracy') === '1')
 
 // admin-related vars
 const auth = useAuthStore()
@@ -556,6 +557,7 @@ function setEngine(i: number) {
 
 function setSort(value: boolean) {
   if (sortByAccuracy.value == value) return
+  localStorage.setItem('sortByAccuracy', value ? '1' : '')
   sortByAccuracy.value = value
   page.value = 1
   fetchScores()
